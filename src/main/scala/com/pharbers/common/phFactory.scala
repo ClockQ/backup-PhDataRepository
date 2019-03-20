@@ -1,4 +1,4 @@
-package common
+package com.pharbers.common
 
 import com.pharbers.spark.phSparkDriver
 
