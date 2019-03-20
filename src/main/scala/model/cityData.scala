@@ -1,5 +1,5 @@
 package model
 
-class cityData {
+case class cityData(_id: String, name: String, polygon: String, tier: List[String], province: String) {
 
 }
