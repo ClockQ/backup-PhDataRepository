@@ -87,13 +87,13 @@ class phRegionData extends Serializable {
 		val renameCT2018 = CT2018DFWithCity.withColumnRenamed("tier", "tier_c")
     		.withColumnRenamed("_id", "_id_c")
 		val joinedDF = cityDF.select("_id", "name", "polygon", "tier", "province")
-    		.join(CT2018DFWithCity, col("name") === col("city"), "left")
+    		.join(renameCT2018, col("name") === col("city"), "left")
     		.na.fill("")
 		val haveNoCityTier2018 = joinedDF.filter(col("tier") === "")
 		val haveCityTier2018 = joinedDF.filter(col("tier") =!= "")
     		.withColumn("tier", settier(col("tier"), col("_id_c")))
 		val resultDF = haveNoCityTier2018.union(haveCityTier2018).select("_id", "name", "polygon", "tier", "province")
-		saveParquet(allTier, "/test/testAddress/", "city")
+		saveParquet(resultDF, "/test/testAddress/", "city")
 	}
 
 
