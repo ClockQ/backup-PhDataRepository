@@ -1,5 +1,7 @@
 package com.pharbers.model
 
-case class cityData(_id: String, name: String, polygon: String, tier: List[String], province: String) {
+import org.bson.types.ObjectId
+
+case class cityData(_id: String, name: String, polygon: String, var tier: List[String], province:  String) {
 
 }
