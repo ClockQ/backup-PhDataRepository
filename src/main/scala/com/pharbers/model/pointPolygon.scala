@@ -1,4 +1,4 @@
-package model
+package com.pharbers.model
 
 case class pointPolygon(coordinates: Seq[String]) {
     val `type`: String = "point"

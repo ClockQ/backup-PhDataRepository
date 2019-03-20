@@ -1,14 +1,14 @@
-package phDataConversion
+package com.pharbers.phDataConversion
 
 import com.pharbers.spark.phSparkDriver
-import model._
+import com.pharbers.model._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SaveMode}
 import org.apache.spark.sql.functions._
 import com.pharbers.spark.util.dataFrame2Mongo
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
-import common.phFactory
+import com.pharbers.common.phFactory
 
 class phRegionData extends Serializable {
     def getRegionDataFromCsv(df: DataFrame): Unit ={

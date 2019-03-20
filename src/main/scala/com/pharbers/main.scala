@@ -1,5 +1,7 @@
-import common.phFactory
-import phDataConversion.phRegionData
+package com.pharbers
+
+import com.pharbers.common.phFactory
+import com.pharbers.phDataConversion.phRegionData
 
 object main extends App{
     val driver = phFactory.getSparkInstance()
