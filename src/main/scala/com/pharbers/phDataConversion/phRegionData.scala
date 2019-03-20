@@ -9,6 +9,7 @@ import com.pharbers.spark.util.dataFrame2Mongo
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import com.pharbers.common.phFactory
+import org.bson.types.ObjectId
 
 class phRegionData extends Serializable {
     def getRegionDataFromCsv(df: DataFrame): Unit ={
@@ -62,7 +63,7 @@ class phRegionData extends Serializable {
 
     //todo:objectID
     private def getObjectID(): String ={
-        "null"
+        ObjectId.get().toString
     }
 
     private def getPolygon(): String ={
