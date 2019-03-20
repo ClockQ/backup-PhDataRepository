@@ -6,4 +6,5 @@ object phFactory{
     private lazy val sparkDriver: phSparkDriver = phSparkDriver("cui-test")
 
     def getSparkInstance(): phSparkDriver = sparkDriver
+
 }
