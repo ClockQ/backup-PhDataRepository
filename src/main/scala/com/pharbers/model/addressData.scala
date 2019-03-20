@@ -1,6 +1,7 @@
 package com.pharbers.model
 
-case class addressData(region: String, location: String, province: String, city: String, prefecture: String, tier: Int,
-                       var addressID:String = "", var prefectureID: String = "", var cityID: String = "", var provinceID: String = "", var tierID: String = "", var regionID: String = "" ) {
+import org.bson.types.ObjectId
+
+case class addressData(_id: String, location: pointPolygon, prefecture: String, region: List[String], var desc: String = "NA") {
 
 }
