@@ -17,41 +17,57 @@ class phRegionData extends Serializable {
 		val rddTemp = data.toJavaRDD.rdd.map(x => addressExcelData(x(0).toString, x(1).toString, x(2).toString, x(3).toString, x(4).toString,
 			x(5).toString.trim))
 
-		//        rddTemp.foreach(print)
-		val refData = rddTemp.map(x => {
-			x.addressID = getObjectID()
-			x
-		}).groupBy(x => x.prefecture).flatMap(x => {
-			val prefectureID = getObjectID()
-			x._2.map(y => {
-				y.prefectureID = prefectureID
-				y
-			})
-		}).groupBy(x => x.city + x.province).flatMap(x => {
-			val cityID = getObjectID()
-			x._2.map(y => {
-				y.cityID = cityID
-				y
-			})
-		}).groupBy(x => x.province).flatMap(x => {
-			val provinceID = getObjectID()
-			x._2.map(y => {
-				y.provinceID = provinceID
-				y
-			})
-		}).groupBy(x => x.tier).flatMap(x => {
-			val tierID = getObjectID()
-			x._2.map(y => {
-				y.tierID = tierID
-				y
-			})
-		}).groupBy(x => x.region).flatMap(x => {
-			val regionID = getObjectID()
-			x._2.map(y => {
-				y.regionID = regionID
-				y
-			})
-		})
+//        rddTemp.foreach(print)
+        val refData = rddTemp.map(x => {
+            x.addressID = getObjectID()
+            x
+        }).groupBy(x => x.prefecture).flatMap(x => {
+            val prefectureID = getObjectID()
+             x._2.map(y => {
+                y.prefectureID = prefectureID
+                y
+            })
+        }).groupBy(x => x.city + x.province).flatMap(x => {
+            val cityID = getObjectID()
+            x._2.map(y => {
+                y.cityID = cityID
+                y
+            })
+        }).groupBy(x => x.province).flatMap(x => {
+            val provinceID = getObjectID()
+            x._2.map(y => {
+                y.provinceID = provinceID
+                y
+            })
+        }).groupBy(x => x.tier).flatMap(x => {
+            val tierID = getObjectID()
+            x._2.map(y => {
+                y.tierID = tierID
+                y
+            })
+        }).groupBy(x => x.region).flatMap(x => {
+            val regionID = getObjectID()
+            x._2.map(y => {
+                y.regionID = regionID
+                y
+            })
+        })
+        lazy val sparkDriver: phSparkDriver = phFactory.getSparkInstance()
+        import sparkDriver.ss.implicits._
+
+        val medleDf = refData.toDF("region", "location", "province", "city", "prefecture", "tier",
+            "addressID", "prefectureID", "cityID", "provinceID", "tierID", "regionID")
+
+        saveParquet(medleDf ,"/test/testAddress/", "medle")
+
+        val medleRDD = getRefData()
+        getTier(medleRDD, "2010")
+        getPrefecture(medleRDD, getPolygon())
+        getCity(medleRDD, getPolygon())
+        getProvince(medleRDD, getPolygon())
+        getRegion(medleRDD, "test")
+        getAddress(medleRDD)
+    }
 
 		getTier(refData, "2010")
 		getPrefecture(refData, getPolygon())
@@ -61,6 +77,7 @@ class phRegionData extends Serializable {
 		getAddress(refData)
 	}
 
+        df.select("city", "City Tier 2018")
 	def add18Tiger(cityDF: DataFrame, cityTier2010DF: DataFrame, cityTierDf: DataFrame): Unit = {
 		val driver = phFactory.getSparkInstance()
 		import driver.ss.implicits._
@@ -72,6 +89,8 @@ class phRegionData extends Serializable {
 			(seq: Seq[String], str: String) => seq :+ str
 		}
 
+
+    }
 		val setTier: (String, String) => DataFrame = (cityTier, tagStr) => {
 			cityTierDf.select("Prefecture", cityTier)
 				.distinct()
@@ -96,10 +115,19 @@ class phRegionData extends Serializable {
 		saveParquet(resultDF, "/test/testAddress/", "city")
 	}
 
+    def getRefData(): RDD[addressExcelData] ={
+        val driver = phFactory.getSparkInstance()
+        import driver.conn_instance
 
-	private def getObjectID(): String = {
-		ObjectId.get().toString
-	}
+        driver.setUtil(readParquet()).readParquet("/test/testAddress/medle")
+                .toJavaRDD.rdd.map(x => addressExcelData(x(0).toString, x(1).toString, x(2).toString, x(3).toString, x(4).toString,
+                x(5).toString.trim.toInt, x(6).toString,x(7).toString,x(8).toString,x(9).toString,x(10).toString,x(11).toString))
+    }
+
+
+    private def getObjectID(): String ={
+        ObjectId.get().toString
+    }
 
 	private def getPolygon(): String = {
 		"null"
@@ -150,23 +178,24 @@ class phRegionData extends Serializable {
 		saveParquet(df, "/test/testAddress/", "province")
 	}
 
-	private def getRegion(data: RDD[addressExcelData], tag: String): Unit = {
-		lazy val sparkDriver: phSparkDriver = phFactory.getSparkInstance()
-		import sparkDriver.ss.implicits._
-		val df = data.map(x => {
-			regionData(x.regionID, x.region, tag)
-		}).distinct.toDF("_id", "name", "tag")
-		saveParquet(df, "/test/testAddress/", "region")
-	}
+    private def getRegion(data: RDD[addressExcelData], tag: String): Unit ={
+        lazy val sparkDriver: phSparkDriver = phFactory.getSparkInstance()
+        import sparkDriver.ss.implicits._
+        val df = data.map(x => {
+            regionData(x.regionID, x.region, tag)
+        }).distinct
+        saveParquet(df.toDF("_id", "name", "tag"), "/test/testAddress/", "region")
+    }
 
-	private def getAddress(data: RDD[addressExcelData]): Unit = {
-		lazy val sparkDriver: phSparkDriver = phFactory.getSparkInstance()
-		import sparkDriver.ss.implicits._
-		val df = data.map(x => {
-			addressData(x.addressID, pointPolygon(x.location.split(",")), x.prefectureID, List(x.regionID))
-		}).distinct.toDF("_id", "location", "prefecture", "region", "desc")
-		saveParquet(df, "/test/testAddress/", "address")
-	}
+    private def getAddress(data: RDD[addressExcelData]): Unit ={
+        lazy val sparkDriver: phSparkDriver = phFactory.getSparkInstance()
+        import sparkDriver.ss.implicits._
+
+        val df = data.map(x => {
+            addressData(x.addressID, pointPolygon(x.location.split(",")), x.prefectureID, List(x.regionID))
+        }).distinct
+        saveParquet(df.toDF("_id", "location", "prefecture", "region", "desc"), "/test/testAddress/", "address")
+    }
 
 
 	private def saveParquet(df: DataFrame, path: String, name: String): Unit = {
