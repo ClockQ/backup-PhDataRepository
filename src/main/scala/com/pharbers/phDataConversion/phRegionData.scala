@@ -3,10 +3,11 @@ package com.pharbers.phDataConversion
 import com.pharbers.spark.phSparkDriver
 import com.pharbers.model._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, SaveMode}
+import org.apache.spark.sql.{DataFrame, Row, SaveMode}
 import org.apache.spark.sql.functions._
 import com.pharbers.spark.util.{dataFrame2Mongo, readParquet}
 import com.pharbers.common.phFactory
+import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.bson.types.ObjectId
 
 class phRegionData extends Serializable {
@@ -60,27 +61,39 @@ class phRegionData extends Serializable {
 		getAddress(refData)
 	}
 
-	def add18Tiger(df: DataFrame, cityDf: DataFrame): Unit = {
+	def add18Tiger(cityDF: DataFrame, cityTier2010DF: DataFrame, cityTierDf: DataFrame): Unit = {
 		val driver = phFactory.getSparkInstance()
 		import driver.ss.implicits._
+		//udf函数
+		val setIdCol: UserDefinedFunction = udf{
+			getObjectID()
+		}
+		val settier: UserDefinedFunction = udf{
+			(seq: Seq[String], str: String) => seq :+ str
+		}
+
 		val setTier: (String, String) => DataFrame = (cityTier, tagStr) => {
-			cityDf.select("Prefecture", cityTier)
+			cityTierDf.select("Prefecture", cityTier)
 				.distinct()
 				.withColumnRenamed(cityTier, "tier")
     			.withColumnRenamed("Prefecture", "city")
 				.withColumn("tag", lit(tagStr))
-				.withColumn("_id", lit(""))
-				.map{ x =>
-					val regionID = getObjectID()
-					x("_id") = regionID
-					x
-				}
+				.withColumn("_id", setIdCol())
 		}
-		val cityTier2010DF = setTier("City Tier 2010", "2010")
-		val cityTier2018DF = setTier("City Tier 2018", "2018")
-		val allTier = cityTier2010DF.union(cityTier2018DF)
-		allTier.select("_id", "tier", "tag")
-		df.select("City").distinct()
+		val CT2018DFWithCity = setTier("City Tier 2018", "2018")
+		val cityTier2018DF = CT2018DFWithCity.select("_id", "tier", "tag")
+		val allTier = cityTier2018DF.union(cityTier2010DF)
+		saveParquet(allTier, "/test/testAddress/", "tier")
+		val renameCT2018 = CT2018DFWithCity.withColumnRenamed("tier", "tier_c")
+    		.withColumnRenamed("_id", "_id_c")
+		val joinedDF = cityDF.select("_id", "name", "polygon", "tier", "province")
+    		.join(CT2018DFWithCity, col("name") === col("city"), "left")
+    		.na.fill("")
+		val haveNoCityTier2018 = joinedDF.filter(col("tier") === "")
+		val haveCityTier2018 = joinedDF.filter(col("tier") =!= "")
+    		.withColumn("tier", settier(col("tier"), col("_id_c")))
+		val resultDF = haveNoCityTier2018.union(haveCityTier2018).select("_id", "name", "polygon", "tier", "province")
+		saveParquet(allTier, "/test/testAddress/", "city")
 	}
 
 
