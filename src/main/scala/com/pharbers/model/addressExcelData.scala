@@ -6,11 +6,12 @@ case class addressExcelData(region: String,
                             city: String,
                             prefecture: String,
                             tier: String,
-                            var addressID:String = "",
+                            var addressID:String,
                             var prefectureID: String = "",
                             var cityID: String = "",
                             var provinceID: String = "",
                             var tierID: String = "",
-                            var regionID: String = "" ) {
+                            var regionID: String = "",
+                            var desc: String = "") {
 
 }
