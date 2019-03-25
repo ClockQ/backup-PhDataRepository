@@ -27,16 +27,14 @@ object main extends App{
     new phHospData().getHospDataFromCsv(df)
 //    new phRegionData().getRegionDataFromCsv(df)
 
-    val test = driver.setUtil(readParquet()).readParquet("/test/hosp/" + "outpatients")
 
-
-    var dfMap: Map[String, DataFrame] = Map("address" -> null,"city" -> null,"prefecture" -> null,"province" -> null,"region" -> null,"tier" -> null)
+    var dfMap: Map[String, DataFrame] = Map("hosp" -> null,"outpatient" -> null,"bed" -> null,"revenue" -> null,"staff" -> null,"specialty" -> null, "estimate" -> null)
 
     dfMap = dfMap.map(x => {
-        (x._1, driver.setUtil(readParquet()).readParquet("/test/testAddress/" + x._1))
+        (x._1, driver.setUtil(readParquet()).readParquet("/test/hosp/" + x._1))
     })
 
-//    math(dfMap)
+    math(dfMap)
 
 
     def math(dfMap: Map[String, DataFrame]): Unit ={
