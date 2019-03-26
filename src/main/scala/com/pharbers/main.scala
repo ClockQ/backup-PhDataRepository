@@ -25,16 +25,16 @@ object main extends App{
     })
 
     new phHospData().getHospDataFromCsv(df)
-//    new phRegionData().getRegionDataFromCsv(df)
+    new phRegionData().getRegionDataFromCsv(df)
 
 
-    var dfMap: Map[String, DataFrame] = Map("hosp" -> null,"outpatient" -> null,"bed" -> null,"revenue" -> null,"staff" -> null,"specialty" -> null, "estimate" -> null)
-
-    dfMap = dfMap.map(x => {
-        (x._1, driver.setUtil(readParquet()).readParquet("/test/hosp/" + x._1))
-    })
-
-    math(dfMap)
+//    var dfMap: Map[String, DataFrame] = Map("hosp" -> null,"outpatient" -> null,"bed" -> null,"revenue" -> null,"staff" -> null,"specialty" -> null, "estimate" -> null)
+//
+//    dfMap = dfMap.map(x => {
+//        (x._1, driver.setUtil(readParquet()).readParquet("/test/hosp/" + x._1))
+//    })
+//
+//    math(dfMap)
 
 
     def math(dfMap: Map[String, DataFrame]): Unit ={
@@ -59,9 +59,6 @@ object main extends App{
                  (tagFunc: (String, DataFrame) => DataFrame)(filterFunc:(DataFrame, tableInfo,DataFrame, tableInfo) => DataFrame): DataFrame ={
         filterFunc(inputData, inputInfo,tagFunc(tag, outputData), outputInfo)
     }
-//    def nomalRead(inputData: DataFrame, outputData: DataFrame, inputInfo: tableInfo, outputInfo: tableInfo): DataFrame ={
-//
-//    }
 }
 
 

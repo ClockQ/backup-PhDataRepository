@@ -11,6 +11,9 @@ class phHospData() extends Serializable{
     def getHospDataFromCsv(df: DataFrame): Unit ={
         lazy val sparkDriver: phSparkDriver = phFactory.getSparkInstance()
         import sparkDriver.ss.implicits._
+
+        val rmbId = phDataHandFunc.getObjectID()
+        phDataHandFunc.saveParquet(List((rmbId, "人民币", 1)).toDF("_id", "title", "rate"),"/test/hosp/","unit")
         val data = df.withColumn("hospId", phDataHandFunc.setIdCol())
                 .na.fill("")
                 .cache()
@@ -24,15 +27,15 @@ class phHospData() extends Serializable{
         var hospRDD = getEstimate(data, "2019") union getSpecialty(data)
 
         numMap.foreach{case (name, list) =>
-            hospRDD = hospRDD union getNumbers(getRdd(hosp, numMap(name), data), "2019", name, list)(hospSetNumberId(name), numbersToDf(name))
+            hospRDD = hospRDD union getNumbers(getRdd(hosp, numMap(name), data), "2019", name, list)(hospSetNumberId(name), numbersToDf(name, rmbId))
         }
         val hospDF = hospRDD.keyBy(x => x._id).reduceByKey((left, right) => {
-            left.revenues = (right.revenues ::: right.revenues).distinct
-            left.nobs = (right.nobs ::: right.nobs).distinct
-            left.estimates = (right.estimates ::: right.estimates).distinct
-            left.noo = (right.noo ::: right.noo).distinct
-            left.nos = (right.nos ::: right.nos).distinct
-            left.specialty = (right.specialty ::: right.specialty).distinct
+            left.revenues = (left.revenues ::: right.revenues).distinct
+            left.nobs = (left.nobs ::: right.nobs).distinct
+            left.estimates = (left.estimates ::: right.estimates).distinct
+            left.noo = (left.noo ::: right.noo).distinct
+            left.nos = (left.nos ::: right.nos).distinct
+            left.specialty = (left.specialty ::: right.specialty).distinct
             left
         }).map(x => x._2).toDF("_id", "title", "type", "level", "character", "addressID", "nos", "estimates", "noo", "nobs", "revenues", "specialty")
         phDataHandFunc.saveParquet(hospDF, "/test/hosp/", "hosp")
@@ -133,8 +136,8 @@ class phHospData() extends Serializable{
     def numbersToDf(name: String, rmbId: String = "")(rddData: RDD[data])(tag: String): DataFrame ={
         lazy val sparkDriver: phSparkDriver = phFactory.getSparkInstance()
         import sparkDriver.ss.implicits._
-        Map("revenue" -> rddData.map(x => x.array).flatMap(x => x.map(y => (y._1, y._2, y._3, y._2 + tag, 365, rmbId))).toDF("amount", "title", "_id", "tag", "period", "unit")
-        ).getOrElse(name, rddData.map(x => x.array).flatMap(x => x.map(y => (y._1, y._2, y._3, y._2 + tag))).toDF("amount", "title", "_id", "tag"))
+        Map("revenue" -> rddData.map(x => x.array).flatMap(x => x.map(y => (tryToInt(y._1), y._2, y._3, y._2 + tag, 365, rmbId))).toDF("amount", "title", "_id", "tag", "period", "unit")
+        ).getOrElse(name, rddData.map(x => x.array).flatMap(x => x.map(y => (tryToInt(y._1), y._2, y._3, y._2 + tag))).toDF("amount", "title", "_id", "tag"))
 
     }
 
@@ -153,13 +156,6 @@ class phHospData() extends Serializable{
             case _ => 0
         }
     }
-
-//    def revenueToDf(rddData: RDD[(hospData, List[(String, String, String)])])(rmbId: String)(tag: String): DataFrame ={
-//        lazy val sparkDriver: phSparkDriver = phFactory.getSparkInstance()
-//        import sparkDriver.ss.implicits._
-//
-//        rddData.map(x => x._2).flatMap(x => x.map(y => (y._1, y._2, y._3, y._2 + tag, 365, rmbId))).toDF("amount", "title", "_id", "tag", "period", "unit")
-//    }
 }
 
 case class data(hosp: hospData, array: collection.mutable.ArrayBuffer[(String, String, String)])
