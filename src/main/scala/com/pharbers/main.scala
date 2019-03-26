@@ -1,7 +1,7 @@
 package com.pharbers
 
 import com.pharbers.common.phFactory
-import com.pharbers.phDataConversion.{phDataHandFunc, phRegionData}
+import com.pharbers.phDataConversion.{phDataHandFunc, phHospData, phRegionData}
 import com.pharbers.spark.util.readParquet
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
@@ -13,22 +13,27 @@ object main extends App{
     driver.sc.addJar("D:\\code\\pharbers\\phDataRepository new\\target\\pharbers-data-repository-1.0-SNAPSHOT.jar")
     driver.sc.addJar("C:\\Users\\EDZ\\.m2\\repository\\com\\pharbers\\spark_driver\\1.0\\spark_driver-1.0.jar")
     driver.sc.addJar("C:\\Users\\EDZ\\.m2\\repository\\org\\mongodb\\mongo-java-driver\\3.8.0\\mongo-java-driver-3.8.0.jar")
-    val df = driver.ss.read.format("com.databricks.spark.csv")
+    var df = driver.ss.read.format("com.databricks.spark.csv")
             .option("header", "true")
             .option("delimiter", ",")
             .load("/test/2019年Universe更新维护1.0.csv")
             .withColumn("addressId", phDataHandFunc.setIdCol())
             .cache()
 
+    df.columns.foreach(x => {
+        df = df.withColumnRenamed(x, x.trim)
+    })
+
+    new phHospData().getHospDataFromCsv(df)
     new phRegionData().getRegionDataFromCsv(df)
 
 
-    var dfMap: Map[String, DataFrame] = Map("address" -> null,"city" -> null,"prefecture" -> null,"province" -> null,"region" -> null,"tier" -> null)
-
-    dfMap = dfMap.map(x => {
-        (x._1, driver.setUtil(readParquet()).readParquet("/test/testAddress/" + x._1))
-    })
-
+//    var dfMap: Map[String, DataFrame] = Map("hosp" -> null,"outpatient" -> null,"bed" -> null,"revenue" -> null,"staff" -> null,"specialty" -> null, "estimate" -> null)
+//
+//    dfMap = dfMap.map(x => {
+//        (x._1, driver.setUtil(readParquet()).readParquet("/test/hosp/" + x._1))
+//    })
+//
 //    math(dfMap)
 
 
@@ -54,9 +59,6 @@ object main extends App{
                  (tagFunc: (String, DataFrame) => DataFrame)(filterFunc:(DataFrame, tableInfo,DataFrame, tableInfo) => DataFrame): DataFrame ={
         filterFunc(inputData, inputInfo,tagFunc(tag, outputData), outputInfo)
     }
-//    def nomalRead(inputData: DataFrame, outputData: DataFrame, inputInfo: tableInfo, outputInfo: tableInfo): DataFrame ={
-//
-//    }
 }
 
 
