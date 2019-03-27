@@ -13,8 +13,8 @@ class savePath2Mongo extends connectMongoInfo {
 		val filePathlst = FileSystem.get(new Configuration).listStatus(new Path(path))
 			.map(x => x.getPath.toString.split("/").last)
 		filePathlst.foreach { x =>
-			val df = phSparkDriver.setUtil(readParquet()).readParquet(path + x)
-			phSparkDriver.setUtil(dataFrame2Mongo()).dataFrame2Mongo(df, server_host, server_port.toString,
+			val df = phSparkDriver.setUtil(readParquet()).readParquet(path + "/" + x)
+			phSparkDriver.setUtil(dataFrame2Mongo()).dataFrame2Mongo(str2ObjectId().reset(df), server_host, server_port.toString,
 				conn_name, x)
 		}
 	}

@@ -9,5 +9,5 @@ import org.apache.spark.sql.DataFrame
   * @ Description: TODO
   */
 trait phDataTrait {
-    def getDataFromCsv(df: DataFrame): Unit
+    def getDataFromDF(df: DataFrame): Unit
 }
