@@ -29,5 +29,5 @@ object TransformAtcTable extends App {
     atcTableDF.save2Mongo(PROD_ATCTABLE_LOCATION.split("/").last)
 
     val atcTableMongoDF = Mongo2DF(PROD_ATCTABLE_LOCATION.split("/").last)
-    phDebugLog("atcTableDF mongodb coount = " + atcTableMongoDF.count())
+    phDebugLog("atcTableDF mongodb count = " + atcTableMongoDF.count())
 }
