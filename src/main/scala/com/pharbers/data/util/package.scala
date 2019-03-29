@@ -30,16 +30,15 @@ package object util {
         def save2Mongo(name: String): Unit = {
             phDebugLog(s"save `$name` to Mongo")
             sparkDriver.setUtil(dataFrame2Mongo())
-                    .dataFrame2Mongo(df, PhMongoConf.server_host, PhMongoConf.server_port.toString, PhMongoConf.conn_name, name)
+                    .dataFrame2Mongo(df.trimOId, PhMongoConf.server_host, PhMongoConf.server_port.toString, PhMongoConf.conn_name, name)
         }
     }
 
     implicit class DFUnit(df: DataFrame) {
 
         import org.bson.types.ObjectId
-        import com.pharbers.data.util.OidCol
-        import org.apache.spark.sql.functions.{lit, udf}
         import org.apache.spark.sql.expressions.UserDefinedFunction
+        import org.apache.spark.sql.functions.{struct, col, lit, udf}
 
         def trim(colName: String, colValue: Any = null): DataFrame = {
             phDebugLog(s"trim `$colName`&`$colValue` to DataFrame")
@@ -47,12 +46,25 @@ package object util {
             else df.withColumn(colName, lit(colValue))
         }
 
-        def generateOId: DataFrame = {
-            phDebugLog(s"trim `ID` to DataFrame")
+        def generateId: DataFrame = {
+            phDebugLog(s"generate `ID` to DataFrame")
             val generateOidUdf: UserDefinedFunction = udf { () => ObjectId.get().toString }
-//            val generateOidUdf: UserDefinedFunction = udf { () => OidCol() }
             if (df.columns.contains("_id")) df
             else df.withColumn("_id", generateOidUdf())
+        }
+
+        def trimOId: DataFrame = {
+            phDebugLog(s"trim `ObjectID` to DataFrame")
+            val trimOIdUdf: UserDefinedFunction = udf(toOId)
+            if (df.columns.contains("_id")) df.withColumn("_id", trimOIdUdf(col("_id")))
+            else df
+        }
+
+        def trimId: DataFrame = {
+            phDebugLog(s"trim `ID` to DataFrame")
+            val trimIdUdf: UserDefinedFunction = udf(toId)
+            if (df.columns.contains("_id")) df.withColumn("_id", trimIdUdf(col("_id")("oid")))
+            else df
         }
     }
 

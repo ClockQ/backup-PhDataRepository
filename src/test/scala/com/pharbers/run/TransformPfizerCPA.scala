@@ -52,10 +52,10 @@ object TransformPfizerCPA extends App {
     val cpaDF = result("cpaDF")
     val revenueDF = result("revenueDF")
 
-    phDebugLog("cpaDF coount = " + cpaDF.count())
+    phDebugLog("cpaDF `ERD` count = " + cpaDF.count())
     cpaDF.show(true)
 
-    phDebugLog("revenueDF coount = " + revenueDF.count())
+    phDebugLog("revenueDF `ERD` count = " + revenueDF.count())
     revenueDF.show(true)
 
     cpaDF.save2Parquet(PFIZER_CPA_LOCATION)
@@ -65,8 +65,11 @@ object TransformPfizerCPA extends App {
     revenueDF.save2Mongo(HOSP_REVENUE_LOCATION.split("/").last)
 
     val cpaMongoDF = Mongo2DF(PFIZER_CPA_LOCATION.split("/").last)
-    phDebugLog("cpaMongoDF mongodb count = " + cpaMongoDF.count())
+    phDebugLog("cpaMongoDF `mongodb` count = " + cpaMongoDF.count())
+    phDebugLog("cpaMongoDF `mongodb` contrast `ERD` = " + (cpaMongoDF.count() == cpaDF.count()))
 
     val revenueMongoDF = Mongo2DF(HOSP_REVENUE_LOCATION.split("/").last)
-    phDebugLog("revenueMongoDF mongodb count = " + revenueMongoDF.count())
+    revenueMongoDF.show(true)
+    phDebugLog("revenueMongoDF `mongodb` count = " + revenueMongoDF.count())
+    phDebugLog("revenueMongoDF `mongodb` contrast `ERD` = " + (revenueMongoDF.count() == revenueDF.count()))
 }

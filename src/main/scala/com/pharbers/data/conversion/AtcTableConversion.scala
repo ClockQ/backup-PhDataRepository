@@ -17,7 +17,7 @@ case class AtcTableConversion() extends PhDataConversion {
                 .reduce(_ union _)
                 .filter(col("ATC_CODE").isNotNull)
                 .distinct()
-                .generateOId
+                .generateId
 
         Map(
             "atcTableDF" -> atcTableDF
