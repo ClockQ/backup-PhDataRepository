@@ -50,12 +50,29 @@ object main extends App{
         .na.fill("-")
         .cache()
 
-    val hosp_df = driver.setUtil(readParquet()).readParquet("/test/hosp/hosp")
+    val hosp_df = driver.setUtil(readParquet()).readParquet("/test/hosp/hosp").select("PHAHospId", "_id")
 
-    var df = pfizer_cpa union pfizer_gyc union astellas_cpa union astellas_gyc union nhwa_cpa
-    new phProdData().getDataFromDF(df)
+    val cpa_df = (pfizer_cpa union astellas_cpa union nhwa_cpa)
+        .na.fill("")
+        .distinct()
+    val gyc_df = (pfizer_gyc union astellas_gyc)
+        .na.fill("")
+        .distinct()
 
-    new savePath2Mongo().saveDF("/test/prod")
+    val origin_df_with_pha = (cpa_df.join(cpa_gyc_pha, cpa_df("HOSP_ID") === cpa_gyc_pha("CPA"), "left") union
+        gyc_df.join(cpa_gyc_pha, gyc_df("HOSP_ID") === cpa_gyc_pha("GYC"), "left"))
+        .na.fill("")
+        .distinct()
+
+    val origin_df_with_hosp_oid = origin_df_with_pha.join(hosp_df, origin_df_with_pha("PHA_ID_NEW") === hosp_df("PHAHospId"), "left")
+        .na.fill("")
+        .withColumnRenamed("_id", "hospital-id")
+        .select("hospital-id", "PRODUCT_NAME", "VALUE", "STANDARD_UNIT", "MOLE_NAME", "PACK_DES", "PACK_NUMBER", "DOSAGE", "DELIVERY_WAY", "CORP_NAME")
+
+
+    new phProdData().getDataFromDF(origin_df_with_hosp_oid)
+
+//    new savePath2Mongo().saveDF("/test/prod")
     println("ALL DONE")
 
 //    driver.sc.addJar("D:\\code\\pharbers\\phDataRepository new\\target\\pharbers-data-repository-1.0-SNAPSHOT.jar")
