@@ -12,25 +12,25 @@ object TransformAtcTable extends App {
     val astellas_cpa_csv = "/test/CPA&GYCX/Astellas_201804_CPA_20180629.csv"
     val nhwa_cpa_csv = "/test/CPA&GYCX/Nhwa_201804_CPA_20181227.csv"
 
-//    val atcCvs = AtcTableConversion()
-//
-//    val atcTableDF = atcCvs.DF2ERD(
-//        Map(
-//            "pfizerCpaDF" -> CSV2DF(pfizer_cpa_csv),
-//            "astellasCpaDF" -> CSV2DF(astellas_cpa_csv),
-//            "nhwaCpaDF" -> CSV2DF(nhwa_cpa_csv)
-//        )
-//    )("atcTableDF")
-//
-//    phDebugLog("atcTableDF `ERD` count = " + atcTableDF.count())
-//    atcTableDF.show(true)
+    val atcCvs = AtcTableConversion()
 
-//    atcTableDF.save2Parquet(PROD_ATCTABLE_LOCATION)
-//    atcTableDF.save2Mongo(PROD_ATCTABLE_LOCATION.split("/").last)
+    val atcTableDF = atcCvs.DF2ERD(
+        Map(
+            "pfizerCpaDF" -> CSV2DF(pfizer_cpa_csv),
+            "astellasCpaDF" -> CSV2DF(astellas_cpa_csv),
+            "nhwaCpaDF" -> CSV2DF(nhwa_cpa_csv)
+        )
+    )("atcTableDF")
+
+    phDebugLog("atcTableDF `ERD` count = " + atcTableDF.count())
+    atcTableDF.show(true)
+
+    atcTableDF.save2Parquet(PROD_ATCTABLE_LOCATION)
+    atcTableDF.save2Mongo(PROD_ATCTABLE_LOCATION.split("/").last)
 
     val atcTableMongoDF = Mongo2DF(PROD_ATCTABLE_LOCATION.split("/").last)
-    val a = atcTableMongoDF.trimId
-            a.show(true)
+    atcTableMongoDF.show(true)
+
     phDebugLog("atcTableDF `mongodb` count = " + atcTableMongoDF.count())
-//    phDebugLog("atcTableDF `mongodb` contrast `ERD` = " + (atcTableMongoDF.count() == atcTableDF.count()))
+    phDebugLog("atcTableDF `mongodb` contrast `ERD` = " + (atcTableMongoDF.count() == atcTableDF.count()))
 }

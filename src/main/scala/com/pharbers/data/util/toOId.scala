@@ -12,9 +12,3 @@ case class toOId(id: String) {
     val oidSchema = StructType(StructField("oid", StringType, false) :: Nil)
     new GenericRowWithSchema(Array(id), oidSchema)
 }
-
-case class toId(oid: String) {
-    oid.drop(1)
-//    val oidSchema = StructField("_id", StringType, false)
-//    new GenericRowWithSchema(Array(oid), )
-}

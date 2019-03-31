@@ -37,8 +37,8 @@ package object util {
     implicit class DFUnit(df: DataFrame) {
 
         import org.bson.types.ObjectId
+        import org.apache.spark.sql.functions.{col, lit, udf}
         import org.apache.spark.sql.expressions.UserDefinedFunction
-        import org.apache.spark.sql.functions.{struct, col, lit, udf}
 
         def trim(colName: String, colValue: Any = null): DataFrame = {
             phDebugLog(s"trim `$colName`&`$colValue` to DataFrame")
@@ -62,13 +62,12 @@ package object util {
 
         def trimId: DataFrame = {
             phDebugLog(s"trim `ID` to DataFrame")
-            val trimIdUdf: UserDefinedFunction = udf(toId)
-            if (df.columns.contains("_id")) df.withColumn("_id", trimIdUdf(col("_id")("oid")))
+            if (df.columns.contains("_id")) df.withColumn("_id", lit(col("_id")("oid")))
             else df
         }
     }
 
     val CSV2DF: String => DataFrame = sparkDriver.setUtil(csv2RDD()).csv2RDD(_, ",", header = true)
-    val Mongo2DF: String => DataFrame = sparkDriver.setUtil(mongo2DF()).mongo2DF(PhMongoConf.server_host, PhMongoConf.server_port.toString, PhMongoConf.conn_name, _)
+    val Mongo2DF: String => DataFrame = sparkDriver.setUtil(mongo2DF()).mongo2DF(PhMongoConf.server_host, PhMongoConf.server_port.toString, PhMongoConf.conn_name, _).trimId
     val Parquet2DF: String => DataFrame = sparkDriver.setUtil(readParquet()).readParquet(_)
 }
