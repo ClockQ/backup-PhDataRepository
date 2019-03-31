@@ -12,9 +12,9 @@ case class HospConversion() extends PhDataConversion {
     import com.pharbers.data.util.sparkDriver.ss.implicits._
     import org.apache.spark.sql.functions._
 
-    def DF2ERD(args: Map[String, DataFrame]): Map[String, DataFrame] = ???
+    def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = ???
 
-    def ERD2DF(args: Map[String, DataFrame]): Map[String, DataFrame] = {
+    def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val hospBaseDF = args.getOrElse("hospBaseDF", throw new Exception("not found hospBaseDF"))
         val hospBedDF = args.getOrElse("hospBedDF", Seq.empty[String].toDF("_id"))
         val hospEstimateDF = args.getOrElse("hospEstimateDF", Seq.empty[String].toDF("_id"))

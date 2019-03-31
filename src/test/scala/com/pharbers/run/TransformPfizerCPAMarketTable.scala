@@ -14,7 +14,7 @@ object TransformPfizerCPAMarketTable extends App {
 
     val atcCvs = AtcTableConversion()
 
-    val atcTableDF = atcCvs.DF2ERD(
+    val atcTableDF = atcCvs.toERD(
         Map(
             "pfizerCpaDF" -> CSV2DF(pfizer_cpa_csv),
             "astellasCpaDF" -> CSV2DF(astellas_cpa_csv),

@@ -3,7 +3,6 @@ package com.pharbers.run
 import com.pharbers.util.log.phLogTrait.phDebugLog
 
 object TransformAtcTable extends App {
-
     import com.pharbers.data.util._
     import com.pharbers.data.conversion._
     import com.pharbers.data.util.ParquetLocation._
@@ -14,7 +13,7 @@ object TransformAtcTable extends App {
 
     val atcCvs = AtcTableConversion()
 
-    val atcTableDF = atcCvs.DF2ERD(
+    val atcTableDF = atcCvs.toERD(
         Map(
             "pfizerCpaDF" -> CSV2DF(pfizer_cpa_csv),
             "astellasCpaDF" -> CSV2DF(astellas_cpa_csv),

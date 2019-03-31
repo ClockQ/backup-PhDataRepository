@@ -12,9 +12,9 @@ case class ProdConversion() extends PhDataConversion {
     import org.apache.spark.sql.functions._
     import com.pharbers.data.util.sparkDriver.ss.implicits._
 
-    def DF2ERD(args: Map[String, DataFrame]): Map[String, DataFrame] = ???
+    def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = ???
 
-    def ERD2DF(args: Map[String, DataFrame]): Map[String, DataFrame] = {
+    def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val prodBaseDF = args.getOrElse("prodBaseDF", throw new Exception("not found prodBaseDF"))
         val prodDeliveryDF = args.getOrElse("prodDeliveryDF", Seq.empty[String].toDF("_id"))
         val prodDosageDF = args.getOrElse("prodDosageDF", Seq.empty[String].toDF("_id"))

@@ -9,7 +9,7 @@ import org.apache.spark.sql.DataFrame
   */
 trait PhDataConversion {
 
-    def DF2ERD(args: Map[String, DataFrame]): Map[String, DataFrame]
+    def toERD(args: Map[String, DataFrame]): Map[String, DataFrame]
 
-    def ERD2DF(args: Map[String, DataFrame]): Map[String, DataFrame]
+    def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame]
 }
