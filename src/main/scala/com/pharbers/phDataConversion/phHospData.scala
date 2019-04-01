@@ -8,12 +8,13 @@ import com.pharbers.common.phFactory
 
 
 class phHospData() extends Serializable {
+	val path = "/repository/"
 	def getHospDataFromCsv(df: DataFrame): Unit = {
 		lazy val sparkDriver: phSparkDriver = phFactory.getSparkInstance()
 		import sparkDriver.ss.implicits._
 
 		val rmbId = phDataHandFunc.getObjectID()
-		phDataHandFunc.saveParquet(List((rmbId, "人民币", 1)).toDF("_id", "title", "rate"), "/test/hosp/", "unit")
+		phDataHandFunc.saveParquet(List((rmbId, "人民币", 1)).toDF("_id", "title", "rate"), path, "unit")
 		val data = df.withColumn("hospId", phDataHandFunc.setIdCol())
 			.na.fill("")
 			.cache()
@@ -38,7 +39,7 @@ class phHospData() extends Serializable {
 			left.specialty = (left.specialty ::: right.specialty).distinct
 			left
 		}).map(x => x._2).toDF("_id", "title", "PHAHospId", "type", "level", "character", "addressID", "nos", "estimates", "noo", "nobs", "revenues", "specialty")
-		phDataHandFunc.saveParquet(hospDF, "/test/hosp/", "hosp")
+		phDataHandFunc.saveParquet(hospDF, path, "hosp")
 	}
 
 	def getRdd(hosp: List[String], numbers: List[String], df: DataFrame): RDD[data] = {
@@ -65,7 +66,7 @@ class phHospData() extends Serializable {
 			}).cache()
 
 		phDataHandFunc.saveParquet(res.map(x => (x._3, "Est_DrugIncome_RMB", "tag", tryToInt(x._2))).distinct().toDF("_id", "title", "tag", "amount"),
-			"/test/hosp/", "estimate")
+			path, "estimate")
 
 		res.map(x => x._1)
 	}
@@ -130,7 +131,7 @@ class phHospData() extends Serializable {
 				}).cache()
 		}
 
-		phDataHandFunc.saveParquet(toDfFunc(rddData)(tag), "/test/hosp/", name)
+		phDataHandFunc.saveParquet(toDfFunc(rddData)(tag), path, name)
 		rddData.map(x => x.hosp)
 	}
 
