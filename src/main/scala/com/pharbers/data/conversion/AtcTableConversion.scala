@@ -9,7 +9,7 @@ import org.apache.spark.sql.DataFrame
   */
 case class AtcTableConversion() extends PhDataConversion {
 
-    import com.pharbers.data.util.DFUnit
+    import com.pharbers.data.util.DFUtil
     import org.apache.spark.sql.functions._
 
     def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {
