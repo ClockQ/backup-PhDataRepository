@@ -52,9 +52,10 @@ package object util {
 
     implicit class DFUtil(df: DataFrame) {
 
-        def trim(colName: String, colValue: Any = null): DataFrame = {
+        def trim(colName: String, colValue: Any = ""): DataFrame = {
             phDebugLog(s"trim `$colName`&`$colValue` in DataFrame")
-            if (df.columns.contains(colName)) df
+            if (df.columns.contains(colName))
+                df.withColumn(colName, when(col(colName).isNull, colValue).otherwise(col(colName)))
             else df.withColumn(colName, lit(colValue))
         }
 

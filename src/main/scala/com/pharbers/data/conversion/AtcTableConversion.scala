@@ -15,7 +15,7 @@ case class AtcTableConversion() extends PhDataConversion {
     def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val atcTableDF = args.map(x => x._2.trim("ATC_CODE").select("MOLE_NAME", "ATC_CODE"))
                 .reduce(_ union _)
-                .filter(col("ATC_CODE").isNotNull)
+                .filter(col("ATC_CODE") =!= "")
                 .distinct()
                 .generateId
 
