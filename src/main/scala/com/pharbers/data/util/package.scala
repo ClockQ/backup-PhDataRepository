@@ -50,9 +50,7 @@ package object util {
         }
     }
 
-    implicit class DFUnit(df: DataFrame) {
-
-        import commonUDF._
+    implicit class DFUtil(df: DataFrame) {
 
         def trim(colName: String, colValue: Any = null): DataFrame = {
             phDebugLog(s"trim `$colName`&`$colValue` in DataFrame")
@@ -63,13 +61,13 @@ package object util {
         def generateId: DataFrame = {
             phDebugLog(s"generate `ID` in DataFrame")
             if (df.columns.contains("_id")) df
-            else df.withColumn("_id", generateIdUdf())
+            else df.withColumn("_id", commonUDF.generateIdUdf())
         }
 
         def str2Time: DataFrame = {
             phDebugLog(s"`YM` to `Timestamp` in DataFrame")
             if (df.columns.contains("YM"))
-                df.withColumn("time", str2TimeUdf(col("YM")))
+                df.withColumn("time", commonUDF.str2TimeUdf(col("YM")))
             else
                 df.withColumn(
                     "MONTH",
@@ -79,7 +77,7 @@ package object util {
                 ).withColumn(
                     "YM",
                     concat(col("YEAR"), col("MONTH"))
-                ).withColumn("time", str2TimeUdf(col("YM")))
+                ).withColumn("time", commonUDF.str2TimeUdf(col("YM")))
         }
     }
 
