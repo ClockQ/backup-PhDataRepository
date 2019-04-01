@@ -5,8 +5,6 @@ import java.text.SimpleDateFormat
 import org.bson.types.ObjectId
 import org.apache.spark.sql.functions.udf
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
-import org.apache.spark.sql.types.{StringType, StructField, StructType}
 
 /**
   * @description:
@@ -27,9 +25,4 @@ object commonUDF {
     val generateIdUdf: UserDefinedFunction = udf { () => ObjectId.get().toString }
 
     val trimOIdUdf: UserDefinedFunction = udf(toOId)
-
-    case class toOId(id: String) {
-        val oidSchema = StructType(StructField("oid", StringType, nullable = false) :: Nil)
-        new GenericRowWithSchema(Array(id), oidSchema)
-    }
 }

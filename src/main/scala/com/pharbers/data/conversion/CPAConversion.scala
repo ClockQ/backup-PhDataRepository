@@ -11,7 +11,7 @@ case class CPAConversion(company: String, source_id: String)
         extends PhDataConversion {
 
     import com.pharbers.data.util._
-    import org.apache.spark.sql.functions._
+    import org.apache.spark.sql.functions
     import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {
@@ -23,7 +23,7 @@ case class CPAConversion(company: String, source_id: String)
         val revenueDF = Seq.empty[String].toDF("_id")
 
         val cpaConnProdHosp = cpaDF
-                .withColumn("source-id", lit(source_id))
+                .withColumn("source-id", functions.lit(source_id))
                 .str2Time
                 .join(
                     phaDF.drop("_id")

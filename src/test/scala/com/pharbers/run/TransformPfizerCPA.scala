@@ -19,58 +19,36 @@ object TransformPfizerCPA extends App {
     val cpaCvs = CPAConversion(company, source_id)
 
     val pfizerCpaDF = CSV2DF(cpa_csv)
-//    pfizerCpaDF.show(true)
+    pfizerCpaDF.show(true)
 
     val phaDF = CSV2DF(pha_csv)
-//    phaDF.show(true)
+    phaDF.show(true)
 
-    //    val hospDF = hospCvs.ERD2DF(
-//        Map(
-//            "hospBaseDF" -> Parquet2DF(HOSP_BASE_LOCATION),
-//            "hospBedDF" -> Parquet2DF(HOSP_BED_LOCATION),
-//            "hospEstimateDF" -> Parquet2DF(HOSP_ESTIMATE_LOCATION),
-//            "hospOutpatientDF" -> Parquet2DF(HOSP_OUTPATIENT_LOCATION),
-//            "hospRevenueDF" -> Parquet2DF(HOSP_REVENUE_LOCATION),
-//            "hospSpecialtyDF" -> Parquet2DF(HOSP_SPECIALTY_LOCATION),
-//            "hospStaffNumDF" -> Parquet2DF(HOSP_STAFFNUM_LOCATION),
-//            "hospUnitDF" -> Parquet2DF(HOSP_UNIT_LOCATION)
-//        )
-//    )("hospDF")
-val hospDF = hospCvs.toDIS(
-    Map(
-        "hospBaseDF" -> Mongo2DF(HOSP_BASE_LOCATION.split("/").last),
-        "hospBedDF" -> Mongo2DF(HOSP_BED_LOCATION.split("/").last),
-        "hospEstimateDF" -> Mongo2DF(HOSP_ESTIMATE_LOCATION.split("/").last),
-        "hospOutpatientDF" -> Mongo2DF(HOSP_OUTPATIENT_LOCATION.split("/").last),
-        "hospRevenueDF" -> Mongo2DF(HOSP_REVENUE_LOCATION.split("/").last),
-        "hospSpecialtyDF" -> Mongo2DF(HOSP_SPECIALTY_LOCATION.split("/").last),
-        "hospStaffNumDF" -> Mongo2DF(HOSP_STAFFNUM_LOCATION.split("/").last),
-        "hospUnitDF" -> Mongo2DF(HOSP_UNIT_LOCATION.split("/").last)
-    )
-)("hospDF")
-//    hospDF.show(true)
+    val hospDF = hospCvs.toDIS(
+        Map(
+            "hospBaseDF" -> Parquet2DF(HOSP_BASE_LOCATION),
+            "hospBedDF" -> Parquet2DF(HOSP_BED_LOCATION),
+            "hospEstimateDF" -> Parquet2DF(HOSP_ESTIMATE_LOCATION),
+            "hospOutpatientDF" -> Parquet2DF(HOSP_OUTPATIENT_LOCATION),
+            "hospRevenueDF" -> Parquet2DF(HOSP_REVENUE_LOCATION),
+            "hospSpecialtyDF" -> Parquet2DF(HOSP_SPECIALTY_LOCATION),
+            "hospStaffNumDF" -> Parquet2DF(HOSP_STAFFNUM_LOCATION),
+            "hospUnitDF" -> Parquet2DF(HOSP_UNIT_LOCATION)
+        )
+    )("hospDF")
+    hospDF.show(true)
 
-    //    val prodDF = prodCvs.ERD2DF(
-//        Map(
-//            "prodBaseDF" -> Parquet2DF(PROD_BASE_LOCATION),
-//            "prodDeliveryDF" -> Parquet2DF(PROD_DELIVERY_LOCATION),
-//            "prodDosageDF" -> Parquet2DF(PROD_DOSAGE_LOCATION),
-//            "prodMoleDF" -> Parquet2DF(PROD_MOLE_LOCATION),
-//            "prodPackageDF" -> Parquet2DF(PROD_PACKAGE_LOCATION),
-//            "prodCorpDF" -> Parquet2DF(PROD_CORP_LOCATION)
-//        )
-//    )("prodDF")
-val prodDF = prodCvs.toDIS(
-    Map(
-        "prodBaseDF" -> Mongo2DF(PROD_BASE_LOCATION.split("/").last),
-        "prodDeliveryDF" -> Mongo2DF(PROD_DELIVERY_LOCATION.split("/").last),
-        "prodDosageDF" -> Mongo2DF(PROD_DOSAGE_LOCATION.split("/").last),
-        "prodMoleDF" -> Mongo2DF(PROD_MOLE_LOCATION.split("/").last),
-        "prodPackageDF" -> Mongo2DF(PROD_PACKAGE_LOCATION.split("/").last),
-        "prodCorpDF" -> Mongo2DF(PROD_CORP_LOCATION.split("/").last)
-    )
-)("prodDF")
-//    prodDF.show(true)
+    val prodDF = prodCvs.toDIS(
+        Map(
+            "prodBaseDF" -> Parquet2DF(PROD_BASE_LOCATION),
+            "prodDeliveryDF" -> Parquet2DF(PROD_DELIVERY_LOCATION),
+            "prodDosageDF" -> Parquet2DF(PROD_DOSAGE_LOCATION),
+            "prodMoleDF" -> Parquet2DF(PROD_MOLE_LOCATION),
+            "prodPackageDF" -> Parquet2DF(PROD_PACKAGE_LOCATION),
+            "prodCorpDF" -> Parquet2DF(PROD_CORP_LOCATION)
+        )
+    )("prodDF")
+    prodDF.show(true)
 
     val result = cpaCvs.toERD(
         Map(
