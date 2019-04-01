@@ -36,10 +36,4 @@ class phSpecialtyData {
                 .select(colList.head, colList.tail: _*)
                 .distinct()
     }
-
-    //	def saveSpecialty(speResultDF: DataFrame, path: String): Unit ={
-    //		speResultDF.write.mode(SaveMode.Append)
-    //			.option("header", value = true)
-    //			.parquet(path)
-    //	}
 }
