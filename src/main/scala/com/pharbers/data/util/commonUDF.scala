@@ -1,8 +1,7 @@
 package com.pharbers.data.util
 
-import java.text.SimpleDateFormat
-
 import org.bson.types.ObjectId
+import java.text.SimpleDateFormat
 import org.apache.spark.sql.functions.udf
 import org.apache.spark.sql.expressions.UserDefinedFunction
 
@@ -24,5 +23,4 @@ object commonUDF {
 
     val generateIdUdf: UserDefinedFunction = udf { () => ObjectId.get().toString }
 
-    val trimOIdUdf: UserDefinedFunction = udf(toOId)
 }

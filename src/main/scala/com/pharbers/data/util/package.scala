@@ -28,10 +28,25 @@ package object util {
     }
 
     implicit class SaveMongo(df: DataFrame) {
+        import org.apache.spark.sql.expressions.UserDefinedFunction
+
         def save2Mongo(name: String): Unit = {
             phDebugLog(s"save `$name` to Mongo")
             sparkDriver.setUtil(dataFrame2Mongo())
                     .dataFrame2Mongo(df.trimOId, PhMongoConf.server_host, PhMongoConf.server_port.toString, PhMongoConf.conn_name, name)
+        }
+
+        def trimOId: DataFrame = {
+            phDebugLog(s"trim `ObjectID` in DataFrame")
+            val trimOIdUdf: UserDefinedFunction = udf(oidSchema)
+            if (df.columns.contains("_id")) df.withColumn("_id", trimOIdUdf(col("_id")))
+            else df
+        }
+
+        def trimId: DataFrame = {
+            phDebugLog(s"trim `ID` in DataFrame")
+            if (df.columns.contains("_id")) df.withColumn("_id", lit(col("_id")("oid")))
+            else df
         }
     }
 
@@ -49,18 +64,6 @@ package object util {
             phDebugLog(s"generate `ID` in DataFrame")
             if (df.columns.contains("_id")) df
             else df.withColumn("_id", generateIdUdf())
-        }
-
-        def trimOId: DataFrame = {
-            phDebugLog(s"trim `ObjectID` in DataFrame")
-            if (df.columns.contains("_id")) df.withColumn("_id", trimOIdUdf(col("_id")))
-            else df
-        }
-
-        def trimId: DataFrame = {
-            phDebugLog(s"trim `ID` in DataFrame")
-            if (df.columns.contains("_id")) df.withColumn("_id", lit(col("_id")("oid")))
-            else df
         }
 
         def str2Time: DataFrame = {

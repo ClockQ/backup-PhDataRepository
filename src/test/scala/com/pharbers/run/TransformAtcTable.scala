@@ -15,9 +15,9 @@ object TransformAtcTable extends App {
 
     val atcTableDF = atcCvs.toERD(
         Map(
-            "pfizerCpaDF" -> CSV2DF(pfizer_cpa_csv),
-            "astellasCpaDF" -> CSV2DF(astellas_cpa_csv),
-            "nhwaCpaDF" -> CSV2DF(nhwa_cpa_csv)
+            "pfizerCpaDF" -> CSV2DF(pfizer_cpa_csv)
+            , "astellasCpaDF" -> CSV2DF(astellas_cpa_csv)
+            , "nhwaCpaDF" -> CSV2DF(nhwa_cpa_csv)
         )
     )("atcTableDF")
 
