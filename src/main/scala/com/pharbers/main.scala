@@ -77,7 +77,9 @@ object main extends App{
         .option("header", "true")
         .option("delimiter", ",")
         .load("/test/CPA&GYCX/CPA_GYC_PHA.csv")
+        .select("GYC", "PHA_ID_NEW")
         .na.fill("-")
+        .distinct()
         .cache()
     val hosp_df = driver.setUtil(readParquet()).readParquet("/test/hosp/hosp").select("PHAHospId", "_id")
     //TODO:根据产品特征匹配已存的prod,仓库添加新的源数据CPA或GYC时一定会有以前的产品,重新把prod再生成一次是愚蠢的,最好把以前的prod加载进来,按照min1遍历查询,存在就使用原来的id,不存在就新加.
@@ -115,7 +117,7 @@ object main extends App{
     new phGycData().getDataFromDF(gyc_df_with_hosp_prod_oid)
 
     //TODO:save2mongo层的，待抽离整合
-    new savePath2Mongo().saveDF("/repository")
+//    new savePath2Mongo().saveDF("/repository")
     println("ALL DONE")
 
 //    driver.sc.addJar("D:\\code\\pharbers\\phDataRepository new\\target\\pharbers-data-repository-1.0-SNAPSHOT.jar")
