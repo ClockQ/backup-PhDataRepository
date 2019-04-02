@@ -59,7 +59,7 @@ class phRegionData extends Serializable {
         val medleDf = refData.toDF("region", "location", "province", "city", "prefecture", "tier",
             "addressID", "prefectureID", "cityID", "provinceID", "tierID", "regionID", "desc")
 
-        saveParquet(medleDf ,"/test/hosp/Address/", "medle")
+        saveParquet(medleDf ,"/repository/", "medle")
 
         val medleRDD = getRefData()
         getPrefecture(medleRDD, getPolygon())
@@ -89,7 +89,7 @@ class phRegionData extends Serializable {
 		}
 		val CT2018DFWithCity = setTier("City Tier 2018")
 		val allTier = cityTierWithIdReload.withColumnRenamed("City Tier 2018", "tier").union(cityTier2010DF)
-		saveParquet(allTier, "/test/hosp/Address/", "tier")
+		saveParquet(allTier, "/repository/", "tier")
 		val renameCT2018 = CT2018DFWithCity.withColumnRenamed("tier", "tier_c")
     		.withColumnRenamed("_id", "_id_c")
 		val joinedDF = cityDF.select("_id", "name", "polygon", "tier", "province")
@@ -99,7 +99,7 @@ class phRegionData extends Serializable {
 		val haveCityTier2018 = joinedDF.filter(col("tier_c") =!= "")
     		.withColumn("tier", settier(col("tier"), col("_id_c")))
 		val resultDF = haveNoCityTier2018.union(haveCityTier2018).select("_id", "name", "polygon", "tier", "province")
-		saveParquet(resultDF, "/test/hosp/Address/", "city")
+		saveParquet(resultDF, "/repository/", "city")
 	}
 
     def getRefData(): RDD[addressExcelData] ={
@@ -111,8 +111,7 @@ class phRegionData extends Serializable {
                 x(5).toString, x(6).toString,x(7).toString,x(8).toString,x(9).toString,x(10).toString,x(11).toString, x(12).toString))
     }
 
-
-    private def getObjectID(): String ={
+	private def getObjectID(): String ={
         ObjectId.get().toString
     }
 
@@ -128,7 +127,7 @@ class phRegionData extends Serializable {
 		val df = data.map(x => {
 			prefectureData(x.prefectureID, x.prefecture, polygon, x.cityID)
 		}).distinct.toDF("_id", "name", "polygon", "city")
-		saveParquet(df, "/test/hosp/Address/", "prefecture")
+		saveParquet(df, "/repository/", "prefecture")
 	}
 
 	private def getCity(data: RDD[addressExcelData], polygon: polygon): Unit = {
@@ -163,7 +162,7 @@ class phRegionData extends Serializable {
 		val df = data.map(x => {
 			provinceData(x.provinceID, x.province, polygon)
 		}).distinct.toDF("_id", "name", "polygon")
-		saveParquet(df, "/test/hosp/Address/", "province")
+		saveParquet(df, "/repository/", "province")
 	}
 
     private def getRegion(data: RDD[addressExcelData], tag: String): Unit ={
@@ -172,7 +171,7 @@ class phRegionData extends Serializable {
         val df = data.map(x => {
             regionData(x.regionID, x.region, tag)
         }).distinct
-        saveParquet(df.toDF("_id", "name", "tag"), "/test/hosp/Address/", "region")
+        saveParquet(df.toDF("_id", "name", "tag"), "/repository/", "region")
     }
 
     private def getAddress(data: RDD[addressExcelData]): Unit ={
@@ -182,7 +181,7 @@ class phRegionData extends Serializable {
         val df = data.map(x => {
             addressData(x.addressID, pointPolygon(x.location.split(",")), x.prefectureID, List(x.regionID), x.desc)
         }).distinct
-        saveParquet(df.toDF("_id", "location", "prefecture", "region", "desc"), "/test/hosp/Address/", "address")
+        saveParquet(df.toDF("_id", "location", "prefecture", "region", "desc"), "/repository/", "address")
     }
 
 
