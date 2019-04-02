@@ -16,7 +16,7 @@ class phSpecialtyData {
         val specialty_2_standard = addCols(specialtyDF, 4, "Specialty_2_标准化", 1, "specialty_2", colList, 0, "entryNextId")
         val specialty_re = addCols(specialtyDF, 5, "Re-Speialty", 0, "re", colList, 0, "entryNextId")
         val dfList = List(specialty_1, specialty_2, specialty_3, specialty_1_standard, specialty_2_standard, specialty_re)
-        dfList.foreach(x => phDataHandFunc.saveParquet(x, "/test/hosp/", "specialty"))
+        dfList.foreach(x => phDataHandFunc.saveParquet(x, "/repository/", "specialty"))
     }
 
     private def addCols(specialtyDF: DataFrame, idIndex: Int, specialtyName: String, level: Int, tag: String, colList: List[String], nextIdInext: Int, nextIdFlag: String): DataFrame = {
