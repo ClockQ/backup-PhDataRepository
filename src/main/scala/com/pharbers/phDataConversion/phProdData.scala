@@ -49,17 +49,7 @@ class phProdData() extends Serializable with phDataTrait {
                 y.corpID = corpID
                 y
             })
-        }).cache().groupBy(x => x.productName + x.moleID + x.packageID + x.dosageID + x.deliveryID).flatMap(x => {
-            val productID = phDataHandFunc.getObjectID()
-            x._2.map(y => {
-                y.productID = productID
-                y
-            })
         }).cache()
-
-        val test = refData.map(x => {
-            (x.productID, x.productName, x.moleID, x.packageID, x.dosageID, x.deliveryID, x.corpID)
-        }).distinct.count()
 
         saveProd(refData)
         saveMole(refData)
@@ -73,12 +63,11 @@ class phProdData() extends Serializable with phDataTrait {
     private def saveProd(data: RDD[prodData]): Unit ={
         lazy val sparkDriver: phSparkDriver = phFactory.getSparkInstance()
         import sparkDriver.ss.implicits._
-
         val rdd = data.map(x => {
-            (x.productID, x.productName, x.moleID, x.packageID, x.dosageID, x.deliveryID, x.corpID)
-        }).distinct
+            (phDataHandFunc.getObjectID(), x.productName, x.moleID, x.packageID, x.dosageID, x.deliveryID, x.corpID)
+        }).cache().distinct()
         phDataHandFunc.saveParquet(rdd.toDF("_id", "product-name", "mole-id", "package-id", "dosage-id", "delivery-id", "corp-id"),
-            "/repository/", "prod")
+            "/repository/", "prod2")
     }
 
     private def saveMole(data: RDD[prodData]): Unit ={
@@ -88,7 +77,7 @@ class phProdData() extends Serializable with phDataTrait {
         val rdd = data.map(x => {
             (x.moleID, x.moleName)
         }).distinct
-        phDataHandFunc.saveParquet(rdd.toDF("_id", "mole-name"), "/repository/", "mole")
+        phDataHandFunc.saveParquet(rdd.toDF("_id", "mole-name"), "/repository/", "mole2")
     }
 
     private def savePackage(data: RDD[prodData]): Unit ={
@@ -98,7 +87,7 @@ class phProdData() extends Serializable with phDataTrait {
         val rdd = data.map(x => {
             (x.packageID, x.packageDes, x.packageNumber)
         }).distinct
-        phDataHandFunc.saveParquet(rdd.toDF("_id", "package-des", "package-number"), "/repository/", "package")
+        phDataHandFunc.saveParquet(rdd.toDF("_id", "package-des", "package-number"), "/repository/", "package2")
     }
 
     private def saveDosage(data: RDD[prodData]): Unit ={
@@ -107,7 +96,7 @@ class phProdData() extends Serializable with phDataTrait {
         val rdd = data.map(x => {
             (x.dosageID, x.dosage)
         }).distinct
-        phDataHandFunc.saveParquet(rdd.toDF("_id", "dosage"), "/repository/", "dosage")
+        phDataHandFunc.saveParquet(rdd.toDF("_id", "dosage"), "/repository/", "dosage2")
     }
 
     private def saveDelivery(data: RDD[prodData]): Unit ={
@@ -116,7 +105,7 @@ class phProdData() extends Serializable with phDataTrait {
         val rdd = data.map(x => {
             (x.deliveryID, x.deliveryWay)
         }).distinct
-        phDataHandFunc.saveParquet(rdd.toDF("_id", "delivery-way"), "/repository/", "delivery")
+        phDataHandFunc.saveParquet(rdd.toDF("_id", "delivery-way"), "/repository/", "delivery2")
         //直接在源数据上加ObjectId成功例子
 //        val rdd = data.map(x => {
 //            Row(new GenericRowWithSchema(Array(x.deliveryID), new StructType()
@@ -138,7 +127,7 @@ class phProdData() extends Serializable with phDataTrait {
         val rdd = data.map(x => {
             (x.corpID, x.corpName)
         }).distinct
-        phDataHandFunc.saveParquet(rdd.toDF("_id", "corp-name"), "/repository/", "corp")
+        phDataHandFunc.saveParquet(rdd.toDF("_id", "corp-name"), "/repository/", "corp2")
     }
 
 }

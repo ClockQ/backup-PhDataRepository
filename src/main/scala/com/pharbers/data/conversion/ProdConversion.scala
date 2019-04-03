@@ -26,13 +26,7 @@ case class ProdConversion() extends PhDataConversion {
         val rddTemp = dist_df.toJavaRDD.rdd.map(x => prodData(x(0).toString, x(1).toString, x(2).toString, x(3).toString, x(4).toString,
             x(5).toString, x(6).toString))
 
-        val refData = rddTemp.groupBy(x => x.productName + x.moleName + x.packageDes + x.packageNumber + x.dosage + x.deliveryWay).flatMap(x => {
-            val productID = phDataHandFunc.getObjectID()
-            x._2.map(y => {
-                y.productID = productID
-                y
-            })
-        }).groupBy(x => x.moleName).flatMap(x => {
+        val refData = rddTemp.groupBy(x => x.moleName).flatMap(x => {
             val moleID = phDataHandFunc.getObjectID()
             x._2.map(y => {
                 y.moleID = moleID
@@ -65,8 +59,8 @@ case class ProdConversion() extends PhDataConversion {
         }).cache()
 
         val prodERD = refData.map(x => {
-            (x.productID, x.productName, x.moleID, x.packageID, x.dosageID, x.deliveryID, x.corpID)
-        }).distinct.toDF("_id", "product-name", "mole-id", "package-id", "dosage-id", "delivery-id", "corp-id")
+            (phDataHandFunc.getObjectID(), x.productName, x.moleID, x.packageID, x.dosageID, x.deliveryID, x.corpID)
+        }).cache().distinct.toDF("_id", "product-name", "mole-id", "package-id", "dosage-id", "delivery-id", "corp-id")
 
         val prodMoleERD = refData.map(x => {
             (x.moleID, x.moleName)
