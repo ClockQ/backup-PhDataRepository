@@ -75,8 +75,7 @@ object TransformGYC extends App {
         Map(
             "gycERD" -> astellasERD,
             "hospERD" -> hospDIS,
-            "prodERD" -> prodDIS,
-            "phaERD" -> phaDF
+            "prodERD" -> prodDIS
         )
     )("gycDIS")
     val astellasDISMinus = astellasGycDF.count() - astellasDIS.count()
