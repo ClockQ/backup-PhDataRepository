@@ -9,7 +9,6 @@ case class prodData(
                        deliveryWay: String,
                        corpName: String,
 
-                       var productID: String = "",
                        var moleID: String = "",
                        var packageID: String = "",
                        var dosageID: String = "",
