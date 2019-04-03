@@ -54,9 +54,9 @@ object TransformGYC extends App {
             "phaDF" -> phaDF
         )
     )("gycERD")
-    val pfizerMinus = pfizerGycDF.count() - pfizerERD.count()
-    phDebugLog("pfizerERD count = " + pfizerERD.count())
-    assert(pfizerMinus == 0, "pfizer: 转换后的ERD比源数据减少`" + pfizerMinus + "`条记录")
+//    val pfizerMinus = pfizerGycDF.count() - pfizerERD.count()
+//    phDebugLog("pfizerERD count = " + pfizerERD.count())
+//    assert(pfizerMinus == 0, "pfizer: 转换后的ERD比源数据减少`" + pfizerMinus + "`条记录")
 
     val astellasERD = astellasGycCvs.toERD(
         Map(
@@ -66,10 +66,21 @@ object TransformGYC extends App {
             "phaDF" -> phaDF
         )
     )("gycERD")
-    val astellasMinus = astellasGycDF.count() - astellasERD.count()
-    phDebugLog("astellasERD count = " + astellasERD.count())
-    assert(astellasMinus == 0, "astellas: 转换后的ERD比源数据减少`" + astellasMinus + "`条记录")
-    astellasERD.show(true)
+//    val astellasMinus = astellasGycDF.count() - astellasERD.count()
+//    phDebugLog("astellasERD count = " + astellasERD.count())
+//    assert(astellasMinus == 0, "astellas: 转换后的ERD比源数据减少`" + astellasMinus + "`条记录")
+
+    val pfizerDIS = pfizerGycCvs.toDIS(
+        Map(
+            "gycERD" -> pfizerERD,
+            "hospERD" -> hospDIS,
+            "prodERD" -> prodDIS
+        )
+    )("gycDIS")
+    val pfizerDISMinus = pfizerGycDF.count() - pfizerDIS.count()
+    phDebugLog("pfizerDIS count = " + pfizerDIS.count())
+    assert(pfizerDISMinus == 0, "pfizer: 转换后的DIS比源数据减少`" + pfizerDISMinus + "`条记录")
+    pfizerDIS.show(true)
 
     val astellasDIS = astellasGycCvs.toDIS(
         Map(
@@ -80,7 +91,7 @@ object TransformGYC extends App {
     )("gycDIS")
     val astellasDISMinus = astellasGycDF.count() - astellasDIS.count()
     phDebugLog("astellasDIS count = " + astellasDIS.count())
-    assert(astellasMinus == 0, "astellas: 转换后的DIS比源数据减少`" + astellasMinus + "`条记录")
+    assert(astellasDISMinus == 0, "astellas: 转换后的DIS比源数据减少`" + astellasDISMinus + "`条记录")
     astellasDIS.show(true)
 
 }
