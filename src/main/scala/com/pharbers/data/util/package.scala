@@ -80,6 +80,10 @@ package object util {
                     concat(col("YEAR"), col("MONTH"))
                 ).withColumn("time", commonUDF.str2TimeUdf(col("YM")))
         }
+
+        def alignAt(alignDF: DataFrame): DataFrame = {
+            alignDF.columns.foldRight(df)((a, b) => b.trim(a, null))
+        }
     }
 
     val CSV2DF: String => DataFrame =

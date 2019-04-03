@@ -83,7 +83,7 @@ case class ProdConversion() extends PhDataConversion {
         }).distinct.toDF("_id", "corp-name")
 
         Map(
-            "prodERD" -> prodERD,
+            "prodBaseERD" -> prodBaseERD,
             "prodDeliveryERD" -> prodDeliveryERD,
             "prodDosageERD" -> prodDosageERD,
             "prodMoleERD" -> prodMoleERD,
