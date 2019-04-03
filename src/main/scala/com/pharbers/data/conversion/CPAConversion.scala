@@ -60,9 +60,18 @@ case class CPAConversion(company: String, source_id: String)
         val cpaERD = args.getOrElse("cpaERD", throw new Exception("not found cpaERD"))
         val hospERD = args.getOrElse("hospERD", throw new Exception("not found hospERD"))
         val prodERD = args.getOrElse("prodERD", throw new Exception("not found prodERD"))
-        val phaERD = args.getOrElse("phaERD", throw new Exception("not found phaERD"))
 
-        val cpaDIS = ???
+        val cpaDIS = cpaERD
+            .join(
+                hospERD.withColumnRenamed("_id", "main-id"),
+                col("hosp-id") === col("main-id"),
+                "left"
+            ).drop(col("main-id"))
+            .join(
+                prodERD.withColumnRenamed("_id", "main-id"),
+                col("product-id") === col("main-id"),
+                "left"
+            ).drop(col("main-id"))
 
         Map(
             "cpaDIS" -> cpaDIS

@@ -26,7 +26,7 @@ case class ProdConversion() extends PhDataConversion {
         val rddTemp = dist_df.toJavaRDD.rdd.map(x => prodData(x(0).toString, x(1).toString, x(2).toString, x(3).toString, x(4).toString,
             x(5).toString, x(6).toString))
 
-        val refData = rddTemp.groupBy(x => x.productName).flatMap(x => {
+        val refData = rddTemp.groupBy(x => x.productName + x.moleName + x.packageDes + x.packageNumber + x.dosage + x.deliveryWay).flatMap(x => {
             val productID = phDataHandFunc.getObjectID()
             x._2.map(y => {
                 y.productID = productID
