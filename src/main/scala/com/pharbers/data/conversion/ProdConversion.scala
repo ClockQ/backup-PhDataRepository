@@ -58,7 +58,7 @@ case class ProdConversion() extends PhDataConversion {
             })
         }).cache()
 
-        val prodERD = refData.map(x => {
+        val prodBaseERD = refData.map(x => {
             (phDataHandFunc.getObjectID(), x.productName, x.moleID, x.packageID, x.dosageID, x.deliveryID, x.corpID)
         }).cache().distinct.toDF("_id", "product-name", "mole-id", "package-id", "dosage-id", "delivery-id", "corp-id")
 

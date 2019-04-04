@@ -64,9 +64,8 @@ case class CPAConversion(company: String, source_id: String)(prodCvs: ProdConver
                     .withColumnRenamed("HOSP_ID", "CPA")
                     .withColumn("PHA_ID_NEW", generateIdUdf())
                     .cache()
-            val notConnHospDIS = notConnPhaDIS.select("CPA", "PHA_ID_NEW")
+            val notConnHospDIS = notConnPhaDIS.select("PHA_ID_NEW")
                     .withColumnRenamed("PHA_ID_NEW", "PHAHospId")
-                    .withColumnRenamed("CPA", "_id")
                     .generateId
             return toERD(args +
                     ("hospDF" -> hospDF.unionByName(notConnHospDIS.alignAt(hospDF))) +
