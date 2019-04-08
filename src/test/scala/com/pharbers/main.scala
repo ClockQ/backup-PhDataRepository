@@ -1,16 +1,20 @@
 package com.pharbers
 
-import com.pharbers.common.{phFactory, savePath2Mongo}
-import com.pharbers.phDataConversion._
+import com.pharbers.common.phFactory
+import com.pharbers.phDataConversion.{phGycData, phProdData}
 import com.pharbers.spark.util.readParquet
-import org.apache.spark.sql.functions._
+import org.apache.spark.sql.functions.{col, concat, lit, when}
 import org.apache.spark.sql.types.IntegerType
 
-
+/**
+  * @description:
+  * @author: clock
+  * @date: 2019-04-08 19:40
+  */
 object main extends App{
     val driver = phFactory.getSparkInstance()
-    import driver.ss.implicits._
     import driver.conn_instance
+    import driver.ss.implicits._
     driver.sc.addJar("target/pharbers-data-repository-1.0-SNAPSHOT.jar")
 
     val pfizer_cpa = driver.ss.read.format("com.databricks.spark.csv")
@@ -170,5 +174,3 @@ object main extends App{
 //        filterFunc(inputData, inputInfo,tagFunc(tag, outputData), outputInfo)
 //    }
 }
-
-

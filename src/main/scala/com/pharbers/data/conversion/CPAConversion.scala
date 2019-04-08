@@ -8,7 +8,7 @@ import com.pharbers.util.log.phLogTrait.phDebugLog
   * @author: clock
   * @date: 2019-03-28 16:40
   */
-case class CPAConversion(company: String, source_id: String)(prodCvs: ProdConversion)
+case class CPAConversion(company_id: String)(prodCvs: ProdConversion)
         extends PhDataConversion {
 
     import com.pharbers.data.util._
@@ -75,7 +75,7 @@ case class CPAConversion(company: String, source_id: String)(prodCvs: ProdConver
 
         val cpaERD = connProdHosp
                 .generateId
-                .withColumn("source-id", lit(source_id))
+                .withColumn("source-id", lit(company_id))
                 .str2Time
                 .trim("PRODUCT_NAME_NOTE")
                 .select("_id", "source-id", "time", "hosp-id", "product-id", "VALUE", "STANDARD_UNIT", "PRODUCT_NAME_NOTE")
