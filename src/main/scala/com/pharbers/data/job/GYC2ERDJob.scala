@@ -1,17 +1,17 @@
 package com.pharbers.data.job
 
-import com.pharbers.data.conversion.{GYCConversion, HospConversion, ProdConversion}
-import com.pharbers.pactions.actionbase._
-import com.pharbers.pactions.jobs.sequenceJobWithMap
-import com.pharbers.util.log.phLogTrait.phDebugLog
 import org.apache.spark.sql.DataFrame
+import com.pharbers.pactions.actionbase._
+import com.pharbers.util.log.phLogTrait.phDebugLog
+import com.pharbers.pactions.jobs.sequenceJobWithMap
+import com.pharbers.data.conversion.{GYCConversion, HospConversion, ProdConversion}
 
 /**
   * @description:
   * @author: clock
   * @date: 2019-04-08 10:46
   */
-case class GYC2ERDJob(args: Map[String, String]) extends sequenceJobWithMap {
+case class GYC2ERDJob(args: Map[String, String])(implicit any: Any = null) extends sequenceJobWithMap {
     override val name: String = "GYC2ERDJob"
     override val actions: List[pActionTrait] = Nil
 

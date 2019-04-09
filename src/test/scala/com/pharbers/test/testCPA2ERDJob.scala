@@ -27,5 +27,5 @@ object testCPA2ERDJob extends App {
         , "save_pha_file" -> "/test/qi/qi/save_pha_file"
     )
 
-    println(CPA2ERDJob(testArgs).exec)
+    println(CPA2ERDJob(testArgs)().exec)
 }

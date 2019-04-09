@@ -27,5 +27,5 @@ object testGYC2ERDJob extends App {
         , "save_pha_file" -> "/test/qi/qi/save_pha_file"
     )
 
-    println(GYC2ERDJob(testArgs).exec)
+    println(GYC2ERDJob(testArgs)().exec)
 }
