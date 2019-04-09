@@ -22,10 +22,9 @@ object testGYC2ERDJob extends App {
         , "prod_mole_file" -> PROD_MOLE_LOCATION
         , "prod_package_file" -> PROD_PACKAGE_LOCATION
         , "prod_corp_file" -> PROD_CORP_LOCATION
-        , "save_prod_file" -> "/test/qi/qi/save_prod_file"
-        , "save_hosp_file" -> "/test/qi/qi/save_hosp_file"
-        , "save_pha_file" -> "/test/qi/qi/save_pha_file"
+        , "prod_base_file_temp" -> "/test/qi/qi/save_prod_file"
+        , "hosp_base_file_temp" -> "/test/qi/qi/save_hosp_file"
+        , "pha_file_temp" -> "/test/qi/qi/save_pha_file"
     )
-
     println(GYC2ERDJob(testArgs)().exec)
 }

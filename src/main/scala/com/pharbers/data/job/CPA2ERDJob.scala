@@ -38,9 +38,9 @@ case class CPA2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
     val prod_package_file: String = args("prod_package_file")
     val prod_corp_file: String = args("prod_corp_file")
 
-    val save_prod_file: String = args.getOrElse("save_prod_file", "")
-    val save_hosp_file: String = args.getOrElse("save_hosp_file", "")
-    val save_pha_file: String = args.getOrElse("save_pha_file", "")
+    val prod_base_file_temp: String = args.getOrElse("prod_base_file_temp", "")
+    val hosp_base_file_temp: String = args.getOrElse("hosp_base_file_temp", "")
+    val pha_file_temp: String = args.getOrElse("pha_file_temp", "")
 
     val hospCvs: HospConversion = HospConversion()
     val prodCvs: ProdConversion = ProdConversion()
@@ -96,9 +96,9 @@ case class CPA2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
         val cpaPhaCount: Long = cpaPha.count()
 
         if (cpaDFCount != cpaERDCount) throw new Exception(s"转换后条目不对$cpaDFCount -> $cpaERDCount")
-        if (prodDISCount != cpaProdCount && save_prod_file.nonEmpty) cpaProd.save2Parquet(save_prod_file)
-        if (hospDISCount != cpaHospCount && save_hosp_file.nonEmpty) cpaHosp.save2Parquet(save_hosp_file)
-        if (phaDFCount != cpaPhaCount && save_pha_file.nonEmpty) cpaPha.save2Parquet(save_pha_file)
+        if (prodDISCount != cpaProdCount && prod_base_file_temp.nonEmpty) cpaProd.save2Parquet(prod_base_file_temp)
+        if (hospDISCount != cpaHospCount && hosp_base_file_temp.nonEmpty) cpaHosp.save2Parquet(hosp_base_file_temp)
+        if (phaDFCount != cpaPhaCount && pha_file_temp.nonEmpty) cpaPha.save2Parquet(pha_file_temp)
 
         MapArgs(Map(
             "result" -> StringArgs("Conversion success")

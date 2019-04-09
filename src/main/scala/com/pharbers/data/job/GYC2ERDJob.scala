@@ -38,9 +38,9 @@ case class GYC2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
     val prod_package_file: String = args("prod_package_file")
     val prod_corp_file: String = args("prod_corp_file")
 
-    val save_prod_file: String = args.getOrElse("save_prod_file", "")
-    val save_hosp_file: String = args.getOrElse("save_hosp_file", "")
-    val save_pha_file: String = args.getOrElse("save_pha_file", "")
+    val prod_base_file_temp: String = args.getOrElse("prod_base_file_temp", "")
+    val hosp_base_file_temp: String = args.getOrElse("hosp_base_file_temp", "")
+    val pha_file_temp: String = args.getOrElse("pha_file_temp", "")
 
     val hospCvs: HospConversion = HospConversion()
     val prodCvs: ProdConversion = ProdConversion()
@@ -96,9 +96,9 @@ case class GYC2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
         val gycPhaCount: Long = gycPha.count()
 
         if (gycDFCount != gycERDCount) throw new Exception(s"转换后条目不对$gycDFCount -> $gycERDCount")
-        if (prodDISCount != gycProdCount && save_prod_file.nonEmpty) gycProd.save2Parquet(save_prod_file)
-        if (hospDISCount != gycHospCount && save_hosp_file.nonEmpty) gycHosp.save2Parquet(save_hosp_file)
-        if (phaDFCount != gycPhaCount && save_pha_file.nonEmpty) gycPha.save2Parquet(save_pha_file)
+        if (prodDISCount != gycProdCount && prod_base_file_temp.nonEmpty) gycProd.save2Parquet(prod_base_file_temp)
+        if (hospDISCount != gycHospCount && hosp_base_file_temp.nonEmpty) gycHosp.save2Parquet(hosp_base_file_temp)
+        if (phaDFCount != gycPhaCount && pha_file_temp.nonEmpty) gycPha.save2Parquet(pha_file_temp)
 
         MapArgs(Map(
             "result" -> StringArgs("Conversion success")
