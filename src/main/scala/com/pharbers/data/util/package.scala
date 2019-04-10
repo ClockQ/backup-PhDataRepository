@@ -52,20 +52,21 @@ package object util {
 
     implicit class DFUtil(df: DataFrame) {
 
-        def trim(colName: String, colValue: Any = null): DataFrame = {
-            phDebugLog(s"trim `$colName`&`$colValue` in DataFrame")
-            if (df.columns.contains(colName)) df
+        def trim(colName: String, colValue: Any = ""): DataFrame = {
+//            phDebugLog(s"trim `$colName`&`$colValue` in DataFrame")
+            if (df.columns.contains(colName))
+                df.withColumn(colName, when(col(colName).isNull, colValue).otherwise(col(colName)))
             else df.withColumn(colName, lit(colValue))
         }
 
         def generateId: DataFrame = {
-            phDebugLog(s"generate `ID` in DataFrame")
+//            phDebugLog(s"generate `ID` in DataFrame")
             if (df.columns.contains("_id")) df
             else df.withColumn("_id", commonUDF.generateIdUdf())
         }
 
         def str2Time: DataFrame = {
-            phDebugLog(s"`YM` to `Timestamp` in DataFrame")
+//            phDebugLog(s"`YM` to `Timestamp` in DataFrame")
             if (df.columns.contains("YM"))
                 df.withColumn("time", commonUDF.str2TimeUdf(col("YM")))
             else
@@ -79,10 +80,14 @@ package object util {
                     concat(col("YEAR"), col("MONTH"))
                 ).withColumn("time", commonUDF.str2TimeUdf(col("YM")))
         }
+
+        def alignAt(alignDF: DataFrame): DataFrame = {
+            alignDF.columns.foldRight(df)((a, b) => b.trim(a, null))
+        }
     }
 
     val CSV2DF: String => DataFrame =
-        sparkDriver.setUtil(csv2RDD()).csv2RDD(_, ",", header = true)
+        sparkDriver.setUtil(csv2RDD()).csv2RDD(_, ",", header = true).na.fill("")
 
     val Mongo2DF: String => DataFrame =
         sparkDriver.setUtil(mongo2DF()).mongo2DF(

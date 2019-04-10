@@ -1,16 +1,20 @@
 package com.pharbers
 
-import com.pharbers.common.{phFactory, savePath2Mongo}
-import com.pharbers.phDataConversion._
+import com.pharbers.common.phFactory
+import com.pharbers.phDataConversion.{phGycData, phProdData}
 import com.pharbers.spark.util.readParquet
-import org.apache.spark.sql.functions._
+import org.apache.spark.sql.functions.{col, concat, lit, when}
 import org.apache.spark.sql.types.IntegerType
 
-
+/**
+  * @description:
+  * @author: clock
+  * @date: 2019-04-08 19:40
+  */
 object main extends App{
     val driver = phFactory.getSparkInstance()
-    import driver.ss.implicits._
     import driver.conn_instance
+    import driver.ss.implicits._
     driver.sc.addJar("target/pharbers-data-repository-1.0-SNAPSHOT.jar")
 
     val pfizer_cpa = driver.ss.read.format("com.databricks.spark.csv")
@@ -77,7 +81,9 @@ object main extends App{
         .option("header", "true")
         .option("delimiter", ",")
         .load("/test/CPA&GYCX/CPA_GYC_PHA.csv")
+        .select("GYC", "PHA_ID_NEW")
         .na.fill("-")
+        .distinct()
         .cache()
     val hosp_df = driver.setUtil(readParquet()).readParquet("/test/hosp/hosp").select("PHAHospId", "_id")
     //TODO:根据产品特征匹配已存的prod,仓库添加新的源数据CPA或GYC时一定会有以前的产品,重新把prod再生成一次是愚蠢的,最好把以前的prod加载进来,按照min1遍历查询,存在就使用原来的id,不存在就新加.
@@ -115,7 +121,7 @@ object main extends App{
     new phGycData().getDataFromDF(gyc_df_with_hosp_prod_oid)
 
     //TODO:save2mongo层的，待抽离整合
-    new savePath2Mongo().saveDF("/repository")
+//    new savePath2Mongo().saveDF("/repository")
     println("ALL DONE")
 
 //    driver.sc.addJar("D:\\code\\pharbers\\phDataRepository new\\target\\pharbers-data-repository-1.0-SNAPSHOT.jar")
@@ -168,5 +174,3 @@ object main extends App{
 //        filterFunc(inputData, inputInfo,tagFunc(tag, outputData), outputInfo)
 //    }
 }
-
-

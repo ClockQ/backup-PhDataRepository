@@ -15,19 +15,19 @@ case class HospConversion() extends PhDataConversion {
     def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = ???
 
     def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = {
-        val hospBaseDF = args.getOrElse("hospBaseDF", throw new Exception("not found hospBaseDF"))
-        val hospBedDF = args.getOrElse("hospBedDF", Seq.empty[String].toDF("_id"))
-        val hospEstimateDF = args.getOrElse("hospEstimateDF", Seq.empty[String].toDF("_id"))
-        val hospOutpatientDF = args.getOrElse("hospOutpatientDF", Seq.empty[String].toDF("_id"))
-        val hospRevenueDF = args.getOrElse("hospRevenueDF", Seq.empty[String].toDF("_id"))
-        val hospSpecialtyDF = args.getOrElse("hospSpecialtyDF", Seq.empty[String].toDF("_id"))
-        val hospStaffNumDF = args.getOrElse("hospStaffNumDF", Seq.empty[String].toDF("_id"))
-        val hospUnitDF = args.getOrElse("hospUnitDF", Seq.empty[String].toDF("_id"))
+        val hospBaseERD = args.getOrElse("hospBaseERD", throw new Exception("not found hospBaseERD"))
+        val hospBedERD = args.getOrElse("hospBedERD", Seq.empty[String].toDF("_id"))
+        val hospEstimateERD = args.getOrElse("hospEstimateERD", Seq.empty[String].toDF("_id"))
+        val hospOutpatientERD = args.getOrElse("hospOutpatientERD", Seq.empty[String].toDF("_id"))
+        val hospRevenueERD = args.getOrElse("hospRevenueERD", Seq.empty[String].toDF("_id"))
+        val hospSpecialtyERD = args.getOrElse("hospSpecialtyERD", Seq.empty[String].toDF("_id"))
+        val hospStaffNumERD = args.getOrElse("hospStaffNumERD", Seq.empty[String].toDF("_id"))
+        val hospUnitERD = args.getOrElse("hospUnitERD", Seq.empty[String].toDF("_id"))
 
-        val hospDF = hospBaseDF
+        val hospDIS = hospBaseERD
 
         Map(
-            "hospDF" -> hospDF
+            "hospDIS" -> hospDIS
         )
     }
 }

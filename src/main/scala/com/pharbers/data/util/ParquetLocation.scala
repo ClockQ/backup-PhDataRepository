@@ -23,15 +23,17 @@ object ParquetLocation {
     val HOSP_ADDRESS_PROVINCE_LOCATION = "/test/hosp/Address/province"
     val HOSP_ADDRESS_REGION_LOCATION = "/test/hosp/Address/region"
     val HOSP_ADDRESS_TIER_LOCATION = "/test/hosp/Address/tier"
+    // hospital pha
+    val HOSP_PHA_LOCATION = "/test/hosp/pha"
 
     // product
-    val PROD_BASE_LOCATION = "/test/prod/prod"
-    val PROD_DELIVERY_LOCATION = "/test/prod/delivery"
-    val PROD_DOSAGE_LOCATION = "/test/prod/dosage"
-    val PROD_MOLE_LOCATION = "/test/prod/mole"
-    val PROD_PACKAGE_LOCATION = "/test/prod/package"
-    val PROD_CORP_LOCATION = "/test/prod/corp"
-    val PROD_ATCTABLE_LOCATION = "/test/prod/atcTable"
+    val PROD_BASE_LOCATION = "/repository/prod"
+    val PROD_DELIVERY_LOCATION = "/repository/delivery"
+    val PROD_DOSAGE_LOCATION = "/repository/dosage"
+    val PROD_MOLE_LOCATION = "/repository/mole"
+    val PROD_PACKAGE_LOCATION = "/repository/package"
+    val PROD_CORP_LOCATION = "/repository/corp"
+    val PROD_ATCTABLE_LOCATION = "/repository/atcTable"
 
     // CPA&GYCX
     val PFIZER_CPA_LOCATION = "/test/source/cpa/Pfizer_201804_CPA_20181227.csv"
