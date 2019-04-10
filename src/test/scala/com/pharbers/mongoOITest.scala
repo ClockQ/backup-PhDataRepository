@@ -1,17 +1,20 @@
 package com.pharbers
 
-import com.mongodb.spark.sql.fieldTypes.ObjectId
 import com.mongodb.spark.sql.helpers.StructFields
 import com.pharbers.common.phFactory
 import com.pharbers.model.oidCol
-import com.pharbers.spark.util.{dataFrame2Mongo, mongo2RDD, readParquet}
-import org.apache.spark.sql.{Row, SaveMode}
+import com.pharbers.spark.util.{dataFrame2Mongo, readParquet}
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types._
-import org.bson.types
+import org.apache.spark.sql.functions.{col, udf}
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.{Row, SaveMode}
 
+/**
+  * @description:
+  * @author: clock
+  * @date: 2019-04-08 19:40
+  */
 object mongoOITest extends App with Serializable {
 	val phSparkDriver = phFactory.getSparkInstance()
 
