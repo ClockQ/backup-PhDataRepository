@@ -68,7 +68,7 @@ package object util {
         def str2Time: DataFrame = {
 //            phDebugLog(s"`YM` to `Timestamp` in DataFrame")
             if (df.columns.contains("YM"))
-                df.withColumn("time", commonUDF.str2TimeUdf(col("YM")))
+                df.withColumn("TIME", commonUDF.str2TimeUdf(col("YM")))
             else
                 df.withColumn(
                     "MONTH",
@@ -78,7 +78,14 @@ package object util {
                 ).withColumn(
                     "YM",
                     concat(col("YEAR"), col("MONTH"))
-                ).withColumn("time", commonUDF.str2TimeUdf(col("YM")))
+                ).withColumn("TIME", commonUDF.str2TimeUdf(col("YM")))
+        }
+
+        def time2ym: DataFrame = {
+            //            phDebugLog(s"`YM` to `Timestamp` in DataFrame")
+            if (df.columns.contains("YM")) df
+            else
+                df.withColumn("YM", commonUDF.time2StrUdf(col("TIME")))
         }
 
         def alignAt(alignDF: DataFrame): DataFrame = {
