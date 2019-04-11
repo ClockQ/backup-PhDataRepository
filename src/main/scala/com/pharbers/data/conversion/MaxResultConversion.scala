@@ -10,9 +10,22 @@ case class MaxResultConversion(company_id: String) extends PhDataConversion {
     def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val maxDF = args.getOrElse("maxDF", throw new Exception("not found maxDF"))
         //Date, Province, City, Panel_ID, Product, Factor, f_sales, f_units, MARKET
-        val maxERD = maxDF
+
+        val sourceERD = maxDF
+            .select("MARKET")
+            .distinct()
+            .withColumn("COMPANY_ID", lit(company_id))
             .generateId
-            .withColumn("SOURCE_ID", lit(company_id))
+            .cache()
+
+        val maxERD = maxDF
+            .distinct()
+            .generateId
+            .join(sourceERD
+                .withColumnRenamed("MARKET", "mkt")
+                .withColumnRenamed("_id", "SOURCE_ID"),
+                col("MARKET") === col("mkt"),
+                "left")
             .withColumnRenamed("Date", "YM")
             .str2Time
             .withColumnRenamed("Panel_ID", "PHA_ID")
@@ -20,10 +33,11 @@ case class MaxResultConversion(company_id: String) extends PhDataConversion {
             .withColumnRenamed("Factor", "FACTOR")
             .withColumnRenamed("f_sales", "SALES")
             .withColumnRenamed("f_units", "UNITS")
-            .select("_ID", "SOURCE_ID", "TIME", "PHA_ID", "MIN_PRODUCT", "FACTOR", "SALES", "UNITS", "MARKET")
+            .select("_ID", "SOURCE_ID", "TIME", "PHA_ID", "MIN_PRODUCT", "FACTOR", "SALES", "UNITS")
 
         Map(
-            "maxERD" -> maxERD
+            "maxERD" -> maxERD,
+            "sourceERD" -> sourceERD
         )
     }
 
