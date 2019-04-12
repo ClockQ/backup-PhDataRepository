@@ -46,11 +46,14 @@ case class MaxResultConversion(company_id: String) extends PhDataConversion {
         val hospDIS = args.getOrElse("hospDIS", throw new Exception("not found hospDIS"))
         val prodDIS = args.getOrElse("prodDIS", throw new Exception("not found prodDIS"))
 
-        //TODO:HospDIS数据有重复的PHAHospId,导致一对多的问题，产品已完成匹配与对数
+        // TODO:匹配医院已完成对数，目前MaxResultHospDIS只使用了[PHAHospId / City / Province]，原因是HospDIS数据中有PHAHospId一对多的问题，
+        // TODO:匹配产品已完成对数，但是max结果数据中的min1是规范产品名等的数据，再使用min1反匹到我们prodDIS【来源于CPA等未经规范的原始数据】，就会出现很多匹配不到的情况。等待公司维度的匹配表的数据仓储的建立。
+//        val hospDistinct = hospDIS.filter(col("PHAIsRepeat") === 0).select("PHAHospId", "prefecture-name", "city-name", "province-name").distinct()
+//            .groupBy("PHAHospId").agg(("PHAHospId" -> "count"))
 
         val maxDIS = maxERD
             .join(
-                hospDIS.withColumnRenamed("_id", "HOSPITAL_ID"),
+                hospDIS.filter(col("PHAIsRepeat") === 0).select("PHAHospId", "city-name", "province-name").distinct(),
                 col("PHA_ID") === col("PHAHospId"),
                 "left"
             ).drop(col("PHAHospId"))
