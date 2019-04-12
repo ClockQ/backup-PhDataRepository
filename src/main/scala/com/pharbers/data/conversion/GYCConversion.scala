@@ -71,7 +71,7 @@ case class GYCConversion(company_id: String)(prodCvs: ProdConversion) extends Ph
                 .generateId
                 .withColumn("source-id", lit(company_id))
                 .str2Time
-                .select("_id", "source-id", "time", "hosp-id", "product-id", "VALUE", "STANDARD_UNIT")
+                .select("_id", "source-id", "TIME", "hosp-id", "product-id", "VALUE", "STANDARD_UNIT")
 
         Map(
             "gycERD" -> gycERD,

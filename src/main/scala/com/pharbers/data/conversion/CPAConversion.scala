@@ -78,7 +78,7 @@ case class CPAConversion(company_id: String)(prodCvs: ProdConversion)
                 .withColumn("source-id", lit(company_id))
                 .str2Time
                 .trim("PRODUCT_NAME_NOTE")
-                .select("_id", "source-id", "time", "hosp-id", "product-id", "VALUE", "STANDARD_UNIT", "PRODUCT_NAME_NOTE")
+                .select("_id", "source-id", "TIME", "hosp-id", "product-id", "VALUE", "STANDARD_UNIT", "PRODUCT_NAME_NOTE")
 
         Map(
             "cpaERD" -> cpaERD,
