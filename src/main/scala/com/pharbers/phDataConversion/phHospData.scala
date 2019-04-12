@@ -19,7 +19,7 @@ class phHospData() extends Serializable {
 			.na.fill("")
 			.cache()
 
-		val hosp = List("hospId", "新版名称", "新版ID", "Type", "Hosp_level", "性质", "addressId")
+		val hosp = List("hospId", "新版名称", "重复", "新版ID", "Type", "Hosp_level", "性质", "addressId")
 		val numMap = Map("outpatient" -> List("年诊疗人次", "内科诊次", "内科诊次", "外科诊次", "入院人数", "住院病人手术人次数"),
 			"bed" -> List("床位数", "全科床位数", "内科床位数", "外科床位数", "眼科床位数"),
 			"revenue" -> List("医疗收入", "门诊收入", "门诊治疗收入", "门诊手术收入", "住院收入", "住院床位收入", "住院治疗收入", "住院手术收入", "药品收入", "门诊药品收入", "门诊西药收入", "住院药品收入", "住院西药收入"),
@@ -38,14 +38,14 @@ class phHospData() extends Serializable {
 			left.nos = (left.nos ::: right.nos).distinct
 			left.specialty = (left.specialty ::: right.specialty).distinct
 			left
-		}).map(x => x._2).toDF("_id", "title", "PHAHospId", "type", "level", "character", "addressID", "nos", "estimates", "noo", "nobs", "revenues", "specialty")
+		}).map(x => x._2).toDF("_id", "title", "PHAIsRepeat", "PHAHospId", "type", "level", "character", "addressID", "nos", "estimates", "noo", "nobs", "revenues", "specialty")
 		phDataHandFunc.saveParquet(hospDF, path, "hosp")
 	}
 
 	def getRdd(hosp: List[String], numbers: List[String], df: DataFrame): RDD[data] = {
 		df.select(hosp.head, hosp.tail ::: numbers: _*).javaRDD.rdd.map(x =>
 
-			data(hospData(x(0).toString, x(1).toString, x(2).toString, x(3).toString, x(4).toString, x(5).toString, x(6).toString),
+			data(hospData(x(0).toString, x(1).toString, x(2).toString, x(3).toString, x(4).toString, x(5).toString, x(6).toString, x(7).toString),
 				collection.mutable.ArrayBuffer.apply(numbers.map(y => (x(numbers.indexOf(y) + 7).toString, "", "")): _*)))
 	}
 
@@ -54,8 +54,8 @@ class phHospData() extends Serializable {
 		lazy val sparkDriver: phSparkDriver = phFactory.getSparkInstance()
 		import sparkDriver.ss.implicits._
 
-		val res = df.select("hospId", "新版名称", "新版ID", "Type", "Hosp_level", "性质", "addressId", "Est_DrugIncome_RMB")
-			.javaRDD.rdd.map(x => (hospData(x(0).toString, x(1).toString, x(2).toString, x(3).toString, x(4).toString, x(5).toString, x(6).toString), x(7).toString))
+		val res = df.select("hospId", "新版名称", "重复", "新版ID", "Type", "Hosp_level", "性质", "addressId", "Est_DrugIncome_RMB")
+			.javaRDD.rdd.map(x => (hospData(x(0).toString, x(1).toString, x(2).toString, x(3).toString, x(4).toString, x(5).toString, x(6).toString, x(7).toString), x(8).toString))
 			.groupBy(x => x._2)
 			.flatMap(x => {
 				val id = phDataHandFunc.getObjectID()
@@ -73,10 +73,10 @@ class phHospData() extends Serializable {
 
 	def getSpecialty(df: DataFrame): RDD[hospData] = {
 		val specialtyNameList = List("Specialty_1", "Specialty_2", "Specialty_1_标准化", "Specialty_2_标准化", "Re-Speialty", "Specialty 3")
-		val hosp = List("hospId", "新版名称", "新版ID", "Type", "Hosp_level", "性质", "addressId")
+		val hosp = List("hospId", "新版名称", "重复", "新版ID", "Type", "Hosp_level", "性质", "addressId")
 		var rdd = df.select(hosp.head, hosp.tail ::: specialtyNameList: _*)
-			.javaRDD.rdd.map(x => (hospData(x(0).toString, x(1).toString, x(2).toString, x(3).toString, x(4).toString, x(5).toString, x(6).toString),
-			specialty(x(7).toString, x(8).toString, x(9).toString, x(10).toString, x(11).toString, x(12).toString)))
+			.javaRDD.rdd.map(x => (hospData(x(0).toString, x(1).toString, x(2).toString, x(3).toString, x(4).toString, x(5).toString, x(6).toString, x(7).toString),
+			specialty(x(8).toString, x(9).toString, x(10).toString, x(11).toString, x(12).toString, x(13).toString)))
 
 		def groupSpecialty(rdd: RDD[(hospData, specialty)], name: String): RDD[(hospData, specialty)] = {
 			val groupTypeMap: Map[String, specialty => String] = Map(
