@@ -6,11 +6,6 @@ import com.pharbers.spark.util.readParquet
 import org.apache.spark.sql.functions.{col, concat, lit, when}
 import org.apache.spark.sql.types.IntegerType
 
-/**
-  * @description:
-  * @author: clock
-  * @date: 2019-04-08 19:40
-  */
 object main extends App{
     val driver = phFactory.getSparkInstance()
     import driver.conn_instance
