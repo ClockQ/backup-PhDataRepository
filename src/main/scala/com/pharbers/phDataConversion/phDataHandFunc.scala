@@ -12,8 +12,8 @@ object phDataHandFunc {
 	}
 
 	val setHospCol: UserDefinedFunction = udf {
-		(_id: String, title: String, PHAHospId: String, `type`: String, level: String, character: String, addressID: String) =>
-			hospData(_id, title, PHAHospId, `type`, level, character, addressID).toString
+		(_id: String, title: String, PHAIsRepeat: String, PHAHospId: String, `type`: String, level: String, character: String, addressID: String) =>
+			hospData(_id, title, PHAIsRepeat, PHAHospId, `type`, level, character, addressID).toString
 		//        _id: String => hospData(_id)
 	}
 
@@ -38,6 +38,6 @@ object phDataHandFunc {
 
 	def string2HospData(s: String): hospData = {
 		val atts = s.split(",")
-		hospData(atts(0), atts(1), atts(2), atts(3), atts(4), atts(5), atts(6))
+		hospData(atts(0), atts(1), atts(2), atts(3), atts(4), atts(5), atts(6), atts(7))
 	}
 }
