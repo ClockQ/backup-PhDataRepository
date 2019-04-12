@@ -22,7 +22,7 @@ class phRegionData extends Serializable {
         val refData = rddTemp.map(x => {
 			x.desc = x.province + x.city + x.prefecture
             x
-        }).groupBy(x => x.prefecture).flatMap(x => {
+        }).groupBy(x => x.prefecture + x.province + x.city).flatMap(x => {
             val prefectureID = getObjectID()
              x._2.map(y => {
                 y.prefectureID = prefectureID
@@ -52,21 +52,21 @@ class phRegionData extends Serializable {
                 y.regionID = regionID
                 y
             })
-        })
+        }).cache()
         lazy val sparkDriver: phSparkDriver = phFactory.getSparkInstance()
         import sparkDriver.ss.implicits._
 
         val medleDf = refData.toDF("region", "location", "province", "city", "prefecture", "tier",
             "addressID", "prefectureID", "cityID", "provinceID", "tierID", "regionID", "desc")
 
-        saveParquet(medleDf ,"/repository/", "medle")
+//        saveParquet(medleDf ,"/repository/", "medle")
 
-        val medleRDD = getRefData()
-        getPrefecture(medleRDD, getPolygon())
-        getCity(medleRDD, getPolygon())
-        getProvince(medleRDD, getPolygon())
-        getRegion(medleRDD, "201903Pharbers")
-        getAddress(medleRDD)
+//        val medleRDD = getRefData()
+        getPrefecture(refData, getPolygon())
+        getCity(refData, getPolygon())
+        getProvince(refData, getPolygon())
+        getRegion(refData, "201903Pharbers")
+        getAddress(refData)
     }
 
 	def add18Tiger(cityDF: DataFrame, cityTier2010DF: DataFrame, cityTierDf: DataFrame)(setIdCol: UserDefinedFunction): Unit = {
@@ -106,7 +106,7 @@ class phRegionData extends Serializable {
         val driver = phFactory.getSparkInstance()
         import driver.conn_instance
 
-        driver.setUtil(readParquet()).readParquet("/test/hosp/Address/medle")
+        driver.setUtil(readParquet()).readParquet("/repository/medle")
                 .toJavaRDD.rdd.map(x => addressExcelData(x(0).toString, x(1).toString, x(2).toString, x(3).toString, x(4).toString,
                 x(5).toString, x(6).toString,x(7).toString,x(8).toString,x(9).toString,x(10).toString,x(11).toString, x(12).toString))
     }
