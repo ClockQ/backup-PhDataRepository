@@ -13,22 +13,25 @@ case class PanelConversion(company_id: String)
     override def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val panelDF = args.getOrElse("panelDF", throw new Exception("not found panelDF"))
         val hospDF = args.getOrElse("hospDF", throw new Exception("not found hospDF"))
+                .filter(col("PHAIsRepeat") === "0")
         val sourceDF = args.getOrElse("sourceDF", throw new Exception("not found sourceDF"))
+        val phaDF = args.getOrElse("phaDF", throw new Exception("not found phaDF"))
 
-        val connHospSource = panelDF.withColumnRenamed("HOSP_ID", "PHA_ID")
-                .withColumn("source_id", lit(company_id))
-                .join(hospDF.withColumnRenamed("_id", "HOSP_ID"), panelDF("PHA_ID") === hospDF("PHAHospId"), "left")
+        val connHospSource = panelDF.withColumnRenamed("HOSP_ID", "PHA_ID_old")
+                .withColumn("source", lit(company_id))
+                .join(phaDF, col("PHA_ID_old") === phaDF("PHA_ID"))
+                .join(hospDF.withColumnRenamed("_id", "HOSP_ID"), col("PHA_ID_NEW") === hospDF("PHAHospId"), "left")
                 .join(sourceDF.withColumnRenamed("_id", "SOURCE_ID"),
-                    panelDF("source_id") === sourceDF("COMPANY_ID") && panelDF("DOI") === sourceDF("MARKET"), "left")
+                    col("source") === sourceDF("COMPANY_ID") && panelDF("DOI") === sourceDF("MARKET"), "left")
 
         val notConnHospOfPanel = connHospSource.filter(col("HOSP_ID").isNull)
         val notConnHospOfPanelCount = notConnHospOfPanel.count()
         if (notConnHospOfPanelCount != 0) {
             phDebugLog(notConnHospOfPanelCount + "条医院未匹配, 重新转换")
-            val notConnHospDIS = notConnHospOfPanel.select("PHA_ID", "Hosp_name")
+            val notConnHospDIS = notConnHospOfPanel.select("PHA_ID_NEW", "Hosp_name")
                     .distinct()
-                    .withColumn("HOSP_ID", generateIdUdf())
-                    .withColumnRenamed("PHA_ID", "PHAHospId")
+                    .withColumn("_id", generateIdUdf())
+                    .withColumnRenamed("PHA_ID_NEW", "PHAHospId")
                     .withColumnRenamed("Hosp_name", "title")
                     .cache()
 
@@ -38,25 +41,23 @@ case class PanelConversion(company_id: String)
         }
 
         val notConnSourceOfPanel = connHospSource.filter(col("SOURCE_ID").isNull)
-        val notConnSourceOfPanelCount = notConnHospOfPanel.count()
+        val notConnSourceOfPanelCount = notConnSourceOfPanel.count()
         if (notConnSourceOfPanelCount != 0) {
             phDebugLog(notConnSourceOfPanelCount + "条source未匹配, 重新转换")
-            val notConnSourceDIS = notConnSourceOfPanel.select("source_id", "DOI")
+            val notConnSourceDIS = notConnSourceOfPanel.select("source", "DOI")
                     .distinct()
-                    .withColumn("SOURCE_ID", generateIdUdf())
-                    .withColumnRenamed("source_id", "COMPANY_ID")
+                    .withColumn("_id", generateIdUdf())
+                    .withColumnRenamed("source", "COMPANY_ID")
                     .withColumnRenamed("DOI", "MARKET")
                     .cache()
 
             return toERD(args +
-                    ("sourceDF" -> hospDF.unionByName(notConnSourceDIS.alignAt(hospDF)))
+                    ("sourceDF" -> sourceDF.unionByName(notConnSourceDIS.alignAt(sourceDF)))
             )
         }
 
         val panelERD = connHospSource
                 .generateId
-                .str2Time
-                .trim("PRODUCT_NAME_NOTE")
                 .select("_id", "SOURCE_ID", "Date", "HOSP_ID", "Prod_Name", "Sales", "Units")
                 .withColumnRenamed("Date", "DATE")
                 .withColumnRenamed("Prod_Name", "MIN_PRODUCT")
@@ -65,41 +66,26 @@ case class PanelConversion(company_id: String)
         Map(
             "panelERD" -> panelERD,
             "hospDIS" -> hospDF,
-            "sourceDIS" -> sourceDF
+            "sourceERD" -> sourceDF
         )
     }
 
     override def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = {
-        import com.pharbers.data.util.sparkDriver.ss.implicits._
 
         val panelERD = args.getOrElse("panelERD", throw new Exception("not found panelERD"))
-        val hospERD = args.getOrElse("hospERD", throw new Exception("not found hospERD"))
         val sourceERD = args.getOrElse("sourceERD", throw new Exception("not found sourceERD"))
-        val prodBaseERD = args.getOrElse("prodBaseERD", throw new Exception("not found prodBaseDF"))
-        val prodDeliveryERD = args.getOrElse("prodDeliveryERD", Seq.empty[String].toDF("_id"))
-        val prodDosageERD = args.getOrElse("prodDosageERD", Seq.empty[String].toDF("_id"))
-        val prodMoleERD = args.getOrElse("prodMoleERD", Seq.empty[String].toDF("_id"))
-        val prodPackageERD = args.getOrElse("prodPackageERD", Seq.empty[String].toDF("_id"))
-        val prodCorpERD = args.getOrElse("prodCorpERD", Seq.empty[String].toDF("_id"))
-
-        val prodDIS = ProdConversion().toDIS(Map(
-            "prodBaseERD" -> prodBaseERD,
-            "prodDeliveryERD" -> prodDeliveryERD,
-            "prodDosageERD" -> prodDosageERD,
-            "prodMoleERD" -> prodMoleERD,
-            "prodPackageERD" -> prodPackageERD,
-            "prodCorpERD" -> prodCorpERD
-        ))("prodDIS")
+        val prodDIS = args.getOrElse("prodDIS", throw new Exception("not found prodDIS"))
+                .withColumn("package-des", regexp_replace(col("package-des")," ", ""))
+                .withColumn("min", concat(col("product-name"), col("dosage"), col("package-des"), col("package-number"), col("corp-name")))
+        val hospDIS = args.getOrElse("hospDIS", throw new Exception("not found hospDIS"))
 
         val panelDIS = panelERD
-                .join(hospERD.withColumnRenamed("_id", "hosp_id"), panelERD("HOSP_ID") === hospERD("hosp_id"), "left")
-                .drop("hosp_id")
-                .join(sourceERD.withColumnRenamed("_id", "source_id"), panelERD("SOURCE_ID") === sourceERD("source_id"), "left")
-                .drop("source_id")
-                .join(prodDIS.withColumnRenamed("_id", "PROD_ID")
-                    , panelERD("MIN_PRODUCT") === (prodDIS("product-name") + prodDIS("dosage") + prodDIS("package-des") + prodDIS("package-number") + prodDIS("corp-name"))
-                    , "left")
-                .drop("MIN_PRODUCT")
+                .join(hospDIS.withColumnRenamed("_id", "hosp"), col("HOSP_ID") === col("hosp"), "left")
+                .drop("hosp")
+                .join(sourceERD.withColumnRenamed("_id", "source"), col("SOURCE_ID") === col("source"), "left")
+                .drop("source")
+                .join(prodDIS.withColumnRenamed("_id", "PROD_ID"), panelERD("MIN_PRODUCT") === prodDIS("min"), "left")
+                .drop("min")
         Map(
             "panelDIS" -> panelDIS
         )
