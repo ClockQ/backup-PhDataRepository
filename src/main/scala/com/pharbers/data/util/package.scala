@@ -96,6 +96,9 @@ package object util {
     val CSV2DF: String => DataFrame =
         sparkDriver.setUtil(csv2RDD()).csv2RDD(_, ",", header = true).na.fill("")
 
+    val TXT2DF: String => DataFrame =
+        sparkDriver.setUtil(csv2RDD()).csv2RDD(_, "|", header = true).na.fill("")
+
     val Mongo2DF: String => DataFrame =
         sparkDriver.setUtil(mongo2DF()).mongo2DF(
             PhMongoConf.server_host,
