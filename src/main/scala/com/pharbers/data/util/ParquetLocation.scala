@@ -26,21 +26,21 @@ object ParquetLocation {
     // hospital pha
     val HOSP_PHA_LOCATION = "/test/hosp/pha"
 
-    // product
+    // Product
     val PROD_BASE_LOCATION = "/repository/prod2"
+    // Product IMS
+    val PROD_IMS_LOCATION = "/repository/ims"
+    // Product ATC
+    val PROD_ATCTABLE_LOCATION = "/repository/atcTable"
+    // Product nhwa
+    val PROD_NHWA_LOCATION = "/repository/prod_nhwa"
+
+    // product
     val PROD_DELIVERY_LOCATION = "/repository/delivery2"
     val PROD_DOSAGE_LOCATION = "/repository/dosage2"
     val PROD_MOLE_LOCATION = "/repository/mole2"
     val PROD_PACKAGE_LOCATION = "/repository/package2"
     val PROD_CORP_LOCATION = "/repository/corp2"
-    val PROD_ATCTABLE_LOCATION = "/repository/atcTable"
-
-    // IMS
-    val IMS_ATC_LOCATION = "/data/IMS/IMS_PRODUCT_STANDARD_201812/cn_atc_ref_201812_1.txt"
-    val IMS_MNF_LOCATION = "/data/IMS/IMS_PRODUCT_STANDARD_201812/cn_mnf_ref_201812_1.txt"
-    val IMS_LKP_LOCATION = "/data/IMS/IMS_PRODUCT_STANDARD_201812/cn_mol_lkp_201812_1.txt"
-    val IMS_MOL_LOCATION = "/data/IMS/IMS_PRODUCT_STANDARD_201812/cn_mol_ref_201812_1.txt"
-    val IMS_PROD_LOCATION = "/data/IMS/IMS_PRODUCT_STANDARD_201812/cn_prod_ref_201812_1.txt"
 
     // CPA&GYCX
     val PFIZER_CPA_LOCATION = "/test/source/cpa/Pfizer_201804_CPA_20181227.csv"
