@@ -36,11 +36,11 @@ object ParquetLocation {
     val PROD_ATCTABLE_LOCATION = "/repository/atcTable"
 
     // IMS
-    val IMS_ATC_LOCATION = "/test/ims/cn_atc_ref_201812_1.txt"
-    val IMS_MNF_LOCATION = "/test/ims/cn_mnf_ref_201812_1.txt"
-    val IMS_LKP_LOCATION = "/test/ims/cn_mol_lkp_201812_1.txt"
-    val IMS_MOL_LOCATION = "/test/ims/cn_mol_ref_201812_1.txt"
-    val IMS_PROD_LOCATION = "/test/ims/cn_prod_ref_201812_1.txt"
+    val IMS_ATC_LOCATION = "/data/IMS/IMS_PRODUCT_STANDARD_201812/cn_atc_ref_201812_1.txt"
+    val IMS_MNF_LOCATION = "/data/IMS/IMS_PRODUCT_STANDARD_201812/cn_mnf_ref_201812_1.txt"
+    val IMS_LKP_LOCATION = "/data/IMS/IMS_PRODUCT_STANDARD_201812/cn_mol_lkp_201812_1.txt"
+    val IMS_MOL_LOCATION = "/data/IMS/IMS_PRODUCT_STANDARD_201812/cn_mol_ref_201812_1.txt"
+    val IMS_PROD_LOCATION = "/data/IMS/IMS_PRODUCT_STANDARD_201812/cn_prod_ref_201812_1.txt"
 
     // CPA&GYCX
     val PFIZER_CPA_LOCATION = "/test/source/cpa/Pfizer_201804_CPA_20181227.csv"
