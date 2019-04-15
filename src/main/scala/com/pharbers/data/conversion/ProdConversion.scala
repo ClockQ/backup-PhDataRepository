@@ -5,7 +5,7 @@ import com.pharbers.phDataConversion.phDataHandFunc
 import org.apache.spark.sql.DataFrame
 
 /**
-  * @description:
+  * @description: product of pharbers
   * @author: clock
   * @date: 2019-03-28 16:40
   */
