@@ -35,9 +35,6 @@ object ParquetLocation {
     // Product Etc
     val PROD_ETC_LOCATION = "/repository/prod_etc"
 
-    // product
-    val PROD_BASE_LOCATION = "/repository/prod"
-
     // CPA&GYCX
     val PFIZER_CPA_LOCATION = "/test/source/cpa/Pfizer_201804_CPA_20181227.csv"
 }
