@@ -28,6 +28,7 @@ package object util {
     }
 
     implicit class SaveMongo(df: DataFrame) {
+
         import org.apache.spark.sql.expressions.UserDefinedFunction
 
         def save2Mongo(name: String): Unit = {
@@ -84,26 +85,6 @@ package object util {
             if (df.columns.contains("YM")) df
             else
                 df.withColumn("YM", commonUDF.time2StrUdf(col("TIME")))
-        }
-
-        def generateProdName: DataFrame = df.withColumn("IMS_PRODUCT_NAME", commonUDF.splitProdMnf(col("Prd_desc")))
-
-        def generateMoleName: DataFrame = df.withColumn("IMS_MOLE_NAME", col("Molecule_Desc"))
-
-        def generatePackDes: DataFrame = df.withColumn("IMS_PACKAGE_DES", concat(col("Str_Desc"), col("PckVol_Desc")))
-
-        def generatePackNumber: DataFrame = df.withColumn("IMS_PACKAGE_NUMBER", col("PckSize_Desc"))
-
-        def generateCorpName: DataFrame = df.withColumn("IMS_CORP_NAME", col("Mnf_Desc"))
-
-        def generateDosage: DataFrame = {
-            df.withColumn("IMS_DOSAGE",
-                when(col("Str_Desc") === "",
-                    when(col("PckVol_Desc") === "", commonUDF.splitDosagePackage(col("Pck_Desc"), col("PckSize_Desc")))
-                        .otherwise(commonUDF.splitDosagePackage(col("Pck_Desc"), col("PckVol_Desc"))))
-                    .otherwise(commonUDF.splitDosagePackage(col("Pck_Desc"), col("Str_Desc"))
-                )
-            )
         }
 
         def alignAt(alignDF: DataFrame): DataFrame = {
