@@ -8,7 +8,7 @@ import org.apache.spark.sql.expressions.UserDefinedFunction
   * @author: clock
   * @date: 2019-04-15 14:47
   */
-case class IMSProductConversion() extends PhDataConversion {
+case class ProductImsConversion() extends PhDataConversion {
 
     import com.pharbers.data.util.DFUtil
     import org.apache.spark.sql.functions._
@@ -61,7 +61,7 @@ case class IMSProductConversion() extends PhDataConversion {
                         .agg(sort_array(collect_list("IMS_MOLE_NAME")) as "IMS_MOLE_NAME")
                         .withColumn("IMS_MOLE_NAME", mkStringByArray($"IMS_MOLE_NAME", lit("+")))
 
-        val ImsERD = {
+        val productImsERD = {
             prodBaseDF
                     // 1. IMS_PRODUCT_NAME
                     .withColumn("IMS_PRODUCT_NAME", splitProdMnf(prodBaseDF("PRD_DESC")))
@@ -87,7 +87,7 @@ case class IMSProductConversion() extends PhDataConversion {
         }
 
         Map(
-            "ImsERD" -> ImsERD
+            "productImsERD" -> productImsERD
         )
     }
 

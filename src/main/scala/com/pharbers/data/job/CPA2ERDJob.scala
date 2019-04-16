@@ -43,7 +43,7 @@ case class CPA2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
     val pha_file_temp: String = args.getOrElse("pha_file_temp", "")
 
     val hospCvs: HospConversion = HospConversion()
-    val prodCvs: ProdConversion = ProdConversion()
+    val prodCvs: ProdConversion = ProdConversion(company_id)
     val cpaCvs: CPAConversion = CPAConversion(company_id)(prodCvs)
 
     override def perform(pr: pActionArgs = MapArgs(Map())): pActionArgs = {
