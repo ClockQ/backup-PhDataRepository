@@ -32,8 +32,17 @@ object testProd2ERD extends App {
     val DIS_MIS_PROD_DF = DIST_PROD_DF
         .join(DIST_MNF_DF.withColumnRenamed("MNF_ID", "MATCH_ID"), col("MNF_ID") === col("MATCH_ID"), "left").drop("MATCH_ID")//112848
         .join(DIST_PackMoleID_DF.withColumnRenamed("Pack_ID", "MATCH_ID"), col("Pack_ID") === col("MATCH_ID"), "left").drop("MATCH_ID")//147012
-        .join(DIST_MOL_DF.withColumnRenamed("Molecule_Id", "MATCH_ID"), col("Molecule_Id") === col("MATCH_ID"), "left").drop("MATCH_ID")
+        .join(DIST_MOL_DF.withColumnRenamed("Molecule_Id", "MATCH_ID"), col("Molecule_Id") === col("MATCH_ID"), "left").drop("MATCH_ID")//147012
 
-    println("DIS_MIS_PROD_DF.count = " + DIS_MIS_PROD_DF.count())
+    val IMS_REF_DF = DIS_MIS_PROD_DF
+        .generateProdName
+        .generateMoleName
+        .generatePackDes
+        .generatePackNumber
+        .generateCorpName
+        .generateDosage
+
+    println("IMS_REF_DF.count = " + IMS_REF_DF.count())
+
 
 }
