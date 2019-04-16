@@ -9,20 +9,25 @@ object testProd2ERD extends App {
     import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     val pfizer_source_id = "5ca069e2eeefcc012918ec73"
+    val ImsAtcFile = "/data/IMS/IMS_PRODUCT_STANDARD_201812/cn_atc_ref_201812_1.txt"
+    val ImsMnfFile = "/data/IMS/IMS_PRODUCT_STANDARD_201812/cn_mnf_ref_201812_1.txt"
+    val ImsLkpFile = "/data/IMS/IMS_PRODUCT_STANDARD_201812/cn_mol_lkp_201812_1.txt"
+    val ImsMolFile = "/data/IMS/IMS_PRODUCT_STANDARD_201812/cn_mol_ref_201812_1.txt"
+    val ImsProdFile = "/data/IMS/IMS_PRODUCT_STANDARD_201812/cn_prod_ref_201812_1.txt"
 
     val prodCvs = ProdConversion()
 
-    val IMS_ATC_DF = TXT2DF(IMS_ATC_LOCATION)
-    val IMS_LKP_DF = TXT2DF(IMS_LKP_LOCATION)
-    val IMS_MNF_DF = TXT2DF(IMS_MNF_LOCATION)
-    val IMS_MOL_DF = TXT2DF(IMS_MOL_LOCATION)
-    val IMS_PROD_DF = TXT2DF(IMS_PROD_LOCATION)
+    val IMS_ATC_DF = TXT2DF(ImsAtcFile)
+    val IMS_LKP_DF = TXT2DF(ImsLkpFile)
+    val IMS_MNF_DF = TXT2DF(ImsMnfFile)
+    val IMS_MOL_DF = TXT2DF(ImsMolFile)
+    val IMS_PROD_DF = TXT2DF(ImsProdFile)
 
-    println("IMS_ATC_DF.count = " + IMS_ATC_DF.count())
-    println("IMS_LKP_DF.count = " + IMS_LKP_DF.count())
-    println("IMS_MNF_DF.count = " + IMS_MNF_DF.count())
-    println("IMS_MOL_DF.count = " + IMS_MOL_DF.count())
-    println("IMS_PROD_DF.count = " + IMS_PROD_DF.count())
+    println("IMS_ATC_DF.count = " + IMS_ATC_DF.count())//789
+    println("IMS_LKP_DF.count = " + IMS_LKP_DF.count())//147152
+    println("IMS_MNF_DF.count = " + IMS_MNF_DF.count())//6762
+    println("IMS_MOL_DF.count = " + IMS_MOL_DF.count())//20328
+    println("IMS_PROD_DF.count = " + IMS_PROD_DF.count())//112848
 
     val DIST_PROD_DF = IMS_PROD_DF.select("Pack_Id", "Prd_desc", "MNF_ID", "Pck_Desc", "Str_Desc", "PckVol_Desc", "PckSize_Desc").distinct()//112848
     val DIST_MNF_DF = IMS_MNF_DF.select("MNF_ID", "Mnf_Desc").distinct()
@@ -34,15 +39,15 @@ object testProd2ERD extends App {
         .join(DIST_PackMoleID_DF.withColumnRenamed("Pack_ID", "MATCH_ID"), col("Pack_ID") === col("MATCH_ID"), "left").drop("MATCH_ID")//147012
         .join(DIST_MOL_DF.withColumnRenamed("Molecule_Id", "MATCH_ID"), col("Molecule_Id") === col("MATCH_ID"), "left").drop("MATCH_ID")//147012
 
-    val IMS_REF_DF = DIS_MIS_PROD_DF
-        .generateProdName
-        .generateMoleName
-        .generatePackDes
-        .generatePackNumber
-        .generateCorpName
-        .generateDosage
-
-    println("IMS_REF_DF.count = " + IMS_REF_DF.count())
+//    val IMS_REF_DF = DIS_MIS_PROD_DF
+//        .generateProdName
+//        .generateMoleName
+//        .generatePackDes
+//        .generatePackNumber
+//        .generateCorpName
+//        .generateDosage
+//
+//    println("IMS_REF_DF.count = " + IMS_REF_DF.count())
 
 
 }
