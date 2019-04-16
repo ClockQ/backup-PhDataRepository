@@ -37,6 +37,6 @@ object TransformIMS extends App {
     ))("ImsERD")
 //    ImsERD.show(false)
 //    println(ImsERD.count())
-    ImsERD.save2Mongo("prod-ims")
-    ImsERD.save2Parquet(PROD_IMS_LOCATION)
+//    ImsERD.save2Mongo("prod-ims")
+//    ImsERD.save2Parquet(PROD_IMS_LOCATION)
 }
