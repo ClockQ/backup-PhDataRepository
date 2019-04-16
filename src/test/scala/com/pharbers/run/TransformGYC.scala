@@ -39,12 +39,7 @@ object TransformGYC extends App {
     )("hospDIS")
     val prodDIS = prodCvs.toDIS(
         Map(
-            "prodBaseERD" -> Parquet2DF(PROD_BASE_LOCATION),
-            "prodDeliveryERD" -> Parquet2DF(PROD_DELIVERY_LOCATION),
-            "prodDosageERD" -> Parquet2DF(PROD_DOSAGE_LOCATION),
-            "prodMoleERD" -> Parquet2DF(PROD_MOLE_LOCATION),
-            "prodPackageERD" -> Parquet2DF(PROD_PACKAGE_LOCATION),
-            "prodCorpERD" -> Parquet2DF(PROD_CORP_LOCATION)
+            "prodBaseERD" -> Parquet2DF(PROD_BASE_LOCATION)
         )
     )("prodDIS")
 

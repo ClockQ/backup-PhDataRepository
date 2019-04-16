@@ -17,11 +17,6 @@ object testGYC2ERDJob extends App {
         , "pha_file" -> HOSP_PHA_LOCATION
         , "hosp_base_file" -> HOSP_BASE_LOCATION
         , "prod_base_file" -> PROD_BASE_LOCATION
-        , "prod_delivery_file" -> PROD_DELIVERY_LOCATION
-        , "prod_dosage_file" -> PROD_DOSAGE_LOCATION
-        , "prod_mole_file" -> PROD_MOLE_LOCATION
-        , "prod_package_file" -> PROD_PACKAGE_LOCATION
-        , "prod_corp_file" -> PROD_CORP_LOCATION
         , "prod_base_file_temp" -> "/test/qi/qi/save_prod_file"
         , "hosp_base_file_temp" -> "/test/qi/qi/save_hosp_file"
         , "pha_file_temp" -> "/test/qi/qi/save_pha_file"
