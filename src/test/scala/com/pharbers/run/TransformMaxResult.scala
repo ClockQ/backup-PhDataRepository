@@ -15,7 +15,7 @@ object TransformMaxResult extends App {
     val pfizer_inf_csv = "/workData/Export/96ca55cb-1413-c9f7-6b0a-aad3c739a88e/5b028f95ed925c2c705b85ba-201901-INF.csv"
 
     val hospCvs = HospConversion()
-    val prodCvs = ProdConversion()
+    val prodCvs = ProdConversion(pfizer_source_id)
     val pfizerInfMaxCvs = MaxResultConversion(pfizer_source_id)
 
 //    val pfizerInfDF = CSV2DF(pfizer_inf_csv)

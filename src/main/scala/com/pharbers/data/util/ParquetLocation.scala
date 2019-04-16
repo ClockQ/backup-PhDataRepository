@@ -27,7 +27,7 @@ object ParquetLocation {
     val HOSP_PHA_LOCATION = "/test/hosp/pha"
 
     // Product
-    val PROD_BASE_LOCATION = "/repository/prod2"
+    val PROD_DEV_LOCATION = "/repository/prod_dev"
     // Product IMS
     val PROD_IMS_LOCATION = "/repository/prod_ims"
     // Product ATC
@@ -36,6 +36,7 @@ object ParquetLocation {
     val PROD_NHWA_LOCATION = "/repository/prod_nhwa"
 
     // product
+    val PROD_BASE_LOCATION = "/repository/prod"
     val PROD_DELIVERY_LOCATION = "/repository/delivery2"
     val PROD_DOSAGE_LOCATION = "/repository/dosage2"
     val PROD_MOLE_LOCATION = "/repository/mole2"

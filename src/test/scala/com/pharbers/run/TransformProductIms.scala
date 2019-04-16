@@ -5,7 +5,7 @@ package com.pharbers.run
   * @author: clock
   * @date: 2019-04-15 15:07
   */
-object TransformIMS extends App {
+object TransformProductIms extends App {
 
     import com.pharbers.data.util._
     import com.pharbers.data.conversion._
@@ -28,15 +28,15 @@ object TransformIMS extends App {
     val prodBaseDF = TXT2DF(ImsProdFile) //112848
 //    prodBaseDF.show(false)
 
-    val ipc = IMSProductConversion()
-    val ImsERD = ipc.toERD(Map(
+    val pic = ProductImsConversion()
+    val productImsERD = pic.toERD(Map(
         "prodBaseDF" -> prodBaseDF
         , "mnfDF" -> mnfDF
         , "lkpDF" -> lkpDF
         , "molDF" -> molDF
-    ))("ImsERD")
-//    ImsERD.show(false)
-//    println(ImsERD.count())
-//    ImsERD.save2Mongo("prod-ims")
-//    ImsERD.save2Parquet(PROD_IMS_LOCATION)
+    ))("productImsERD")
+//    productImsERD.show(false)
+//    println(productImsERD.count())
+//    productImsERD.save2Mongo("prod-ims")
+//    productImsERD.save2Parquet(PROD_IMS_LOCATION)
 }

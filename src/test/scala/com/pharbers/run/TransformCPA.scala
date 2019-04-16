@@ -16,7 +16,7 @@ object TransformCPA extends App {
     val astellas_cpa_csv = "/test/CPA&GYCX/Astellas_201804_CPA_20180629.csv"
 
     val hospCvs = HospConversion()
-    val prodCvs = ProdConversion()
+    val prodCvs = ProdConversion(nhwa_source_id)
     val nhwaCpaCvs = CPAConversion(nhwa_source_id)(prodCvs)
     val pfizerCpaCvs = CPAConversion(pfizer_source_id)(prodCvs)
     val astellasCpaCvs = CPAConversion(astellas_source_id)(prodCvs)
