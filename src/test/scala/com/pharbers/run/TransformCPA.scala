@@ -13,17 +13,17 @@ object TransformCPA extends App {
     val astellas_source_id = "5ca069e5eeefcc012918ec74"
     val nhwa_cpa_csv = "/test/CPA&GYCX/Nhwa_201804_CPA_20181227.csv"
     val pfizer_cpa_csv = "/test/CPA&GYCX/Pfizer_201804_CPA_20181227.csv"
-    val astellas_cpa_csv = "/test/CPA&GYCX/Astellas_201804_CPA_20180629.csv"
+//    val astellas_cpa_csv = "/test/CPA&GYCX/Astellas_201804_CPA_20180629.csv"
 
     val hospCvs = HospConversion()
-    val prodCvs = ProdConversion(nhwa_source_id)
+    val prodCvs = ProductEtcConversion(nhwa_source_id)
     val nhwaCpaCvs = CPAConversion(nhwa_source_id)(prodCvs)
     val pfizerCpaCvs = CPAConversion(pfizer_source_id)(prodCvs)
     val astellasCpaCvs = CPAConversion(astellas_source_id)(prodCvs)
 
     val nhwaCpaDF = CSV2DF(nhwa_cpa_csv)
     val pfizerCpaDF = CSV2DF(pfizer_cpa_csv)
-    val astellasCpaDF = CSV2DF(astellas_cpa_csv)
+//    val astellasCpaDF = CSV2DF(astellas_cpa_csv)
     val phaDF = Parquet2DF(HOSP_PHA_LOCATION)
 
     val hospDIS = hospCvs.toDIS(
@@ -87,36 +87,36 @@ object TransformCPA extends App {
     val pfizerMinus = pfizerCpaDF.count() - pfizerERD.count()
     assert(pfizerMinus == 0, "pfizer: 转换后的ERD比源数据减少`" + pfizerMinus + "`条记录")
 
-    val astellasResult = astellasCpaCvs.toERD(
-        Map(
-            "cpaDF" -> astellasCpaDF,
-            "hospDF" -> hospDIS,
-            "prodDF" -> prodDIS,
-            "phaDF" -> phaDF
-        )
-    )
-    val astellasERD = astellasResult("cpaERD")
-    val astellasProd = astellasResult("prodDIS")
-    val astellasHosp = astellasResult("hospDIS")
-    val astellasPha = astellasResult("phaDIS")
-    phDebugLog("astellasERD", astellasCpaDF.count(), astellasERD.count())
-    phDebugLog("astellasProd", prodDIS.count(), astellasProd.count())
-    phDebugLog("astellasHosp", hospDIS.count(), astellasHosp.count())
-    phDebugLog("astellasPha", phaDF.count(), astellasPha.count())
-    val astellasMinus = astellasCpaDF.count() - astellasERD.count()
-    assert(astellasMinus == 0, "astellas: 转换后的ERD比源数据减少`" + astellasMinus + "`条记录")
+//    val astellasResult = astellasCpaCvs.toERD(
+//        Map(
+//            "cpaDF" -> astellasCpaDF,
+//            "hospDF" -> hospDIS,
+//            "prodDF" -> prodDIS,
+//            "phaDF" -> phaDF
+//        )
+//    )
+//    val astellasERD = astellasResult("cpaERD")
+//    val astellasProd = astellasResult("prodDIS")
+//    val astellasHosp = astellasResult("hospDIS")
+//    val astellasPha = astellasResult("phaDIS")
+//    phDebugLog("astellasERD", astellasCpaDF.count(), astellasERD.count())
+//    phDebugLog("astellasProd", prodDIS.count(), astellasProd.count())
+//    phDebugLog("astellasHosp", hospDIS.count(), astellasHosp.count())
+//    phDebugLog("astellasPha", phaDF.count(), astellasPha.count())
+//    val astellasMinus = astellasCpaDF.count() - astellasERD.count()
+//    assert(astellasMinus == 0, "astellas: 转换后的ERD比源数据减少`" + astellasMinus + "`条记录")
 
-    val astellasDIS = astellasCpaCvs.toDIS(
-        Map(
-            "cpaERD" -> astellasERD,
-            "hospERD" -> hospDIS,
-            "prodERD" -> prodDIS,
-            "phaERD" -> phaDF
-        )
-    )("cpaDIS")
-    phDebugLog("astellasDIS", astellasCpaDF.count(), astellasDIS.count())
-    val astellasDISMinus = astellasCpaDF.count() - astellasDIS.count()
-    assert(astellasMinus == 0, "astellas: 转换后的DIS比源数据减少`" + astellasMinus + "`条记录")
+//    val astellasDIS = astellasCpaCvs.toDIS(
+//        Map(
+//            "cpaERD" -> astellasERD,
+//            "hospERD" -> hospDIS,
+//            "prodERD" -> prodDIS,
+//            "phaERD" -> phaDF
+//        )
+//    )("cpaDIS")
+//    phDebugLog("astellasDIS", astellasCpaDF.count(), astellasDIS.count())
+//    val astellasDISMinus = astellasCpaDF.count() - astellasDIS.count()
+//    assert(astellasMinus == 0, "astellas: 转换后的DIS比源数据减少`" + astellasMinus + "`条记录")
 
 //    cpaDF.save2Parquet(PFIZER_CPA_LOCATION)
 //    cpaDF.save2Mongo(PFIZER_CPA_LOCATION.split("/").last)

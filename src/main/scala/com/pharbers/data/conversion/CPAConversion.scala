@@ -8,7 +8,7 @@ import com.pharbers.util.log.phLogTrait.phDebugLog
   * @author: clock
   * @date: 2019-03-28 16:40
   */
-case class CPAConversion(company_id: String)(prodCvs: ProdConversion)
+case class CPAConversion(company_id: String)(prodCvs: ProductEtcConversion)
         extends PhDataConversion {
 
     import com.pharbers.data.util._

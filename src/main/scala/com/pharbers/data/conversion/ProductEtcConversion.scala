@@ -8,7 +8,7 @@ import com.pharbers.phDataConversion.phDataHandFunc
   * @author: clock
   * @date: 2019-03-28 16:40
   */
-case class ProdConversion(company_id: String) extends PhDataConversion {
+case class ProductEtcConversion(company_id: String) extends PhDataConversion {
 
     import org.apache.spark.sql.functions._
     import com.pharbers.data.util.sparkDriver.ss.implicits._
@@ -31,7 +31,8 @@ case class ProdConversion(company_id: String) extends PhDataConversion {
     def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val prodERD = args.getOrElse("prodERD", throw new Exception("not found prodERD"))
 
-        val prodDIS = ???
+        //TODO:目前prod维度均为一层
+        val prodDIS = prodERD
 
         Map(
             "prodDIS" -> prodDIS
