@@ -23,4 +23,12 @@ object commonUDF {
 
     val generateIdUdf: UserDefinedFunction = udf { () => ObjectId.get().toString }
 
+    val splitProdMnf: UserDefinedFunction = udf { str: String =>
+        str.split(" ").dropRight(1).mkString(" ")
+    }
+
+    val splitDosagePackage: UserDefinedFunction = udf { (originStr: String, elemStr: String) =>
+        originStr.split(elemStr).head
+    }
+
 }
