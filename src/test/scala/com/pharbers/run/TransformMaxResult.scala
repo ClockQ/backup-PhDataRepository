@@ -15,7 +15,7 @@ object TransformMaxResult extends App {
     val pfizer_inf_csv = "/workData/Export/96ca55cb-1413-c9f7-6b0a-aad3c739a88e/5b028f95ed925c2c705b85ba-201901-INF.csv"
 
     val hospCvs = HospConversion()
-    val prodCvs = ProdConversion(pfizer_source_id)
+    val PROD_DEV_CVS = ProductDevConversion()
     val pfizerInfMaxCvs = MaxResultConversion(pfizer_source_id)
 
 //    val pfizerInfDF = CSV2DF(pfizer_inf_csv)
@@ -41,14 +41,10 @@ object TransformMaxResult extends App {
             "hospProvinceERD" -> Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION)
         )
     )("hospDIS")
-    val prodDIS = prodCvs.toDIS(
+    val PROD_DEV_DIS = PROD_DEV_CVS.toDIS(
         Map(
-            "prodBaseERD" -> Parquet2DF(PROD_BASE_LOCATION),
-            "prodDeliveryERD" -> Parquet2DF(PROD_DELIVERY_LOCATION),
-            "prodDosageERD" -> Parquet2DF(PROD_DOSAGE_LOCATION),
-            "prodMoleERD" -> Parquet2DF(PROD_MOLE_LOCATION),
-            "prodPackageERD" -> Parquet2DF(PROD_PACKAGE_LOCATION),
-            "prodCorpERD" -> Parquet2DF(PROD_CORP_LOCATION)
+            "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION),
+            "productImsERD" -> Parquet2DF(PROD_IMS_LOCATION)
         )
     )("prodDIS")
 
@@ -56,7 +52,7 @@ object TransformMaxResult extends App {
         Map(
             "maxERD" -> maxERD,
             "hospDIS" -> hospDIS,
-            "prodDIS" -> prodDIS
+            "prodDIS" -> PROD_DEV_DIS
         )
     )("maxDIS")
     val pfizerDISMinus = pfizerInfDF.count() - maxDIS.count()

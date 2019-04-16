@@ -4,7 +4,7 @@ import org.apache.spark.sql.DataFrame
 import com.pharbers.pactions.actionbase._
 import com.pharbers.util.log.phLogTrait.phDebugLog
 import com.pharbers.pactions.jobs.sequenceJobWithMap
-import com.pharbers.data.conversion.{CPAConversion, HospConversion, ProdConversion}
+import com.pharbers.data.conversion.{CPAConversion, HospConversion, ProductEtcConversion}
 
 /**
   * @description:
@@ -43,7 +43,7 @@ case class CPA2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
     val pha_file_temp: String = args.getOrElse("pha_file_temp", "")
 
     val hospCvs: HospConversion = HospConversion()
-    val prodCvs: ProdConversion = ProdConversion(company_id)
+    val prodCvs: ProductEtcConversion = ProductEtcConversion(company_id)
     val cpaCvs: CPAConversion = CPAConversion(company_id)(prodCvs)
 
     override def perform(pr: pActionArgs = MapArgs(Map())): pActionArgs = {
@@ -68,12 +68,12 @@ case class CPA2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
         val hospDISCount: Long = hospDIS.count()
         val prodDIS: DataFrame = prodCvs.toDIS {
             val args = Map.newBuilder[String, DataFrame]
-            args += "prodBaseERD" -> Parquet2DF(prod_base_file)
-            if (prod_delivery_file.nonEmpty) args += "prodDeliveryERD" -> Parquet2DF(prod_delivery_file)
-            if (prod_dosage_file.nonEmpty) args += "prodDosageERD" -> Parquet2DF(prod_dosage_file)
-            if (prod_mole_file.nonEmpty) args += "prodMoleERD" -> Parquet2DF(prod_mole_file)
-            if (prod_package_file.nonEmpty) args += "prodPackageERD" -> Parquet2DF(prod_package_file)
-            if (prod_corp_file.nonEmpty) args += "prodCorpERD" -> Parquet2DF(prod_corp_file)
+            args += "prodERD" -> Parquet2DF(prod_base_file)
+//            if (prod_delivery_file.nonEmpty) args += "prodDeliveryERD" -> Parquet2DF(prod_delivery_file)
+//            if (prod_dosage_file.nonEmpty) args += "prodDosageERD" -> Parquet2DF(prod_dosage_file)
+//            if (prod_mole_file.nonEmpty) args += "prodMoleERD" -> Parquet2DF(prod_mole_file)
+//            if (prod_package_file.nonEmpty) args += "prodPackageERD" -> Parquet2DF(prod_package_file)
+//            if (prod_corp_file.nonEmpty) args += "prodCorpERD" -> Parquet2DF(prod_corp_file)
             args.result()
         }("prodDIS")
         val prodDISCount: Long = prodDIS.count()
