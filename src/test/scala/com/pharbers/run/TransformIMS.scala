@@ -35,6 +35,8 @@ object TransformIMS extends App {
         , "lkpDF" -> lkpDF
         , "molDF" -> molDF
     ))("ImsERD")
-    ImsERD.show(false)
-    println(ImsERD.count())
+//    ImsERD.show(false)
+//    println(ImsERD.count())
+//    ImsERD.save2Mongo("prod-ims")
+//    ImsERD.save2Parquet(PROD_IMS_LOCATION)
 }

@@ -29,7 +29,7 @@ object ParquetLocation {
     // Product
     val PROD_BASE_LOCATION = "/repository/prod2"
     // Product IMS
-    val PROD_IMS_LOCATION = "/repository/ims"
+    val PROD_IMS_LOCATION = "/repository/prod_ims"
     // Product ATC
     val PROD_ATCTABLE_LOCATION = "/repository/atcTable"
     // Product nhwa

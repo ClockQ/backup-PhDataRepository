@@ -10,6 +10,7 @@ import org.apache.spark.sql.expressions.UserDefinedFunction
   */
 case class IMSProductConversion() extends PhDataConversion {
 
+    import com.pharbers.data.util.DFUtil
     import org.apache.spark.sql.functions._
     import com.pharbers.data.util.sparkDriver.ss.implicits._
 
@@ -82,6 +83,7 @@ case class IMSProductConversion() extends PhDataConversion {
                     )
                     // Adjust the order
                     .select(columnSeq.head, columnSeq.tail: _*)
+                    .generateId
         }
 
         Map(
