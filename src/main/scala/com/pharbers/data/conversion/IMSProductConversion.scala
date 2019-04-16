@@ -27,6 +27,7 @@ case class IMSProductConversion() extends PhDataConversion {
                     $"PckSize_Desc".as("IMS_PACKAGE_NUMBER"), // 4. IMS_PACKAGE_NUMBER
                     $"MNF_ID".as("MNF_ID"), // 5. IMS_CORP_NAME
                     $"Pck_Desc".as("PCK_DESC"), // 7. IMS_DOSAGE_NAME
+                    $"NFC123_Code".as("IMS_DELIVERY_WAY"), // 6. IMS_DELIVERY_WAY
                     $"PckSize_Desc".as("PCKSIZE_DESC") // 7. IMS_DOSAGE_NAME
                 ).distinct() // 112848
 
@@ -70,8 +71,6 @@ case class IMSProductConversion() extends PhDataConversion {
                     // 5. IMS_CORP_NAME
                     .join(mnfDF, prodBaseDF("MNF_ID") === mnfDF("MNF_ID"))
                     .drop("MNF_ID")
-                    // 6. IMS_DELIVERY_WAY
-                    .withColumn("IMS_DELIVERY_WAY", lit(""))
                     // 7. IMS_DOSAGE_NAME
                     .withColumn("IMS_DOSAGE_NAME",
                         when(col("STR_DESC") === "",
