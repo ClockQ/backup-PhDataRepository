@@ -1,18 +1,15 @@
 package com.pharbers.phDataConversion
 
 import com.pharbers.common.phDataTrait
-import com.pharbers.data.util.getSparkDriver
 import com.pharbers.model.chcData
-import com.pharbers.spark.phSparkDriver
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
 import org.bson.types.ObjectId
 import com.pharbers.data.util._
 
 class phCHCData extends Serializable with phDataTrait {
-	lazy val sparkDriver: phSparkDriver = getSparkDriver()
 
-	import sparkDriver.ss.implicits._
+	import com.pharbers.data.util.sparkDriver.ss.implicits._
 
 	def getDataFromDF(df: DataFrame): Unit = {
 		val rddTemp = df.na.fill("").distinct().toJavaRDD.rdd.map(x => chcData(x(0).toString, x(1).toString,
@@ -86,13 +83,11 @@ class phCHCData extends Serializable with phDataTrait {
 
 	private def saveDate(data: RDD[chcData]): Unit = {
 		val rdd = data.map(x => (x.date_id, x.date, "quarter")).distinct
-		rdd.take(20).foreach(println(_))
 		rdd.toDF("_id", "data", "period").save2Parquet("/test/chc/chcDate")
 	}
 
 	private def saveCity(data: RDD[chcData]): Unit = {
 		val rdd = data.map(x => (x.city_id, x.city)).distinct
-		rdd.take(20).foreach(println(_))
 		rdd.toDF("_id", "city").save2Parquet("/test/chc/chcCity")
 	}
 

@@ -4,7 +4,6 @@ import org.apache.spark.sql.DataFrame
 
 case class CHCConversion() extends PhDataConversion {
 
-	import com.pharbers.data.util._
 	import com.pharbers.data.util.sparkDriver.ss.implicits._
 	import org.apache.spark.sql.functions._
 
@@ -20,19 +19,14 @@ case class CHCConversion() extends PhDataConversion {
 		val oadDF = args.getOrElse("oadDF", Seq.empty[String].toDF("_id"))
 		val moleDF = args.getOrElse("moleDF", Seq.empty[String].toDF("_id"))
 		val manufactureDF = args.getOrElse("manufactureDF", Seq.empty[String].toDF("_id"))
-		val chcDF = chcBaseDF.drop("_id").join(revenueDF, col("revenue") === col("_id"), "left").drop("_id")
-			.join(dateDF, col("date") === col("_id"), "left").drop("_id").drop("date")
-    		.withColumnRenamed("title", "date")
-			.join(cityDF, col("city") === col("_id"), "left").drop("_id").drop("city")
-    		.withColumnRenamed("title", "city")
-			.join(productDF, col("prod") === col("_id"), "left").drop("_id").drop("prod")
-    		.withColumnRenamed("name", "product")
-			.join(packDF, col("pack") === col("_id"), "left").drop("_id").drop("pack")
-    		.withColumnRenamed("oad", "oad_p")
-			.join(oadDF, col("oad_p") === col("_id"), "left").drop("_id").drop("oad_p")
-			.join(moleDF, col("mole") === col("_id"), "left").drop("_id").drop("mole")
-			.join(manufactureDF, col("manufacture") === col("_id"), "left").drop("_id")
-			.withColumnRenamed("title", "manufacture")
+		val chcDF = chcBaseDF.drop("_id").join(productDF, chcBaseDF("prod_id") === productDF("_id"), "left").drop("_id", "prod_id")
+			.join(packDF, col("pack_id") === col("_id"), "left").drop("_id", "pack_id")
+			.join(moleDF, col("mole_id") === col("_id"), "left").drop("_id", "mole_id")
+			.join(manufactureDF, col("manufacturer_id") === col("_id"), "left").drop("_id", "manufacturer_id")
+			.join(oadDF, col("oad_id") === col("_id"), "left").drop("_id", "oad_id")
+			.join(revenueDF, col("revenue_id") === col("_id"), "left").drop("_id", "revenue_id")
+			.join(dateDF, col("date_id") === col("_id"), "left").drop("_id", "date_id")
+			.join(cityDF, col("city_id") === col("_id"), "left").drop("_id", "city_id")
 		Map("chcDF" -> chcDF)
 	}
 }
