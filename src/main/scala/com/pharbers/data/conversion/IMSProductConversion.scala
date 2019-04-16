@@ -51,21 +51,22 @@ case class IMSProductConversion() extends PhDataConversion {
             originStr.split(elemStr).head
         }
 
-        val packAndMoleDF = lkpDF.join(molDF, lkpDF("MOLE_ID") === molDF("MOLE_ID")).drop(molDF("MOLE_ID"))//.filter(col("PACK_ID") === "202")
-                        .groupBy("MOLE_ID")
-                        .agg(concat_ws("IMS_MOLE_NAME"))
+        val mkStringByArray: UserDefinedFunction = udf { (array: Seq[String], seg: String) =>
+            array.mkString(seg)
+        }
 
-        packAndMoleDF.show(false)
+        val packAndMoleDF = lkpDF.join(molDF, lkpDF("MOLE_ID") === molDF("MOLE_ID")).drop(molDF("MOLE_ID"))
+                        .groupBy("PACK_ID")
+                        .agg(sort_array(collect_list("IMS_MOLE_NAME")) as "IMS_MOLE_NAME")
+                        .withColumn("IMS_MOLE_NAME", mkStringByArray($"IMS_MOLE_NAME", lit("+")))
 
         val ImsERD = {
             prodBaseDF
                     // 1. IMS_PRODUCT_NAME
                     .withColumn("IMS_PRODUCT_NAME", splitProdMnf(prodBaseDF("PRD_DESC")))
                     // 2. IMS_MOLE_NAME
-                    .join(lkpDF, prodBaseDF("IMS_PACK_ID") === lkpDF("PACK_ID"))
-                    .drop(lkpDF("PACK_ID"))
-                    .join(molDF, lkpDF("MOLE_ID") === molDF("MOLE_ID"))
-                    .drop("MOLE_ID")
+                    .join(packAndMoleDF, prodBaseDF("IMS_PACK_ID") === packAndMoleDF("PACK_ID"))
+                    .drop(packAndMoleDF("PACK_ID"))
                     // 3. IMS_PACKAGE_DES
                     .withColumn("IMS_PACKAGE_DES", concat(prodBaseDF("STR_DESC"), prodBaseDF("PCKVOL_DESC")))
                     // 5. IMS_CORP_NAME

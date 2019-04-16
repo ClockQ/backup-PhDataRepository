@@ -35,7 +35,6 @@ object TransformIMS extends App {
         , "lkpDF" -> lkpDF
         , "molDF" -> molDF
     ))("ImsERD")
-//    ImsERD.show(false)
+    ImsERD.show(false)
     println(ImsERD.count())
-    println(ImsERD.dropDuplicates("IMS_PACK_ID").count())
 }
