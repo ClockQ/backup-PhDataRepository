@@ -50,6 +50,12 @@ case class IMSProductConversion() extends PhDataConversion {
             originStr.split(elemStr).head
         }
 
+        val packAndMoleDF = lkpDF.join(molDF, lkpDF("MOLE_ID") === molDF("MOLE_ID")).drop(molDF("MOLE_ID"))//.filter(col("PACK_ID") === "202")
+                        .groupBy("MOLE_ID")
+                        .agg(concat_ws("IMS_MOLE_NAME"))
+
+        packAndMoleDF.show(false)
+
         val ImsERD = {
             prodBaseDF
                     // 1. IMS_PRODUCT_NAME
@@ -77,6 +83,7 @@ case class IMSProductConversion() extends PhDataConversion {
                     // Adjust the order
                     .select(columnSeq.head, columnSeq.tail: _*)
         }
+
         Map(
             "ImsERD" -> ImsERD
         )
