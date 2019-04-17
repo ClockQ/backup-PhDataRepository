@@ -10,10 +10,6 @@ case class CHCConversion() extends PhDataConversion {
 
     override def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val chcDF = args.getOrElse("chcDF", throw new Exception("not found chcDF"))
-                .select(
-                    $"Pack_ID".as("PACK_ID"), $"city".as("CITY")
-                    , $"Date", $"ATC3", $"OAD类别", $"Sales", $"Units"
-                )
         val prodDF = args.getOrElse("prodDF", throw new Exception("not found prodDF"))
         val cityDF = args.getOrElse("cityDF", throw new Exception("not found cityDF"))
                 .select($"_id".as("CITY_ID"), regexp_replace($"name", "市", "").as("NAME"))
@@ -28,31 +24,26 @@ case class CHCConversion() extends PhDataConversion {
             chcDF
                     // DATE_ID
                     .join(dateDF, chcDF("Date") === dateDF("TIME"))
-                    .drop(chcDF("Date"))
-                    .drop(dateDF("TIME"))
-                    .drop(dateDF("PERIOD"))
                     // PRODUCT_ID
                     .join(
                         prodDF.select($"_id".as("PRODUCT_ID"), $"PACK_ID"),
-                        chcDF("PACK_ID") === prodDF("PACK_ID"),
+                        chcDF("Pack_ID") === prodDF("PACK_ID"),
                         "left"
                     )
-                    .drop(chcDF("PACK_ID"))
-                    .drop(prodDF("PACK_ID"))
                     // CITY_ID
                     .join(
                         cityDF,
-                        chcDF("CITY") === cityDF("NAME"),
+                        chcDF("city") === cityDF("NAME"),
                         "left"
                     )
-                    .drop(chcDF("CITY"))
-                    .drop(cityDF("NAME"))
+                    // Adjust the order
+                    .select($"PRODUCT_ID", $"CITY_ID", $"DATE_ID", $"Sales".as("SALES"), $"Units".as("UNITS"))
+                    .generateId
         }
 
         Map(
             "chcERD" -> chcERD,
-            "dateERD" -> dateDF,
-            "prodDIS" -> prodDF
+            "dateERD" -> dateDF
         )
     }
 
