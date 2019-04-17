@@ -37,6 +37,7 @@ object TransformProductIms extends App {
     ))("productImsERD")
 //    productImsERD.show(false)
 //    println(productImsERD.count())
+//    println(productImsERD.dropDuplicates("IMS_PACK_ID").count())
 //    productImsERD.save2Mongo("prod-ims")
 //    productImsERD.save2Parquet(PROD_IMS_LOCATION)
 }

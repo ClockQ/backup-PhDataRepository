@@ -8,6 +8,7 @@ package com.pharbers.run
 object TransformProductDev extends App {
     import com.pharbers.data.util._
     import com.pharbers.data.conversion._
+    import org.apache.spark.sql.functions._
     import com.pharbers.data.util.ParquetLocation._
     import com.pharbers.data.util.sparkDriver.ss.implicits._
 
@@ -30,9 +31,9 @@ object TransformProductDev extends App {
 //    productDevERD.save2Mongo("prod-dev")
 //    productDevERD.save2Parquet(PROD_DEV_LOCATION)
 
-    val productImsERDArgs = Parquet2DF(PROD_IMS_LOCATION)
+    val productImsERDArgs = Parquet2DF(PROD_IMS_LOCATION) // 112848
 //    println(productImsERDArgs.count())
-    val productDevERDArgs = Parquet2DF(PROD_DEV_LOCATION)
+    val productDevERDArgs = Parquet2DF(PROD_DEV_LOCATION) // 9072
 //    println(productDevERDArgs.count())
     val productEtcERDArgs = Parquet2DF(PROD_ETC_LOCATION + "/5ca069bceeefcc012918ec72")
 //    println(productEtcERDArgs.count())
@@ -44,5 +45,5 @@ object TransformProductDev extends App {
     ))("productDIS")
     productDIS.show(false)
     println(productDIS.count())
-    println(productDIS.filter($"PRODUCT_ID".isNotNull).count())
+    println(productDIS.dropDuplicates("PACK_ID").count())
 }
