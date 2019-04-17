@@ -16,7 +16,7 @@ object TransformMaxResult extends App {
     val pfizerInfMaxCvs = MaxResultConversion(pfizer_source_id)
 
     val pfizerInfDF = FILE2DF(pfizer_inf_csv, 31.toChar.toString)
-//    println("pfizerInfDF.count = " + pfizerInfDF.count())
+    println("pfizerInfDF.count = " + pfizerInfDF.count())
 
     val maxToErdResult = pfizerInfMaxCvs.toERD(
         Map(
@@ -25,9 +25,9 @@ object TransformMaxResult extends App {
     )
     val maxERD = maxToErdResult("maxERD")
     val sourceERD = maxToErdResult("sourceERD")
-//    val pfizerMinus = pfizerInfDF.count() - maxERD.count()
-//    phDebugLog("maxERD count = " + maxERD.count())
-//    assert(pfizerMinus == 0, "pfizer INF max result: 转换后的ERD比源数据减少`" + pfizerMinus + "`条记录")
+    val pfizerMinus = pfizerInfDF.count() - maxERD.count()
+    phDebugLog("maxERD count = " + maxERD.count())
+    assert(pfizerMinus == 0, "pfizer INF max result: 转换后的ERD比源数据减少`" + pfizerMinus + "`条记录")
 
     val hospDIS = hospCvs.toDIS(
         Map(
@@ -51,7 +51,7 @@ object TransformMaxResult extends App {
             "maxERD" -> maxERD,
             "sourceERD" -> sourceERD,
             "hospDIS" -> hospDIS,
-            "prodDIS" -> Parquet2DF(PROD_DEV_LOCATION)
+            "prodDIS" -> PROD_DEV_DIS
         )
     )("maxDIS")
     val pfizerDISMinus = pfizerInfDF.count() - maxDIS.count()

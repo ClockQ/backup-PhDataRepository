@@ -40,11 +40,11 @@ case class ProductEtcConversion(company_id: String) extends PhDataConversion {
                 .drop("CORP_NAME")
                 .dropDuplicates("MIN2")
                 , col("MIN_PRODUCT_UNIT_STANDARD") === col("MIN2"), "left")
-            .withColumn("SOURCE_ID", lit(company_id))
+            .withColumn("COMPANY_ID", lit(company_id))
             .na.fill("")
             .select(
                 $"PRODUCT_ID",
-                $"SOURCE_ID",
+                $"COMPANY_ID",
                 $"PRODUCT_NAME" as "PH_PRODUCT_NAME",
                 $"MOLE_NAME" as "PH_MOLE_NAME",
                 $"PACK_DES" as "PH_PACKAGE_DES",
