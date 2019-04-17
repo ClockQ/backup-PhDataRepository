@@ -44,7 +44,7 @@ case class MaxResultConversion(company_id: String) extends PhDataConversion {
     def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val maxERD = args.getOrElse("maxERD", throw new Exception("not found maxERD"))
         val hospDIS = args.getOrElse("hospDIS", throw new Exception("not found hospDIS"))
-        val prodDIS = args.getOrElse("prodDIS", throw new Exception("not found prodDIS"))
+//        val prodDIS = args.getOrElse("prodDIS", throw new Exception("not found prodDIS"))
 
         // TODO:匹配医院已完成对数，目前MaxResultHospDIS只使用了[PHAHospId / City / Province]，原因是HospDIS数据中有PHAHospId一对多的问题，
         // TODO:匹配产品已完成对数，但是max结果数据中的min1是规范产品名等的数据，再使用min1反匹到我们prodDIS【来源于CPA等未经规范的原始数据】，就会出现很多匹配不到的情况。等待公司维度的匹配表的数据仓储的建立。
@@ -57,15 +57,16 @@ case class MaxResultConversion(company_id: String) extends PhDataConversion {
                 col("PHA_ID") === col("PHAHospId"),
                 "left"
             ).drop(col("PHAHospId"))
-            .join(
-                prodDIS
-                    .withColumnRenamed("_id", "PRODUCT_ID")
-                    //TODO:统一命名 -> 【全大写，单词间下划线相连。】
-//                    .withColumn("min1", concat(col("PRODUCT_NAME"), col("DOSAGE"), col("PACK_DES"), col("PACK_NUMBER"), col("CORP_NAME"))),
-                    .withColumn("min1", concat(col("product-name"), col("dosage"), col("package-des"), col("package-number"), col("corp-name"))),
-                col("MIN_PRODUCT") === col("min1"),
-                "left"
-            ).drop(col("min1"))
+                //TODO: 等有了新的product还要加上
+//            .join(
+//                prodDIS
+//                    .withColumnRenamed("_id", "PRODUCT_ID")
+//                    //TODO:统一命名 -> 【全大写，单词间下划线相连。】
+////                    .withColumn("min1", concat(col("PRODUCT_NAME"), col("DOSAGE"), col("PACK_DES"), col("PACK_NUMBER"), col("CORP_NAME"))),
+//                    .withColumn("min1", concat(col("product-name"), col("dosage"), col("package-des"), col("package-number"), col("corp-name"))),
+//                col("MIN_PRODUCT") === col("min1"),
+//                "left"
+//            ).drop(col("min1"))
             .time2ym
 
         Map(
