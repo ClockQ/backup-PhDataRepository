@@ -17,7 +17,7 @@ object TransformCHC extends App {
 
     val chcDF = CSV2DF(chcFile)
     val cityDF = Parquet2DF(HOSP_ADDRESS_CITY_LOCATION)
-
+    chcDF.show(false)
     val pdc = ProductDevConversion()
     val chcCvs = CHCConversion()
 
@@ -32,14 +32,14 @@ object TransformCHC extends App {
         , "cityDF" -> cityDF
     ))
     val chcERD = chcResult("chcERD")
-    chcERD.show(false)
+//    chcERD.show(false)
     val dateERD = chcResult("dateERD")
 //    dateERD.show(false)
-    val prodDIS = chcResult("prodDIS")
-//    prodDIS.show(false)
     phDebugLog("chcERD", chcDF.count(), chcERD.count())
     phDebugLog("dateERD", 0, dateERD.count())
-    phDebugLog("prodDIS", productDIS.count(), prodDIS.count())
 
 //    chcERD.save2Parquet(CHC_LOCATION)
+//    chcERD.save2Mongo(CHC_LOCATION.split("/").last)
+//    dateERD.save2Parquet(CHC_DATE_LOCATION)
+//    dateERD.save2Mongo(CHC_DATE_LOCATION.split("/").last)
 }
