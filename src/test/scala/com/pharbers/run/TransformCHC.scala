@@ -1,5 +1,7 @@
 package com.pharbers.run
 
+import com.pharbers.util.log.phLogTrait.phDebugLog
+
 /**
   * @description:
   * @author: clock
@@ -24,12 +26,20 @@ object TransformCHC extends App {
         , "productImsERD" -> Parquet2DF(PROD_IMS_LOCATION)
     ))("productDIS")
 
-    val chcERD = chcCvs.toERD(Map(
+    val chcResult = chcCvs.toERD(Map(
         "chcDF" -> chcDF
         , "prodDF" -> productDIS
         , "cityDF" -> cityDF
-    ))("chcERD")
+    ))
+    val chcERD = chcResult("chcERD")
     chcERD.show(false)
+    val dateERD = chcResult("dateERD")
+//    dateERD.show(false)
+    val prodDIS = chcResult("prodDIS")
+//    prodDIS.show(false)
+    phDebugLog("chcERD", chcDF.count(), chcERD.count())
+    phDebugLog("dateERD", 0, dateERD.count())
+    phDebugLog("prodDIS", productDIS.count(), prodDIS.count())
 
 //    chcERD.save2Parquet(CHC_LOCATION)
 }
