@@ -9,6 +9,7 @@ object TransformProductDev extends App {
     import com.pharbers.data.util._
     import com.pharbers.data.conversion._
     import com.pharbers.data.util.ParquetLocation._
+    import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     val nhwaProductMatchFile = "/data/nhwa/pha_config_repository1809/Nhwa_ProductMatchTable_20181126.csv"
     val pfizerProductMatchFile = "/data/pfizer/pha_config_repository1901/Pfizer_ProductMatchTable_20190403.csv"
@@ -33,11 +34,15 @@ object TransformProductDev extends App {
 //    println(productImsERDArgs.count())
     val productDevERDArgs = Parquet2DF(PROD_DEV_LOCATION)
 //    println(productDevERDArgs.count())
+    val productEtcERDArgs = Parquet2DF(PROD_ETC_LOCATION + "/5ca069bceeefcc012918ec72")
+//    println(productEtcERDArgs.count())
 
     val productDIS = pdc.toDIS(Map(
         "productDevERD" -> productDevERDArgs
         , "productImsERD" -> productImsERDArgs
+        , "productEtcERD" -> productEtcERDArgs
     ))("productDIS")
     productDIS.show(false)
     println(productDIS.count())
+    println(productDIS.filter($"PRODUCT_ID".isNotNull).count())
 }

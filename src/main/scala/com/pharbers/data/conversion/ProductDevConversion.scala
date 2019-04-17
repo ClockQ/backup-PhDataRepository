@@ -37,12 +37,15 @@ case class ProductDevConversion() extends PhDataConversion {
 
     override def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val productDevERD = args.getOrElse("productDevERD", throw new Exception("not found productDevERD"))
-        val productImsERD = args.getOrElse("productImsERD", Seq.empty[String].toDF("IMS_PACK_ID"))
+        val productImsERD = args.getOrElse("productImsERD", Seq.empty[(String, String)].toDF("_id", "IMS_PACK_ID"))
+        val productEtcERD = args.getOrElse("productEtcERD", Seq.empty[(String, String)].toDF("_id", "PRODUCT_ID"))
 
         val productDIS = {
             productDevERD
                     .join(productImsERD, productDevERD("PACK_ID") === productImsERD("IMS_PACK_ID"), "left")
-                    .drop(productImsERD("IMS_PACK_ID"))
+                    .drop(productImsERD("_id"))
+                    .join(productEtcERD, productDevERD("_id") === productEtcERD("PRODUCT_ID"), "left")
+                    .drop(productEtcERD("_id"))
         }
 
         Map(

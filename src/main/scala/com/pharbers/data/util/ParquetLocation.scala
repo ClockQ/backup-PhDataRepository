@@ -37,4 +37,7 @@ object ParquetLocation {
 
     // CPA&GYCX
     val PFIZER_CPA_LOCATION = "/test/source/cpa/Pfizer_201804_CPA_20181227.csv"
+
+    // CHC
+    val CHC_LOCATION = "/repository/chc"
 }
