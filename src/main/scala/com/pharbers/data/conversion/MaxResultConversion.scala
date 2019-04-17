@@ -43,6 +43,7 @@ case class MaxResultConversion(company_id: String) extends PhDataConversion {
 
     def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val maxERD = args.getOrElse("maxERD", throw new Exception("not found maxERD"))
+        val sourceERD = args.getOrElse("sourceERD", throw new Exception("not found sourceERD"))
         val hospDIS = args.getOrElse("hospDIS", throw new Exception("not found hospDIS"))
         val prodDIS = args.getOrElse("prodDIS", throw new Exception("not found prodDIS"))
 
@@ -52,6 +53,11 @@ case class MaxResultConversion(company_id: String) extends PhDataConversion {
 //            .groupBy("PHAHospId").agg(("PHAHospId" -> "count"))
 
         val maxDIS = maxERD
+            .join(
+                sourceERD.withColumnRenamed("_id", "main-id"),
+                col("SOURCE_ID") === col("main-id"),
+                "left"
+            ).drop(col("main-id"))
             .join(
                 hospDIS.filter(col("PHAIsRepeat") === 0).select("PHAHospId", "city-name", "province-name").distinct(),
                 col("PHA_ID") === col("PHAHospId"),

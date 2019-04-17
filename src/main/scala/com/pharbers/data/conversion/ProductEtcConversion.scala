@@ -22,30 +22,23 @@ case class ProductEtcConversion(company_id: String) extends PhDataConversion {
 
         val prodERD = sourceDataDF
             .select("PRODUCT_NAME", "MOLE_NAME", "PACK_DES", "PACK_NUMBER", "DOSAGE", "DELIVERY_WAY", "CORP_NAME")
-            .distinct()
+            .distinct()//pfizer:13851
             .withColumn("MIN1", concat(col("PRODUCT_NAME"), col("DOSAGE"), col("PACK_DES"), col("PACK_NUMBER"), col("CORP_NAME")))
             .join(productMatchDF
-                .drop("PRODUCT_NAME")
-                .drop("MOLE_NAME")
-                .drop("DOSAGE")
-                .drop("PACK_DES")
-                .drop("PACK_NUMBER")
-                .drop("CORP_NAME")
-                .drop("DELIVERY_WAY")
-                .drop("PACK_ID")
+                .select("MIN_PRODUCT_UNIT", "MIN_PRODUCT_UNIT_STANDARD")
+                .dropDuplicates("MIN_PRODUCT_UNIT")
                 .distinct()
                 , col("MIN1") === col("MIN_PRODUCT_UNIT"), "left")
             .join(productDevERD
-                .withColumn("PRODUCT_ID", col("_id"))
+                .withColumnRenamed("_id", "PRODUCT_ID")
+                .select(col("PRODUCT_ID"), col("PRODUCT_NAME"), col("DOSAGE_NAME"), col("PACKAGE_DES"), col("PACKAGE_NUMBER"), col("CORP_NAME"))
                 .withColumn("MIN2", concat(col("PRODUCT_NAME"), col("DOSAGE_NAME"), col("PACKAGE_DES"), col("PACKAGE_NUMBER"), col("CORP_NAME")))
                 .drop("PRODUCT_NAME")
-                .drop("MOLE_NAME")
                 .drop("DOSAGE_NAME")
                 .drop("PACKAGE_DES")
                 .drop("PACKAGE_NUMBER")
                 .drop("CORP_NAME")
-                .drop("DELIVERY_WAY")
-                .drop("PACK_ID")
+                .dropDuplicates("MIN2")
                 , col("MIN_PRODUCT_UNIT_STANDARD") === col("MIN2"), "left")
             .withColumn("SOURCE_ID", lit(company_id))
             .na.fill("")
@@ -70,6 +63,7 @@ case class ProductEtcConversion(company_id: String) extends PhDataConversion {
     def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val productEtcERD = args.getOrElse("productEtcERD", throw new Exception("not found prodERD"))
         val productDevERD = args.getOrElse("productDevERD", Seq.empty[String].toDF("_id"))
+        val productImsERD = args.getOrElse("productImsERD", Seq.empty[(String, String)].toDF("_id", "IMS_PACK_ID"))
 
         val productEtcDIS = productEtcERD
             .join(
@@ -77,6 +71,8 @@ case class ProductEtcConversion(company_id: String) extends PhDataConversion {
                 col("PRODUCT_ID") === col("main-id"),
                 "left"
             ).drop(col("main-id"))
+            .join(productImsERD, col("PACK_ID") === col("IMS_PACK_ID"), "left")
+            .drop(productImsERD("_id"))
 
         Map(
             "productEtcDIS" -> productEtcDIS

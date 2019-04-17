@@ -23,13 +23,10 @@ object TransformGYC extends App {
     val hospDIS = hospCvs.toDIS(
         Map(
             "hospBaseERD" -> Parquet2DF(HOSP_BASE_LOCATION),
-            "hospBedERD" -> Parquet2DF(HOSP_BED_LOCATION),
-            "hospEstimateERD" -> Parquet2DF(HOSP_ESTIMATE_LOCATION),
-            "hospOutpatientERD" -> Parquet2DF(HOSP_OUTPATIENT_LOCATION),
-            "hospRevenueERD" -> Parquet2DF(HOSP_REVENUE_LOCATION),
-            "hospSpecialtyERD" -> Parquet2DF(HOSP_SPECIALTY_LOCATION),
-            "hospStaffNumERD" -> Parquet2DF(HOSP_STAFFNUM_LOCATION),
-            "hospUnitERD" -> Parquet2DF(HOSP_UNIT_LOCATION)
+            "hospAddressERD" -> Parquet2DF(HOSP_ADDRESS_BASE_LOCATION),
+            "hospPrefectureERD" -> Parquet2DF(HOSP_ADDRESS_PREFECTURE_LOCATION),
+            "hospCityERD" -> Parquet2DF(HOSP_ADDRESS_CITY_LOCATION),
+            "hospProvinceERD" -> Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION)
         )
     )("hospDIS")
     val prodDIS = pfizerProdCvs.toDIS(
