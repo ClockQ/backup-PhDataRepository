@@ -26,22 +26,14 @@ object ParquetLocation {
     // hospital pha
     val HOSP_PHA_LOCATION = "/test/hosp/pha"
 
-    // Product
+    // Product Dev
     val PROD_DEV_LOCATION = "/repository/prod_dev"
     // Product IMS
     val PROD_IMS_LOCATION = "/repository/prod_ims"
     // Product ATC
     val PROD_ATCTABLE_LOCATION = "/repository/atcTable"
-    // Product nhwa
-    val PROD_NHWA_LOCATION = "/repository/prod_nhwa"
-
-    // product
-    val PROD_BASE_LOCATION = "/repository/prod"
-    val PROD_DELIVERY_LOCATION = "/repository/delivery2"
-    val PROD_DOSAGE_LOCATION = "/repository/dosage2"
-    val PROD_MOLE_LOCATION = "/repository/mole2"
-    val PROD_PACKAGE_LOCATION = "/repository/package2"
-    val PROD_CORP_LOCATION = "/repository/corp2"
+    // Product Etc
+    val PROD_ETC_LOCATION = "/repository/prod_etc"
 
     // CPA&GYCX
     val PFIZER_CPA_LOCATION = "/test/source/cpa/Pfizer_201804_CPA_20181227.csv"

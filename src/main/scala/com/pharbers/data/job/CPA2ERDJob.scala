@@ -32,11 +32,6 @@ case class CPA2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
     val hosp_unit_file: String = args.getOrElse("hosp_unit_file", "")
 
     val prod_base_file: String = args("prod_base_file")
-    val prod_delivery_file: String = args("prod_delivery_file")
-    val prod_dosage_file: String = args("prod_dosage_file")
-    val prod_mole_file: String = args("prod_mole_file")
-    val prod_package_file: String = args("prod_package_file")
-    val prod_corp_file: String = args("prod_corp_file")
 
     val prod_base_file_temp: String = args.getOrElse("prod_base_file_temp", "")
     val hosp_base_file_temp: String = args.getOrElse("hosp_base_file_temp", "")
