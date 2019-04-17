@@ -16,9 +16,8 @@ object TransformGYC extends App {
     val pfizerGycCvs = GYCConversion(pfizer_source_id)(pfizerProdCvs)
 
     val pfizerGycDF = CSV2DF(pfizer_gyc_csv)
-    println("pfizerGycDF = " + pfizerGycDF.count())
     val phaDF = Parquet2DF(HOSP_PHA_LOCATION)
-    println("phaDF = " + phaDF.count())
+    val pfizerProdEtcERD = Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_source_id)
 
     val hospDIS = hospCvs.toDIS(
         Map(
@@ -29,24 +28,18 @@ object TransformGYC extends App {
             "hospProvinceERD" -> Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION)
         )
     )("hospDIS")
-    val prodDIS = pfizerProdCvs.toDIS(
-        Map(
-            "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_source_id),
-            "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION)
-        )
-    )("productEtcDIS")
 
     val pfizerERD = pfizerGycCvs.toERD(
         Map(
             "gycDF" -> pfizerGycDF,
             "hospDF" -> hospDIS,
-            "prodDF" -> prodDIS,
+            "prodDF" -> pfizerProdEtcERD,
             "phaDF" -> phaDF
         )
     )("gycERD")
-//    val pfizerMinus = pfizerGycDF.count() - pfizerERD.count()
-//    phDebugLog("pfizerERD count = " + pfizerERD.count())
-//    assert(pfizerMinus == 0, "pfizer: 转换后的ERD比源数据减少`" + pfizerMinus + "`条记录")
+    val pfizerMinus = pfizerGycDF.count() - pfizerERD.count()
+    phDebugLog("pfizerERD count = " + pfizerERD.count())
+    assert(pfizerMinus == 0, "pfizer: 转换后的ERD比源数据减少`" + pfizerMinus + "`条记录")
 
 //    val pfizerDIS = pfizerGycCvs.toDIS(
 //        Map(

@@ -35,16 +35,16 @@ case class CPAConversion(company_id: String)(prodCvs: ProductEtcConversion)
                     , phaDF("PHA_ID_NEW") === hospDF("PHAHospId")
                     , "left"
                 )
-//                .join(
-//                    phProdDF.withColumnRenamed("_id", "PH_PRODUCT_ID")
-//                    , cpaDF("PRODUCT_NAME") === phProdDF("PH_PRODUCT_NAME")
-//                        && cpaDF("MOLE_NAME") === phProdDF("PH_MOLE_NAME")
-//                        && cpaDF("DOSAGE") === phProdDF("PH_DOSAGE_NAME")
-//                        && cpaDF("PACK_DES") === phProdDF("PH_PACKAGE_DES")
-//                        && cpaDF("PACK_NUMBER") === phProdDF("PH_PACKAGE_NUMBER")
-//                        && cpaDF("CORP_NAME") === phProdDF("PH_CORP_NAME")
-//                    , "left"
-//                )
+                .join(
+                    phProdDF.withColumnRenamed("_id", "PH_PRODUCT_ID")
+                    , cpaDF("PRODUCT_NAME") === phProdDF("PH_PRODUCT_NAME")
+                        && cpaDF("MOLE_NAME") === phProdDF("PH_MOLE_NAME")
+                        && cpaDF("DOSAGE") === phProdDF("PH_DOSAGE_NAME")
+                        && cpaDF("PACK_DES") === phProdDF("PH_PACKAGE_DES")
+                        && cpaDF("PACK_NUMBER") === phProdDF("PH_PACKAGE_NUMBER")
+                        && cpaDF("CORP_NAME") === phProdDF("PH_CORP_NAME")
+                    , "left"
+                )
 //                .drop(phProdDF("dosage"))// 同名重复，要删掉
         }
 

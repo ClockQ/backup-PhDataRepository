@@ -22,6 +22,8 @@ object TransformCPA extends App {
     val nhwaCpaDF = CSV2DF(nhwa_cpa_csv)
     val pfizerCpaDF = CSV2DF(pfizer_cpa_csv)
     val phaDF = Parquet2DF(HOSP_PHA_LOCATION)
+    val nhwaProdEtcERD = Parquet2DF(PROD_ETC_LOCATION + "/" + nhwa_source_id)
+    val pfizerProdEtcERD = Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_source_id)
 
     val hospDIS = hospCvs.toDIS(
         Map(
@@ -32,45 +34,31 @@ object TransformCPA extends App {
             "hospProvinceERD" -> Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION)
         )
     )("hospDIS")
-//    val nhwaProdDIS = nhwaProdCvs.toDIS(
-//        Map(
-//            "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + nhwa_source_id),
-//            "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION),
-//            "productImsERD" -> Parquet2DF(PROD_IMS_LOCATION)
-//        )
-//    )("productEtcDIS")
-    val pfizerProdDIS = pfizerProdCvs.toDIS(
-        Map(
-            "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_source_id),
-            "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION),
-            "productImsERD" -> Parquet2DF(PROD_IMS_LOCATION)
-        )
-    )("productEtcDIS")
 
-//    val nhwaResult = nhwaCpaCvs.toERD(
-//        Map(
-//            "cpaDF" -> nhwaCpaDF,
-//            "hospDF" -> hospDIS,
-//            "prodDF" -> nhwaProdDIS,
-//            "phaDF" -> phaDF
-//        )
-//    )
-//    val nhwaERD = nhwaResult("cpaERD")
-//    val nhwaProd = nhwaResult("prodDIS")
-//    val nhwaHosp = nhwaResult("hospDIS")
-//    val nhwaPha = nhwaResult("phaDIS")
-//    phDebugLog("nhwaERD", nhwaCpaDF.count(), nhwaERD.count())
-//    phDebugLog("nhwaProd", nhwaProdDIS.count(), nhwaProd.count())
-//    phDebugLog("nhwaHosp", hospDIS.count(), nhwaHosp.count())
-//    phDebugLog("nhwaPha", phaDF.count(), nhwaPha.count())
-//    val nhwaMinus = nhwaCpaDF.count() - nhwaERD.count()
-//    assert(nhwaMinus == 0, "nhwa: 转换后的ERD比源数据减少`" + nhwaMinus + "`条记录")
+    val nhwaResult = nhwaCpaCvs.toERD(
+        Map(
+            "cpaDF" -> nhwaCpaDF,
+            "hospDF" -> hospDIS,
+            "prodDF" -> nhwaProdEtcERD,
+            "phaDF" -> phaDF
+        )
+    )
+    val nhwaERD = nhwaResult("cpaERD")
+    val nhwaProd = nhwaResult("prodDIS")
+    val nhwaHosp = nhwaResult("hospDIS")
+    val nhwaPha = nhwaResult("phaDIS")
+    phDebugLog("nhwaERD", nhwaCpaDF.count(), nhwaERD.count())
+    phDebugLog("nhwaProd", nhwaProdEtcERD.count(), nhwaProd.count())
+    phDebugLog("nhwaHosp", hospDIS.count(), nhwaHosp.count())
+    phDebugLog("nhwaPha", phaDF.count(), nhwaPha.count())
+    val nhwaMinus = nhwaCpaDF.count() - nhwaERD.count()
+    assert(nhwaMinus == 0, "nhwa: 转换后的ERD比源数据减少`" + nhwaMinus + "`条记录")
 
     val pfizerResult = pfizerCpaCvs.toERD(
         Map(
             "cpaDF" -> pfizerCpaDF,
             "hospDF" -> hospDIS,
-            "prodDF" -> pfizerProdDIS,
+            "prodDF" -> pfizerProdEtcERD,
             "phaDF" -> phaDF
         )
     )
@@ -79,7 +67,7 @@ object TransformCPA extends App {
     val pfizerHosp = pfizerResult("hospDIS")
     val pfizerPha = pfizerResult("phaDIS")
     phDebugLog("pfizerERD", pfizerCpaDF.count(), pfizerERD.count()) //==default=> (pfizerERD,178485,204833)
-    phDebugLog("pfizerProd", pfizerProdDIS.count(), pfizerProd.count())
+    phDebugLog("pfizerProd", pfizerProdEtcERD.count(), pfizerProd.count())
     phDebugLog("pfizerHosp", hospDIS.count(), pfizerHosp.count())
     phDebugLog("pfizerPha", phaDF.count(), pfizerPha.count())
     val pfizerMinus = pfizerCpaDF.count() - pfizerERD.count()
