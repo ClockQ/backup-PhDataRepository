@@ -29,7 +29,7 @@ object TransformProductEtc extends App {
     )("productEtcERD")
     //TODO：未匹配到标准形式的只存在公司维度，max计算中是不计这部分的。
     val pfizerProdNotMatch = pfizerProductEtcERD.filter(col("PRODUCT_ID") === "")
-    phDebugLog("pfizerProdNotMatch count = " + pfizerProdNotMatch.count())
+    phDebugLog("pfizerProdNotMatch count = " + pfizerProdNotMatch.count())  //4006
     pfizerProductEtcERD.save2Parquet(PROD_ETC_LOCATION + "/" + pfizer_source_id)
     pfizerProductEtcERD.save2Mongo(PROD_ETC_LOCATION.split("/").last)
 
@@ -48,7 +48,7 @@ object TransformProductEtc extends App {
     )("productEtcERD")
     //TODO：未匹配到标准形式的只存在公司维度，max计算中是不计这部分的。
     val nhwaProdNotMatch = nhwaProductEtcERD.filter(col("PRODUCT_ID") === "")
-    phDebugLog("nhwaProdNotMatch count = " + nhwaProdNotMatch.count())
+    phDebugLog("nhwaProdNotMatch count = " + nhwaProdNotMatch.count())  //75
     nhwaProductEtcERD.save2Parquet(PROD_ETC_LOCATION + "/" + nhwa_source_id)
     nhwaProductEtcERD.save2Mongo(PROD_ETC_LOCATION.split("/").last)
 

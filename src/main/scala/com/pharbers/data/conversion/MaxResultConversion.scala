@@ -43,6 +43,7 @@ case class MaxResultConversion(company_id: String) extends PhDataConversion {
 
     def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val maxERD = args.getOrElse("maxERD", throw new Exception("not found maxERD"))
+        val sourceERD = args.getOrElse("sourceERD", throw new Exception("not found sourceERD"))
         val hospDIS = args.getOrElse("hospDIS", throw new Exception("not found hospDIS"))
         val prodDIS = args.getOrElse("prodDIS", throw new Exception("not found prodDIS"))
 
@@ -53,6 +54,11 @@ case class MaxResultConversion(company_id: String) extends PhDataConversion {
 
         val maxDIS = maxERD
             .join(
+                sourceERD.withColumnRenamed("_id", "main-id"),
+                col("SOURCE_ID") === col("main-id"),
+                "left"
+            ).drop(col("main-id"))
+            .join(
                 hospDIS.filter(col("PHAIsRepeat") === 0).select("PHAHospId", "city-name", "province-name").distinct(),
                 col("PHA_ID") === col("PHAHospId"),
                 "left"
@@ -60,10 +66,13 @@ case class MaxResultConversion(company_id: String) extends PhDataConversion {
             .join(
                 prodDIS
                     .withColumnRenamed("_id", "PRODUCT_ID")
-                    .withColumn("PH_MIN", concat(col("PRODUCT_NAME"), col("DOSAGE"), col("PACK_DES"), col("PACK_NUMBER"), col("CORP_NAME"))),
+                    .withColumn("PH_MIN", concat(col("PRODUCT_NAME"), col("DOSAGE_NAME"), col("PACKAGE_DES"), col("PACKAGE_NUMBER"), col("CORP_NAME")))
+                    .dropDuplicates("PH_MIN")
+                    .drop("COMPANY_ID"),
                 col("MIN_PRODUCT") === col("PH_MIN"),
                 "left"
             ).drop(col("PH_MIN"))
+            .na.fill("")
             .time2ym
 
         Map(

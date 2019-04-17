@@ -18,44 +18,47 @@ case class CPAConversion(company_id: String)(prodCvs: ProductEtcConversion)
     def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val cpaDF = args.getOrElse("cpaDF", throw new Exception("not found cpaDF"))
         val hospDF = args.getOrElse("hospDF", throw new Exception("not found hospDF"))
-        val prodDF = args.getOrElse("prodDF", throw new Exception("not found prodDF"))
+        val phProdDF = args.getOrElse("prodDF", throw new Exception("not found prodDF"))    //16736
         val phaDF = args.getOrElse("phaDF", throw new Exception("not found phaDF"))
 
+        //==default=> (pfizerERD,178485,204833)
+//        phProdDF.select("PH_PRODUCT_NAME", "PH_MOLE_NAME", "PH_DOSAGE_NAME", "PH_PACKAGE_DES", "PH_PACKAGE_NUMBER", "PH_CORP_NAME").distinct().count()//13851
         val connProdHosp = {
             cpaDF
-                    .join(
-                        phaDF.drop("_id").dropDuplicates("CPA")
-                        , cpaDF("HOSP_ID") === phaDF("CPA")
-                        , "left"
-                    )
-                    .join(
-                        hospDF.withColumnRenamed("_id", "hosp-id").dropDuplicates("PHAHospId")
-                        , phaDF("PHA_ID_NEW") === hospDF("PHAHospId")
-                        , "left"
-                    )
-                    .join(
-                        prodDF.withColumnRenamed("_id", "product-id")
-                        , cpaDF("PRODUCT_NAME") === prodDF("product-name")
-                                && cpaDF("MOLE_NAME") === prodDF("mole-name")
-                                && cpaDF("DOSAGE") === prodDF("dosage")
-                                && cpaDF("PACK_DES") === prodDF("package-des")
-                                && cpaDF("PACK_NUMBER") === prodDF("package-number")
-                                && cpaDF("CORP_NAME") === prodDF("corp-name")
-                        , "left"
-                    ).drop(prodDF("dosage"))// 同名重复，要删掉
+                .join(
+                    phaDF.drop("_id").dropDuplicates("CPA")
+                    , cpaDF("HOSP_ID") === phaDF("CPA")
+                    , "left"
+                )
+                .join(
+                    hospDF.withColumnRenamed("_id", "HOSPITAL_ID").dropDuplicates("PHAHospId")
+                    , phaDF("PHA_ID_NEW") === hospDF("PHAHospId")
+                    , "left"
+                )
+                .join(
+                    phProdDF.withColumnRenamed("_id", "PH_PRODUCT_ID")
+                    , cpaDF("PRODUCT_NAME") === phProdDF("PH_PRODUCT_NAME")
+                        && cpaDF("MOLE_NAME") === phProdDF("PH_MOLE_NAME")
+                        && cpaDF("DOSAGE") === phProdDF("PH_DOSAGE_NAME")
+                        && cpaDF("PACK_DES") === phProdDF("PH_PACKAGE_DES")
+                        && cpaDF("PACK_NUMBER") === phProdDF("PH_PACKAGE_NUMBER")
+                        && cpaDF("CORP_NAME") === phProdDF("PH_CORP_NAME")
+                    , "left"
+                )
+//                .drop(phProdDF("dosage"))// 同名重复，要删掉
         }
 
         // 存在未成功匹配的产品, 递归执行self.toERD
-        val notConnProdOfCpa = connProdHosp.filter(col("product-id").isNull)
+        val notConnProdOfCpa = connProdHosp.filter(col("PH_PRODUCT_ID").isNull)
         val notConnProdOfCpaCount = notConnProdOfCpa.count()
         if (notConnProdOfCpaCount != 0) {
             phDebugLog(notConnProdOfCpaCount + "条产品未匹配, 重新转换")
-            val notConnProdDIS = prodCvs.toDIS(prodCvs.toERD(Map("sourceDataDF" -> notConnProdOfCpa)))("prodDIS")
-            return toERD(args + ("prodDF" -> notConnProdDIS.unionByName(prodDF)))
+            val notConnProdDIS = prodCvs.toDIS(prodCvs.toERD(Map("sourceDataDF" -> notConnProdOfCpa)))("productEtcDIS")
+            return toERD(args + ("prodDF" -> notConnProdDIS.unionByName(phProdDF)))
         }
 
         // 存在未成功匹配的医院, 递归执行self.toERD
-        val notConnHospOfCpa = connProdHosp.filter(col("hosp-id").isNull)
+        val notConnHospOfCpa = connProdHosp.filter(col("HOSPITAL_ID").isNull)
         val notConnHospOfCpaCount = notConnHospOfCpa.count()
         if (notConnHospOfCpaCount != 0) {
             phDebugLog(notConnHospOfCpaCount + "条医院未匹配, 重新转换")
@@ -75,14 +78,14 @@ case class CPAConversion(company_id: String)(prodCvs: ProductEtcConversion)
 
         val cpaERD = connProdHosp
                 .generateId
-                .withColumn("source-id", lit(company_id))
+                .withColumn("COMPANY_ID", lit(company_id))
                 .str2Time
                 .trim("PRODUCT_NAME_NOTE")
-                .select("_id", "source-id", "TIME", "hosp-id", "product-id", "VALUE", "STANDARD_UNIT", "PRODUCT_NAME_NOTE")
+                .select("_id", "COMPANY_ID", "TIME", "HOSPITAL_ID", "PH_PRODUCT_ID", "VALUE", "STANDARD_UNIT", "PRODUCT_NAME_NOTE")
 
         Map(
             "cpaERD" -> cpaERD,
-            "prodDIS" -> prodDF,
+            "prodDIS" -> phProdDF,
             "hospDIS" -> hospDF,
             "phaDIS" -> phaDF
         )
@@ -96,12 +99,12 @@ case class CPAConversion(company_id: String)(prodCvs: ProductEtcConversion)
         val cpaDIS = cpaERD
                 .join(
                     hospERD.withColumnRenamed("_id", "main-id"),
-                    col("hosp-id") === col("main-id"),
+                    col("HOSPITAL_ID") === col("main-id"),
                     "left"
                 ).drop(col("main-id"))
                 .join(
                     prodERD.withColumnRenamed("_id", "main-id"),
-                    col("product-id") === col("main-id"),
+                    col("PH_PRODUCT_ID") === col("main-id"),
                     "left"
                 ).drop(col("main-id"))
 
@@ -126,8 +129,3 @@ case class CPAConversion(company_id: String)(prodCvs: ProductEtcConversion)
 //|                 _id|             corp-id|         delivery-id|           dosage-id|             mole-id|          package-id|product-name|standard-unit|value|mole-name|delivery-way|    dosage|         package-des|package-number|corp-name|
 //+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+------------+-------------+-----+---------+------------+----------+--------------------+--------------+---------+
 //|5c9a7a266f566f5b2...|5c9a7a4e6f566f5b2...|5c9a7a4c6f566f5b2...|5c9a7a476f566f5b2...|5c9a7a316f566f5b2...|5c9a7a3e6f566f5b2...|       拜阿司匹灵|          500|  197|     阿司匹林|          口服|       咀嚼片|                0.5g|            10|     null|
-// cpaERD
-//+--------------------+--------------------+-------------+--------------------+--------------------+-----------------+-----+-------------+
-//|                 _id|           source-id|         time|             hosp-id|          product-id|PRODUCT_NAME_NOTE|VALUE|STANDARD_UNIT|
-//+--------------------+--------------------+-------------+--------------------+--------------------+-----------------+-----+-------------+
-//|5ca1822197d1244da...|5ca069e5eeefcc012...|1519833600000|5c9c81a5e068ab60e...|5c9d64646f566f33c...|             null|  733|           50|

@@ -12,7 +12,6 @@ object TransformCPA extends App {
     val pfizer_source_id = "5ca069e2eeefcc012918ec73"
     val nhwa_cpa_csv = "/test/CPA&GYCX/Nhwa_201804_CPA_20181227.csv"
     val pfizer_cpa_csv = "/test/CPA&GYCX/Pfizer_201804_CPA_20181227.csv"
-//    val astellas_cpa_csv = "/test/CPA&GYCX/Astellas_201804_CPA_20180629.csv"
 
     val hospCvs = HospConversion()
     val nhwaProdCvs = ProductEtcConversion(nhwa_source_id)
@@ -23,38 +22,24 @@ object TransformCPA extends App {
     val nhwaCpaDF = CSV2DF(nhwa_cpa_csv)
     val pfizerCpaDF = CSV2DF(pfizer_cpa_csv)
     val phaDF = Parquet2DF(HOSP_PHA_LOCATION)
+    val nhwaProdEtcERD = Parquet2DF(PROD_ETC_LOCATION + "/" + nhwa_source_id)
+    val pfizerProdEtcERD = Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_source_id)
 
     val hospDIS = hospCvs.toDIS(
         Map(
             "hospBaseERD" -> Parquet2DF(HOSP_BASE_LOCATION),
-            "hospBedERD" -> Parquet2DF(HOSP_BED_LOCATION),
-            "hospEstimateERD" -> Parquet2DF(HOSP_ESTIMATE_LOCATION),
-            "hospOutpatientERD" -> Parquet2DF(HOSP_OUTPATIENT_LOCATION),
-            "hospRevenueERD" -> Parquet2DF(HOSP_REVENUE_LOCATION),
-            "hospSpecialtyERD" -> Parquet2DF(HOSP_SPECIALTY_LOCATION),
-            "hospStaffNumERD" -> Parquet2DF(HOSP_STAFFNUM_LOCATION),
-            "hospUnitERD" -> Parquet2DF(HOSP_UNIT_LOCATION)
+            "hospAddressERD" -> Parquet2DF(HOSP_ADDRESS_BASE_LOCATION),
+            "hospPrefectureERD" -> Parquet2DF(HOSP_ADDRESS_PREFECTURE_LOCATION),
+            "hospCityERD" -> Parquet2DF(HOSP_ADDRESS_CITY_LOCATION),
+            "hospProvinceERD" -> Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION)
         )
     )("hospDIS")
-    //TODO:load productDevERD
-    val nhwaProdDIS = nhwaProdCvs.toDIS(
-        Map(
-            "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + nhwa_source_id),
-            "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION)
-        )
-    )("productEtcDIS")
-    val pfizerProdDIS = pfizerProdCvs.toDIS(
-        Map(
-            "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_source_id),
-            "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION)
-        )
-    )("productEtcDIS")
 
     val nhwaResult = nhwaCpaCvs.toERD(
         Map(
             "cpaDF" -> nhwaCpaDF,
             "hospDF" -> hospDIS,
-            "prodDF" -> nhwaProdDIS,
+            "prodDF" -> nhwaProdEtcERD,
             "phaDF" -> phaDF
         )
     )
@@ -63,7 +48,7 @@ object TransformCPA extends App {
     val nhwaHosp = nhwaResult("hospDIS")
     val nhwaPha = nhwaResult("phaDIS")
     phDebugLog("nhwaERD", nhwaCpaDF.count(), nhwaERD.count())
-    phDebugLog("nhwaProd", nhwaProdDIS.count(), nhwaProd.count())
+    phDebugLog("nhwaProd", nhwaProdEtcERD.count(), nhwaProd.count())
     phDebugLog("nhwaHosp", hospDIS.count(), nhwaHosp.count())
     phDebugLog("nhwaPha", phaDF.count(), nhwaPha.count())
     val nhwaMinus = nhwaCpaDF.count() - nhwaERD.count()
@@ -73,7 +58,7 @@ object TransformCPA extends App {
         Map(
             "cpaDF" -> pfizerCpaDF,
             "hospDF" -> hospDIS,
-            "prodDF" -> pfizerProdDIS,
+            "prodDF" -> pfizerProdEtcERD,
             "phaDF" -> phaDF
         )
     )
@@ -81,8 +66,8 @@ object TransformCPA extends App {
     val pfizerProd = pfizerResult("prodDIS")
     val pfizerHosp = pfizerResult("hospDIS")
     val pfizerPha = pfizerResult("phaDIS")
-    phDebugLog("pfizerERD", pfizerCpaDF.count(), pfizerERD.count())
-    phDebugLog("pfizerProd", pfizerProdDIS.count(), pfizerProd.count())
+    phDebugLog("pfizerERD", pfizerCpaDF.count(), pfizerERD.count()) //==default=> (pfizerERD,178485,204833)
+    phDebugLog("pfizerProd", pfizerProdEtcERD.count(), pfizerProd.count())
     phDebugLog("pfizerHosp", hospDIS.count(), pfizerHosp.count())
     phDebugLog("pfizerPha", phaDF.count(), pfizerPha.count())
     val pfizerMinus = pfizerCpaDF.count() - pfizerERD.count()
