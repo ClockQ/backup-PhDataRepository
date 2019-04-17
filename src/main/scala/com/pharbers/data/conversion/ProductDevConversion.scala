@@ -12,17 +12,18 @@ case class ProductDevConversion() extends PhDataConversion {
     import com.pharbers.data.util.DFUtil
     import com.pharbers.data.util.sparkDriver.ss.implicits._
 
-    def matchTable2Product(df: DataFrame): DataFrame =
-        df.trim("DELIVERY_WAY").select(
-            $"STANDARD_PRODUCT_NAME" as "PRODUCT_NAME"
-            , $"STANDARD_MOLE_NAME" as "MOLE_NAME"
-            , $"STANDARD_PACK_DES" as "PACKAGE_DES"
-            , $"PACK_NUMBER" as "PACKAGE_NUMBER"
-            , $"STANDARD_CORP_NAME" as "CORP_NAME"
-            , $"DELIVERY_WAY"
-            , $"STANDARD_DOSAGE" as "DOSAGE_NAME"
-            , $"PACK_ID"
-        )
+    def matchTable2Product(df: DataFrame): DataFrame = df
+            .trim("DELIVERY_WAY")
+            .select(
+                $"STANDARD_PRODUCT_NAME" as "PRODUCT_NAME"
+                , $"STANDARD_MOLE_NAME" as "MOLE_NAME"
+                , $"STANDARD_PACK_DES" as "PACKAGE_DES"
+                , $"PACK_NUMBER" as "PACKAGE_NUMBER"
+                , $"STANDARD_CORP_NAME" as "CORP_NAME"
+                , $"DELIVERY_WAY"
+                , $"STANDARD_DOSAGE" as "DOSAGE_NAME"
+                , $"PACK_ID"
+            )
 
     def chc2Product(df: DataFrame): DataFrame = df
             .trim("DELIVERY_WAY")
@@ -41,8 +42,10 @@ case class ProductDevConversion() extends PhDataConversion {
             )
 
     override def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {
-        val productDevERD = args.values.reduce(_ union _).dropDuplicates("PACK_ID").generateId
-
+        val productDevERD = args.values.reduce(_ union _)
+                .dropDuplicates("PRODUCT_NAME", "MOLE_NAME", "PACKAGE_DES",
+                    "PACKAGE_NUMBER", "CORP_NAME", "DELIVERY_WAY", "DOSAGE_NAME")
+                .generateId
         Map(
             "productDevERD" -> productDevERD
         )
