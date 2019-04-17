@@ -66,12 +66,13 @@ case class MaxResultConversion(company_id: String) extends PhDataConversion {
             .join(
                 prodDIS
                     .withColumnRenamed("_id", "PRODUCT_ID")
-                    .withColumn("PH_MIN", concat(col("PRODUCT_NAME"), col("DOSAGE"), col("PACK_DES"), col("PACK_NUMBER"), col("CORP_NAME"))),
+                    .withColumn("PH_MIN", concat(col("PRODUCT_NAME"), col("DOSAGE_NAME"), col("PACKAGE_DES"), col("PACKAGE_NUMBER"), col("CORP_NAME")))
+                    .dropDuplicates("PH_MIN"),
                 col("MIN_PRODUCT") === col("PH_MIN"),
                 "left"
             ).drop(col("PH_MIN"))
             .time2ym
-
+//maxDIS.filter(col("PRODUCT_ID").isNull).count() //INF:61252
         Map(
             "maxDIS" -> maxDIS
         )

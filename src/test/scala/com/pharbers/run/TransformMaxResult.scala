@@ -1,7 +1,5 @@
 package com.pharbers.run
 
-import com.pharbers.spark.phSparkDriver
-import com.pharbers.spark.util.csv2RDD
 import com.pharbers.util.log.phLogTrait.phDebugLog
 
 object TransformMaxResult extends App {
@@ -10,7 +8,6 @@ object TransformMaxResult extends App {
     import com.pharbers.data.util.ParquetLocation._
     import com.pharbers.data.util._
 
-    val sparkDriver: phSparkDriver = getSparkDriver()
     val pfizer_source_id = "5ca069e2eeefcc012918ec73"
     val pfizer_inf_csv = "/workData/Export/96ca55cb-1413-c9f7-6b0a-aad3c739a88e/5b028f95ed925c2c705b85ba-201901-INF.csv"
 
@@ -18,19 +15,19 @@ object TransformMaxResult extends App {
     val PROD_DEV_CVS = ProductDevConversion()
     val pfizerInfMaxCvs = MaxResultConversion(pfizer_source_id)
 
-//    val pfizerInfDF = CSV2DF(pfizer_inf_csv)
-    val pfizerInfDF = sparkDriver.setUtil(csv2RDD()).csv2RDD(pfizer_inf_csv, 31.toChar.toString, header = true).na.fill("")
+    val pfizerInfDF = FILE2DF(pfizer_inf_csv, 31.toChar.toString)
+//    println("pfizerInfDF.count = " + pfizerInfDF.count())
 
-    println("pfizerInfDF.count = " + pfizerInfDF.count())
-
-    val maxERD = pfizerInfMaxCvs.toERD(
+    val maxToErdResult = pfizerInfMaxCvs.toERD(
         Map(
             "maxDF" -> pfizerInfDF
         )
-    )("maxERD")
-    val pfizerMinus = pfizerInfDF.count() - maxERD.count()
-    phDebugLog("maxERD count = " + maxERD.count())
-    assert(pfizerMinus == 0, "pfizer INF max result: 转换后的ERD比源数据减少`" + pfizerMinus + "`条记录")
+    )
+    val maxERD = maxToErdResult("maxERD")
+    val sourceERD = maxToErdResult("sourceERD")
+//    val pfizerMinus = pfizerInfDF.count() - maxERD.count()
+//    phDebugLog("maxERD count = " + maxERD.count())
+//    assert(pfizerMinus == 0, "pfizer INF max result: 转换后的ERD比源数据减少`" + pfizerMinus + "`条记录")
 
     val hospDIS = hospCvs.toDIS(
         Map(
@@ -44,15 +41,17 @@ object TransformMaxResult extends App {
     val PROD_DEV_DIS = PROD_DEV_CVS.toDIS(
         Map(
             "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION),
+            "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_source_id),
             "productImsERD" -> Parquet2DF(PROD_IMS_LOCATION)
         )
-    )("prodDIS")
+    )("productDIS")
 
     val maxDIS = pfizerInfMaxCvs.toDIS(
         Map(
             "maxERD" -> maxERD,
+            "sourceERD" -> sourceERD,
             "hospDIS" -> hospDIS,
-            "prodDIS" -> PROD_DEV_DIS
+            "prodDIS" -> Parquet2DF(PROD_DEV_LOCATION)
         )
     )("maxDIS")
     val pfizerDISMinus = pfizerInfDF.count() - maxDIS.count()
