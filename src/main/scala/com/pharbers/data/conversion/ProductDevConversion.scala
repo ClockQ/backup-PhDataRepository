@@ -26,7 +26,7 @@ case class ProductDevConversion() extends PhDataConversion {
                     , $"PACK_ID"
                 ))
                     .reduce(_ union _)
-                    .distinct()
+                    .dropDuplicates("PACK_ID")
                     .generateId
         }
 
@@ -44,8 +44,10 @@ case class ProductDevConversion() extends PhDataConversion {
             productDevERD
                     .join(productImsERD, productDevERD("PACK_ID") === productImsERD("IMS_PACK_ID"), "left")
                     .drop(productImsERD("_id"))
+                    .drop(productImsERD("IMS_PACK_ID"))
                     .join(productEtcERD, productDevERD("_id") === productEtcERD("PRODUCT_ID"), "left")
                     .drop(productEtcERD("_id"))
+                    .drop(productEtcERD("PRODUCT_ID"))
         }
 
         Map(
