@@ -28,6 +28,7 @@ package object util {
     }
 
     implicit class SaveMongo(df: DataFrame) {
+
         import org.apache.spark.sql.expressions.UserDefinedFunction
 
         def save2Mongo(name: String): Unit = {
@@ -66,7 +67,6 @@ package object util {
         }
 
         def str2Time: DataFrame = {
-//            phDebugLog(s"`YM` to `Timestamp` in DataFrame")
             if (df.columns.contains("YM"))
                 df.withColumn("TIME", commonUDF.str2TimeUdf(col("YM")))
             else
@@ -82,7 +82,6 @@ package object util {
         }
 
         def time2ym: DataFrame = {
-            //            phDebugLog(s"`YM` to `Timestamp` in DataFrame")
             if (df.columns.contains("YM")) df
             else
                 df.withColumn("YM", commonUDF.time2StrUdf(col("TIME")))
@@ -93,8 +92,11 @@ package object util {
         }
     }
 
-    val CSV2DF: String => DataFrame =
-        sparkDriver.setUtil(csv2RDD()).csv2RDD(_, ",", header = true).na.fill("")
+    val FILE2DF: (String, String) => DataFrame = sparkDriver.setUtil(csv2RDD()).csv2RDD(_, _, header = true).na.fill("")
+
+    val CSV2DF: String => DataFrame = FILE2DF(_, ",")
+
+    val TXT2DF: String => DataFrame = FILE2DF(_, "|")
 
     val Mongo2DF: String => DataFrame =
         sparkDriver.setUtil(mongo2DF()).mongo2DF(

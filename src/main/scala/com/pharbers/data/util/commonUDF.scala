@@ -22,5 +22,4 @@ object commonUDF {
     }
 
     val generateIdUdf: UserDefinedFunction = udf { () => ObjectId.get().toString }
-
 }

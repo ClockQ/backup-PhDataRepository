@@ -43,30 +43,36 @@ case class MaxResultConversion(company_id: String) extends PhDataConversion {
 
     def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val maxERD = args.getOrElse("maxERD", throw new Exception("not found maxERD"))
+        val sourceERD = args.getOrElse("sourceERD", throw new Exception("not found sourceERD"))
         val hospDIS = args.getOrElse("hospDIS", throw new Exception("not found hospDIS"))
 //        val prodDIS = args.getOrElse("prodDIS", throw new Exception("not found prodDIS"))
 
         // TODO:匹配医院已完成对数，目前MaxResultHospDIS只使用了[PHAHospId / City / Province]，原因是HospDIS数据中有PHAHospId一对多的问题，
-        // TODO:匹配产品已完成对数，但是max结果数据中的min1是规范产品名等的数据，再使用min1反匹到我们prodDIS【来源于CPA等未经规范的原始数据】，就会出现很多匹配不到的情况。等待公司维度的匹配表的数据仓储的建立。
+        // TODO:匹配产品已完成对数，但是max结果数据中的min_product是规范产品名等的数据，理论上能完全匹配到PH_PROD_DIS中，待测试。
 //        val hospDistinct = hospDIS.filter(col("PHAIsRepeat") === 0).select("PHAHospId", "prefecture-name", "city-name", "province-name").distinct()
 //            .groupBy("PHAHospId").agg(("PHAHospId" -> "count"))
 
         val maxDIS = maxERD
             .join(
+                sourceERD.withColumnRenamed("_id", "main-id"),
+                col("SOURCE_ID") === col("main-id"),
+                "left"
+            ).drop(col("main-id"))
+            .join(
                 hospDIS.filter(col("PHAIsRepeat") === 0).select("PHAHospId", "city-name", "province-name").distinct(),
                 col("PHA_ID") === col("PHAHospId"),
                 "left"
             ).drop(col("PHAHospId"))
-                //TODO: 等有了新的product还要加上
-//            .join(
-//                prodDIS
-//                    .withColumnRenamed("_id", "PRODUCT_ID")
-//                    //TODO:统一命名 -> 【全大写，单词间下划线相连。】
-////                    .withColumn("min1", concat(col("PRODUCT_NAME"), col("DOSAGE"), col("PACK_DES"), col("PACK_NUMBER"), col("CORP_NAME"))),
-//                    .withColumn("min1", concat(col("product-name"), col("dosage"), col("package-des"), col("package-number"), col("corp-name"))),
-//                col("MIN_PRODUCT") === col("min1"),
-//                "left"
-//            ).drop(col("min1"))
+            .join(
+                prodDIS
+                    .withColumnRenamed("_id", "PRODUCT_ID")
+                    .withColumn("PH_MIN", concat(col("PRODUCT_NAME"), col("DOSAGE_NAME"), col("PACKAGE_DES"), col("PACKAGE_NUMBER"), col("CORP_NAME")))
+                    .dropDuplicates("PH_MIN")
+                    .drop("COMPANY_ID"),
+                col("MIN_PRODUCT") === col("PH_MIN"),
+                "left"
+            ).drop(col("PH_MIN"))
+            .na.fill("")
             .time2ym
 
         Map(
