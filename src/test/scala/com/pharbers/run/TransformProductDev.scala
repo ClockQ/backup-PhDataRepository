@@ -31,12 +31,12 @@ object TransformProductDev extends App {
     ))("productDevERD")
     productDevERD.show(false)
     println(productDevERD.count())
-//    productDevERD.save2Mongo("prod_dev")
-//    productDevERD.save2Parquet(PROD_DEV_LOCATION)
+    productDevERD.save2Mongo("prod_dev")
+    productDevERD.save2Parquet(PROD_DEV_LOCATION)
 
     val productImsERDArgs = Parquet2DF(PROD_IMS_LOCATION) // 112848
 //    println(productImsERDArgs.count())
-    val productDevERDArgs = Parquet2DF(PROD_DEV_LOCATION) // 9185
+    val productDevERDArgs = Parquet2DF(PROD_DEV_LOCATION) // 17765
 //    println(productDevERDArgs.count())
     val productEtcERDArgs = Parquet2DF(PROD_ETC_LOCATION + "/5ca069bceeefcc012918ec72")
 //    println(productEtcERDArgs.count())
@@ -48,5 +48,4 @@ object TransformProductDev extends App {
     ))("productDIS")
     productDIS.show(false)
     println(productDIS.count())
-    println(productDIS.dropDuplicates("PACK_ID").count())
 }
