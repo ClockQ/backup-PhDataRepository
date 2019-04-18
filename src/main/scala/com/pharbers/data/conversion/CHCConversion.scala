@@ -89,7 +89,7 @@ case class CHCConversion() extends PhDataConversion {
 
     def toCHCStruct(dis: DataFrame): DataFrame =
         dis.select(
-            $"PACK_ID", $"TIME", $"name"
+            $"PACK_ID", $"TIME", $"name".as("CITY")
             , $"PRODUCT_NAME", $"MOLE_NAME", $"CORP_NAME"
             , $"PACKAGE_NUMBER", $"DOSAGE_NAME", $"PACKAGE_DES"
             , $"ATC3", $"OAD_TYPE"
