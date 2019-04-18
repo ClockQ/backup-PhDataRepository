@@ -8,15 +8,15 @@ package object util {
     implicit class window(df: DataFrame){
         def yearGR(order: String, colName: String, partition: Column*): DataFrame ={
             val windowYearOnYear = Window.partitionBy(partition.head).orderBy(order).rangeBetween(-100, -100)
-            df.withColumn(colName + "YEAR_ON_YEAR", first(col(colName)).over(windowYearOnYear))
-                    .withColumn(colName + "_YEAR_GROWTH", (col(colName + "YEAR_ON_YEAR") - col(colName)) / col(colName + "YEAR_ON_YEAR"))
+            df.withColumn(colName + "_YEAR_ON_YEAR", first(col(colName)).over(windowYearOnYear))
+                    .withColumn(colName + "_YEAR_GROWTH", (col(colName + "_YEAR_ON_YEAR") - col(colName)) / col(colName + "_YEAR_ON_YEAR"))
                     .drop("YEAR_ON_YEAR")
         }
 
         def ringGR(order: String, colName: String, partition: Column*): DataFrame ={
             val windowYearOnYear = Window.partitionBy(partition: _*).orderBy(order).rangeBetween(-89, -1)
-            df.withColumn(colName + "RING", last(col(colName)).over(windowYearOnYear))
-                    .withColumn(colName + "_RING_GROWTH", (col(colName + "RING") - col(colName)) / col(colName + "RING"))
+            df.withColumn(colName + "_RING", last(col(colName)).over(windowYearOnYear))
+                    .withColumn(colName + "_RING_GROWTH", (col(colName + "_RING") - col(colName)) / col(colName + "_RING"))
                     .drop("RING")
         }
 

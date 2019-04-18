@@ -98,12 +98,20 @@ case class maxResultAggregationJob(args: Map[String, String])(implicit any: Any 
         val dfMap = super.perform(MapArgs(Map("marketDF" -> DFArgs(marketDF), "productDF" -> DFArgs(productDF)))).asInstanceOf[MapArgs].get
 
         val marketAggregationDF = dfMap("MarketAgg").get.asInstanceOf[DataFrame]
-        val productAggregation = dfMap("ProductAgg").get.asInstanceOf[DataFrame]
+        val productAggregationDF = dfMap("ProductAgg").get.asInstanceOf[DataFrame]
         phDebugLog("MarketAggregation:" + marketAggregationDF.count())
-        phDebugLog("ProductAggregation:" + productAggregation.count())
+        phDebugLog("ProductAggregation:" + productAggregationDF.count())
 
-        marketAggregationDF.save2Mongo("max_market_aggregation")
-        productAggregation.save2Mongo("max_product_aggregation")
+        val MarketdimensionDF = productAggregationDF.filter(col("MIN_PRODUCT") === "top10")
+                        .selectExpr("MARKET as top10MARKET", "YM as topYM", "SALES as CONCENTRATED_SALES"
+                            , "SALES_SOM as CONCENTRATED_SOM", "SALES_RING_GROWTH as CONCENTRATED_RING_GROWTH", "SALES_YEAR_GROWTH as CONCENTRATED_YEAR_GROWTH")
+                        .join(marketAggregationDF, col("top10MARKET") === col("MARKET")
+                            && col("topYM") === col("YM"), "right")
+                        .drop("top10MARKET", "topYM")
+
+
+        MarketdimensionDF.save2Mongo("Marketdimension")
+        productAggregationDF.save2Mongo("Productdimension")
 
 
         MapArgs(Map(
