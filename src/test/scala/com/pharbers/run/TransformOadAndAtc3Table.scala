@@ -1,6 +1,6 @@
 package com.pharbers.run
 
-object TransformOadTable extends App {
+object TransformOadAndAtc3Table extends App {
 
     import com.pharbers.data.util._
     import com.pharbers.data.conversion._
@@ -13,11 +13,16 @@ object TransformOadTable extends App {
 
     val oadERD = result("oadERD")
     oadERD.show(false)
-    oadERD.save2Parquet(PROD_OADTABLE_LOCATION)
-    oadERD.save2Mongo(PROD_OADTABLE_LOCATION.split("/").last)
+    if (args.isEmpty || args(0) == "TRUE") {
+        oadERD.save2Parquet(PROD_OADTABLE_LOCATION)
+        oadERD.save2Mongo(PROD_OADTABLE_LOCATION.split("/").last)
+    }
+
 
     val atc3ERD = result("atc3ERD")
     atc3ERD.show(false)
-    atc3ERD.save2Parquet(PROD_ATC3TABLE_LOCATION)
-    atc3ERD.save2Mongo(PROD_ATC3TABLE_LOCATION.split("/").last)
+    if (args.isEmpty || args(0) == "TRUE") {
+        atc3ERD.save2Parquet(PROD_ATC3TABLE_LOCATION)
+        atc3ERD.save2Mongo(PROD_ATC3TABLE_LOCATION.split("/").last)
+    }
 }

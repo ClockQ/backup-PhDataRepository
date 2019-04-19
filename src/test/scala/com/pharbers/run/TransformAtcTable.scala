@@ -24,8 +24,11 @@ object TransformAtcTable extends App {
     phDebugLog("atcTableDF `ERD` count = " + atcTableDF.count())
     atcTableDF.show(true)
 
-    atcTableDF.save2Parquet(PROD_ATCTABLE_LOCATION)
-    atcTableDF.save2Mongo(PROD_ATCTABLE_LOCATION.split("/").last)
+    if(args.isEmpty || args(0) == "TRUE"){
+        atcTableDF.save2Parquet(PROD_ATCTABLE_LOCATION)
+        atcTableDF.save2Mongo(PROD_ATCTABLE_LOCATION.split("/").last)
+    }
+
 
     val atcTableMongoDF = Mongo2DF(PROD_ATCTABLE_LOCATION.split("/").last)
     atcTableMongoDF.show(true)

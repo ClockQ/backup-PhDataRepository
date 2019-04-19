@@ -22,4 +22,8 @@ object commonUDF {
     }
 
     val generateIdUdf: UserDefinedFunction = udf { () => ObjectId.get().toString }
+
+    val mkStringByArray: UserDefinedFunction = udf { (array: Seq[String], seg: String) =>
+        array.distinct.mkString(seg)
+    }
 }

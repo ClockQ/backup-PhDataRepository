@@ -1,5 +1,6 @@
 package com.pharbers.data.conversion
 
+import com.pharbers.data.util.commonUDF
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.expressions.UserDefinedFunction
 
@@ -16,7 +17,7 @@ case class ProductImsConversion() extends PhDataConversion {
 
     def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val columnSeq = Seq(
-            "IMS_PRODUCT_NAME", "IMS_MOLE_NAME", "IMS_PACKAGE_DES", "IMS_PACKAGE_NUMBER"
+            "IMS_SOURCE", "IMS_PRODUCT_NAME", "IMS_MOLE_NAME", "IMS_PACKAGE_DES", "IMS_PACKAGE_NUMBER"
             , "IMS_CORP_NAME", "IMS_DELIVERY_WAY", "IMS_DOSAGE_NAME", "IMS_PACK_ID"
         )
 
@@ -52,17 +53,14 @@ case class ProductImsConversion() extends PhDataConversion {
             originStr.split(elemStr).head
         }
 
-        val mkStringByArray: UserDefinedFunction = udf { (array: Seq[String], seg: String) =>
-            array.mkString(seg)
-        }
-
         val packAndMoleDF = lkpDF.join(molDF, lkpDF("MOLE_ID") === molDF("MOLE_ID")).drop(molDF("MOLE_ID"))
                         .groupBy("PACK_ID")
                         .agg(sort_array(collect_list("IMS_MOLE_NAME")) as "IMS_MOLE_NAME")
-                        .withColumn("IMS_MOLE_NAME", mkStringByArray($"IMS_MOLE_NAME", lit("+")))
+                        .withColumn("IMS_MOLE_NAME", commonUDF.mkStringByArray($"IMS_MOLE_NAME", lit("+")))
 
         val productImsERD = {
             prodBaseDF
+                    .trim("IMS_SOURCE", "CHC")
                     // 1. IMS_PRODUCT_NAME
                     .withColumn("IMS_PRODUCT_NAME", splitProdMnf(prodBaseDF("PRD_DESC")))
                     // 2. IMS_MOLE_NAME
@@ -91,6 +89,30 @@ case class ProductImsConversion() extends PhDataConversion {
         )
     }
 
-    def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = ???
+    def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = {
+        val productImsERD = args.getOrElse("productImsERD", throw new Exception("not found productImsERD"))
+        val atc3ERD = args.getOrElse("atc3ERD", Seq.empty[(String, String, String)].toDF("_id", "PACK_ID", "ATC3"))
+        val oadERD = args.getOrElse("oadERD", Seq.empty[(String, String, String)].toDF("_id", "ATC3", "OAD_TYPE"))
+
+        val productImsDIS = {
+            productImsERD
+                    .join(
+                        atc3ERD
+                        , productImsERD("IMS_PACK_ID").cast("string") === atc3ERD("PACK_ID").cast("string")
+                        , "left"
+                    )
+                    .drop(atc3ERD("_id"))
+                    .drop(atc3ERD("PACK_ID"))
+                    .join(
+                        oadERD
+                        , atc3ERD("ATC3") === oadERD("ATC3")
+                        , "left"
+                    )
+                    .drop(oadERD("_id"))
+                    .drop(oadERD("ATC3"))
+        }
+
+        Map("productImsDIS" -> productImsDIS)
+    }
 
 }
