@@ -1,6 +1,8 @@
 package com.pharbers.data.job.AggregationJob
 
-import com.pharbers.pactions.actionbase.{DFArgs, MapArgs, pActionArgs, pActionTrait}
+import java.util.UUID
+
+import com.pharbers.pactions.actionbase._
 import com.pharbers.pactions.jobs.sequenceJobWithMap
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
@@ -11,19 +13,20 @@ case class ProductAggregationJob(args: Map[String, String]) extends sequenceJobW
     override val name: String = "ProductAgg"
 
 //    val ym: Seq[Int] = args("ym").split("#").map(x => x.toInt)
-    val market: String = args("market")
+//    val market: String = args("market")
 
     override def perform(pr: pActionArgs): pActionArgs = {
-        import com.pharbers.data.job.AggregationJob.util._
+        import com.pharbers.data.util.PhWindowUtil._
         import com.pharbers.data.util._
+        import com.pharbers.data.util.ParquetLocation._
 
         val productDF: DataFrame = pr.asInstanceOf[MapArgs].get("productDF").asInstanceOf[DFArgs].get
-        val productTrendDF = productDF.som("MIN_PRODUCT", "SALES", col("MARKET"), col("YM"))
-                .ringGR("YM", "SALES", col("MARKET"), col("MIN_PRODUCT"))
+        val productTrendDF = productDF.addSom( "SALES", col("MARKET"), col("YM"))
+                .addRingGR("YM", "SALES", col("MARKET"), col("MIN_PRODUCT"))
                 .addRank("SALES", col("MARKET"), col("YM"))
                 .addRank("SALES_RING_GROWTH", col("MARKET"), col("YM"))
-                .ringGR("YM", "SALES", col("MARKET"), col("MIN_PRODUCT"))
-                .yearGR("YM", "SALES", col("MARKET"), col("MIN_PRODUCT"))
+                .addRingGR("YM", "SALES", col("MARKET"), col("MIN_PRODUCT"))
+                .addYearGR("YM", "SALES", col("MARKET"), col("MIN_PRODUCT"))
 
 
         phDebugLog("productTrendDF完成")
@@ -53,8 +56,8 @@ case class ProductAggregationJob(args: Map[String, String]) extends sequenceJobW
                     expr("sum(CITY_COUNT) as CITY_COUNT"),
                     expr("sum(UNITS) as UNITS"))
                 .drop("COMPOSITION")
-                .yearGR("YM", "SALES", col("MARKET"), col("MIN_PRODUCT"))
-                .ringGR("YM", "SALES", col("MARKET"), col("MIN_PRODUCT"))
+                .addYearGR("YM", "SALES", col("MARKET"), col("MIN_PRODUCT"))
+                .addRingGR("YM", "SALES", col("MARKET"), col("MIN_PRODUCT"))
                 .filter(col("MIN_PRODUCT") === "top10")
                 .alignAt(productTrendDF)
 
@@ -63,7 +66,11 @@ case class ProductAggregationJob(args: Map[String, String]) extends sequenceJobW
 //                .select("COMPANY_ID", "MIN_PRODUCT", "YM", "MIN_PRODUCT_SOM", "YEAR_GROWTH", "RING_GROWTH", "SALES_RANK", "SALES")
 //                .filter(col("YM").isin(ym: _*))
 
+
+        val uuid = UUID.randomUUID().toString
+        val productAgg = productTrendDF unionByName productCompositionDF unionByName marketCompositionDF
+        productAgg.save2Parquet(MAX_RESULT_PRODUCT_AGG_LOCATION + "/" + uuid)
         phDebugLog("productAggregationDf完成")
-        DFArgs(productTrendDF unionByName productCompositionDF unionByName marketCompositionDF)
+        StringArgs(MAX_RESULT_PRODUCT_AGG_LOCATION + "/" + uuid)
     }
 }

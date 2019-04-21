@@ -1,6 +1,6 @@
 package com.pharbers.data.job
 
-import com.pharbers.data.conversion.{HospConversion, MaxResultConversion, ProdConversion}
+import com.pharbers.data.conversion.{HospConversion, MaxResultConversion, ProductDevConversion}
 import com.pharbers.data.job.AggregationJob.{MarketAggregationJob, ProductAggregationJob}
 import com.pharbers.data.util.ParquetLocation._
 import com.pharbers.data.util._
@@ -8,8 +8,9 @@ import com.pharbers.pactions.actionbase._
 import com.pharbers.pactions.jobs.sequenceJobWithMap
 import com.pharbers.util.log.phLogTrait.phDebugLog
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types. IntegerType
+import org.apache.spark.sql.types.IntegerType
 
 case class maxResultAggregationJob(args: Map[String, String])(implicit any: Any = null) extends sequenceJobWithMap {
     override val actions: List[pActionTrait] = List(MarketAggregationJob(args),ProductAggregationJob(args))
@@ -17,12 +18,14 @@ case class maxResultAggregationJob(args: Map[String, String])(implicit any: Any 
 
     val maxResultERDLocation: String = args("max_result_erd_location")
     val ym: Seq[Int] = args("ym").split(",").map(x => x.toInt)
-    val market: String = args("market")
     val companyId: String = args("company")
 
     val hospCvs = HospConversion()
-    val prodCvs = ProdConversion()
+//    val prodCvs = ProdConversion()
     val pfizerInfMaxCvs = MaxResultConversion(companyId)
+    val PROD_DEV_CVS = ProductDevConversion()
+
+    val maxResultERD: DataFrame = Parquet2DF(maxResultERDLocation)
 
     val hospDIS: DataFrame = hospCvs.toDIS(
         Map(
@@ -33,33 +36,29 @@ case class maxResultAggregationJob(args: Map[String, String])(implicit any: Any 
             "hospProvinceERD" -> Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION)
         )
     )("hospDIS")
-//    val prodDIS: DataFrame = prodCvs.toDIS(
-//        Map(
-//            "prodBaseERD" -> Parquet2DF(PROD_BASE_LOCATION),
-//            "prodDeliveryERD" -> Parquet2DF(PROD_DELIVERY_LOCATION),
-//            "prodDosageERD" -> Parquet2DF(PROD_DOSAGE_LOCATION),
-//            "prodMoleERD" -> Parquet2DF(PROD_MOLE_LOCATION),
-//            "prodPackageERD" -> Parquet2DF(PROD_PACKAGE_LOCATION),
-//            "prodCorpERD" -> Parquet2DF(PROD_CORP_LOCATION)
-//        )
-//    )("prodDIS")
+    val productDIS: DataFrame = PROD_DEV_CVS.toDIS(
+            Map(
+                "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION),
+                "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + companyId),
+                "productImsERD" -> Parquet2DF(PROD_IMS_LOCATION)
+            )
+        )("productDIS")
 
     val maxDIS: DataFrame = pfizerInfMaxCvs.toDIS(
         Map(
-            "maxERD" -> Parquet2DF(maxResultERDLocation),
-            "hospDIS" -> hospDIS
-//            , "prodDIS" -> prodDIS
+            "maxERD" -> maxResultERD,
+            "hospDIS" -> hospDIS,
+            "prodDIS" -> productDIS,
+            "sourceERD" -> CSV2DF(SOURCE_LOCATION)
         )
     )("maxDIS")
-            //因为现在maxDIS没有COMPANY_ID,和market,为测试用加上了
-            .withColumn("COMPANY_ID", lit("5ca069e2eeefcc012918ec73"))
-            .withColumn("MARKET", lit("CNS_R"))
+
 
     override def perform(pr: pActionArgs): pActionArgs = {
         phDebugLog("聚合开始:" + maxResultERDLocation)
         val marketDF = maxDIS
                 .select(col("COMPANY_ID"), col("province-name"), col("city-name")
-                    , col("MIN_PRODUCT"), col("YM").cast(IntegerType),  col("SALES")
+                    , col("MIN_PRODUCT"), col("YM"),  col("SALES")
                     , col("UNITS"), col("MARKET"))
                 .withColumnRenamed("province-name", "province")
                 .withColumnRenamed("city-name", "city")
@@ -77,8 +76,9 @@ case class maxResultAggregationJob(args: Map[String, String])(implicit any: Any 
 
         val productDF = maxDIS
                 .select(col("COMPANY_ID"), col("province-name"), col("city-name")
-                    , col("MIN_PRODUCT"), col("YM").cast(IntegerType), col("SALES")
-                    , col("UNITS"), col("MARKET"))
+                    , col("MIN_PRODUCT"), col("YM"), col("SALES")
+                    , col("UNITS"), col("MARKET"), col("PRODUCT_NAME")
+                    , col("MOLE_NAME"), col("CORP_NAME"), col("PH_CORP_NAME"))
                 .withColumnRenamed("province-name", "province")
                 .withColumnRenamed("city-name", "city")
                 .filter(col("COMPANY_ID") === companyId
@@ -91,16 +91,20 @@ case class maxResultAggregationJob(args: Map[String, String])(implicit any: Any 
                     expr("count(city) as CITY_COUNT"),
                     expr("sum(SALES) as SALES"),
                     expr("sum(UNITS) as UNITS"),
-                    expr("first(COMPANY_ID) as COMPANY_ID"))
+                    expr("first(COMPANY_ID) as COMPANY_ID"),
+                    expr("first(PRODUCT_NAME) as PRODUCT_NAME"),
+                    expr("first(MOLE_NAME) as MOLE_NAME"),
+                    expr("first(CORP_NAME) as CORP_NAME"),
+                    expr("first(PH_CORP_NAME) as PH_CORP_NAME"))
 
         phDebugLog("productDF完成")
 
         val dfMap = super.perform(MapArgs(Map("marketDF" -> DFArgs(marketDF), "productDF" -> DFArgs(productDF)))).asInstanceOf[MapArgs].get
 
-        val marketAggregationDF = dfMap("MarketAgg").get.asInstanceOf[DataFrame]
-        val productAggregationDF = dfMap("ProductAgg").get.asInstanceOf[DataFrame]
-        phDebugLog("MarketAggregation:" + marketAggregationDF.count())
-        phDebugLog("ProductAggregation:" + productAggregationDF.count())
+        val marketAggregationDF = Parquet2DF(dfMap("MarketAgg").get.asInstanceOf[String])
+        val productAggregationDF = Parquet2DF(dfMap("ProductAgg").get.asInstanceOf[String])
+//        phDebugLog("MarketAggregation:" + marketAggregationDF.count())
+//        phDebugLog("ProductAggregation:" + productAggregationDF.count())
 
         val MarketdimensionDF = productAggregationDF.filter(col("MIN_PRODUCT") === "top10")
                         .selectExpr("MARKET as top10MARKET", "YM as topYM", "SALES as CONCENTRATED_SALES"
@@ -110,8 +114,8 @@ case class maxResultAggregationJob(args: Map[String, String])(implicit any: Any 
                         .drop("top10MARKET", "topYM")
 
 
-        MarketdimensionDF.save2Mongo("Marketdimension")
-        productAggregationDF.save2Mongo("Productdimension")
+        MarketdimensionDF.save2Mongo("MarketAgg")
+        productAggregationDF.save2Mongo("ProductAgg")
 
 
         MapArgs(Map(

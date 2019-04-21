@@ -11,12 +11,14 @@ case class MaxResultConversion(company_id: String) extends PhDataConversion {
         val maxDF = args.getOrElse("maxDF", throw new Exception("not found maxDF"))
         //Date, Province, City, Panel_ID, Product, Factor, f_sales, f_units, MARKET
 
-        val sourceERD = maxDF
-            .select("MARKET")
-            .distinct()
-            .withColumn("COMPANY_ID", lit(company_id))
-            .generateId
-            .cache()
+//        val sourceERD = maxDF
+//            .select("MARKET")
+//            .distinct()
+//            .withColumn("COMPANY_ID", lit(company_id))
+//            .generateId
+//            .cache()
+
+        val sourceERD = args.getOrElse("sourceERD", throw new Exception("not found maxDF"))
 
         val maxERD = maxDF
             .distinct()
@@ -45,7 +47,7 @@ case class MaxResultConversion(company_id: String) extends PhDataConversion {
         val maxERD = args.getOrElse("maxERD", throw new Exception("not found maxERD"))
         val sourceERD = args.getOrElse("sourceERD", throw new Exception("not found sourceERD"))
         val hospDIS = args.getOrElse("hospDIS", throw new Exception("not found hospDIS"))
-//        val prodDIS = args.getOrElse("prodDIS", throw new Exception("not found prodDIS"))
+        val prodDIS = args.getOrElse("prodDIS", throw new Exception("not found prodDIS"))
 
         // TODO:匹配医院已完成对数，目前MaxResultHospDIS只使用了[PHAHospId / City / Province]，原因是HospDIS数据中有PHAHospId一对多的问题，
         // TODO:匹配产品已完成对数，但是max结果数据中的min_product是规范产品名等的数据，理论上能完全匹配到PH_PROD_DIS中，待测试。

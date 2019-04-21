@@ -2,30 +2,23 @@ package com.pharbers.run
 
 import com.pharbers.util.log.phLogTrait.phDebugLog
 
+import scala.io.Source
+
 object TransformMaxResult extends App {
 
     import com.pharbers.data.conversion._
     import com.pharbers.data.util.ParquetLocation._
     import com.pharbers.data.util._
 
-<<<<<<< HEAD
-//    val sparkDriver: phSparkDriver = getSparkDriver()
-=======
->>>>>>> jeorch-0326
     val pfizer_source_id = "5ca069e2eeefcc012918ec73"
     val pfizer_inf_csv = "/test/dcs/201801_201901_CNS_R_panel_result_test.csv"
-
+//
     val hospCvs = HospConversion()
     val PROD_DEV_CVS = ProductDevConversion()
     val pfizerInfMaxCvs = MaxResultConversion(pfizer_source_id)
 
-<<<<<<< HEAD
-//    val pfizerInfDF = CSV2DF(pfizer_inf_csv)
-    val pfizerInfDF = CSV2DF(pfizer_inf_csv)
-
-=======
     val pfizerInfDF = FILE2DF(pfizer_inf_csv, 31.toChar.toString)
->>>>>>> jeorch-0326
+
     println("pfizerInfDF.count = " + pfizerInfDF.count())
 
     val maxToErdResult = pfizerInfMaxCvs.toERD(
@@ -38,7 +31,7 @@ object TransformMaxResult extends App {
     val pfizerMinus = pfizerInfDF.count() - maxERD.count()
     phDebugLog("maxERD count = " + maxERD.count())
     assert(pfizerMinus == 0, "pfizer INF max result: 转换后的ERD比源数据减少`" + pfizerMinus + "`条记录")
-    maxERD.save2Parquet("/test/dcs/201801_201901_CNS_R_panel_result_test")
+    maxERD.save2Parquet("/repository/maxResult")
     val hospDIS = hospCvs.toDIS(
         Map(
             "hospBaseERD" -> Parquet2DF(HOSP_BASE_LOCATION),
