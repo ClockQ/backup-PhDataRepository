@@ -29,7 +29,6 @@ object TransformAtcTable extends App {
         atcTableDF.save2Mongo(PROD_ATCTABLE_LOCATION.split("/").last)
     }
 
-
     val atcTableMongoDF = Mongo2DF(PROD_ATCTABLE_LOCATION.split("/").last)
     atcTableMongoDF.show(true)
 

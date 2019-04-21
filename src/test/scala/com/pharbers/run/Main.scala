@@ -10,9 +10,10 @@ object Main extends App {
     val NOT_SAVE = Array("FALSE")
     val STATUS = NOT_SAVE
 
-    TransformAtcTable.main(STATUS)
     TransformOadAndAtc3Table.main(STATUS)
     TransformProductIms.main(STATUS)
+    TransformAtcTable.main(STATUS)
+    TransformMarket.main(STATUS)
     TransformProductEtc.main(STATUS)
-
+    TransformProductDev.main(STATUS)
 }

@@ -8,7 +8,7 @@ import com.pharbers.data.util.commonUDF
   * @author: clock
   * @date: 2019-03-28 16:40
   */
-case class ProductEtcConversion(company_id: String = "") extends PhDataConversion {
+case class ProductEtcConversion(old: String = "") extends PhDataConversion {
 
     import com.pharbers.data.util.DFUtil
     import org.apache.spark.sql.functions._
@@ -21,9 +21,9 @@ case class ProductEtcConversion(company_id: String = "") extends PhDataConversio
         val productMatchDF = args.getOrElse("productMatchDF", throw new Exception("not found productMatchDF"))
 
         val prodERD = sourceDataDF
-                .select("SOURCE", "PRODUCT_NAME", "MOLE_NAME", "PACK_DES", "PACK_NUMBER", "DOSAGE", "DELIVERY_WAY", "CORP_NAME")
+                .select("COMPANY_ID", "SOURCE", "PRODUCT_NAME", "MOLE_NAME", "PACK_DES", "PACK_NUMBER", "DOSAGE", "DELIVERY_WAY", "CORP_NAME")
                 // 1. SOURCE
-                .groupBy("PRODUCT_NAME", "MOLE_NAME", "PACK_DES", "PACK_NUMBER", "DOSAGE", "DELIVERY_WAY", "CORP_NAME")
+                .groupBy("COMPANY_ID", "PRODUCT_NAME", "MOLE_NAME", "PACK_DES", "PACK_NUMBER", "DOSAGE", "DELIVERY_WAY", "CORP_NAME")
                 .agg(sort_array(collect_list("SOURCE")) as "SOURCE")
                 .withColumn("SOURCE", commonUDF.mkStringByArray($"SOURCE", lit("+")))
                 // 2. MIN1
@@ -44,7 +44,6 @@ case class ProductEtcConversion(company_id: String = "") extends PhDataConversio
                         .drop("CORP_NAME")
                         .dropDuplicates("MIN2")
                     , col("MIN_PRODUCT_UNIT_STANDARD") === col("MIN2"), "left")
-                .withColumn("COMPANY_ID", lit(company_id))
                 .na.fill("")
                 .select(
                     $"PRODUCT_ID",
@@ -66,18 +65,27 @@ case class ProductEtcConversion(company_id: String = "") extends PhDataConversio
     }
 
     def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = {
-        val productEtcERD = args.getOrElse("productEtcERD", throw new Exception("not found prodERD"))
-        val productDevERD = args.getOrElse("productDevERD", Seq.empty[String].toDF("_id"))
-        val productImsERD = args.getOrElse("productImsERD", Seq.empty[(String, String)].toDF("_id", "IMS_PACK_ID"))
+        val productEtcERD = args.getOrElse("productEtcERD", throw new Exception("not found productEtcERD"))
+        val marketERD = args.getOrElse("marketERD", Seq.empty[(String, String, String, String)].toDF("_id", "PRODUCT_ID", "COMPANY_ID", "MARKET"))
+        val atcERD = args.getOrElse("atcERD", Seq.empty[(String, String, String)].toDF("_id", "MOLE_NAME", "ATC_CODE"))
 
         val productEtcDIS = productEtcERD
                 .join(
-                    productDevERD.withColumnRenamed("_id", "main-id"),
-                    col("PRODUCT_ID") === col("main-id"),
+                    marketERD,
+                    productEtcERD("PRODUCT_ID") === marketERD("PRODUCT_ID") &&
+                    productEtcERD("COMPANY_ID") === marketERD("COMPANY_ID"),
                     "left"
-                ).drop(col("main-id"))
-                .join(productImsERD, col("PACK_ID") === col("IMS_PACK_ID"), "left")
-                .drop(productImsERD("_id"))
+                )
+                .drop(marketERD("_id"))
+                .drop(marketERD("PRODUCT_ID"))
+                .drop(marketERD("COMPANY_ID"))
+                .join(
+                    atcERD.dropDuplicates("MOLE_NAME"),
+                    col("ETC_MOLE_NAME") === atcERD("MOLE_NAME"),
+                    "left"
+                )
+                .drop(atcERD("_id"))
+                .drop(atcERD("MOLE_NAME"))
 
         Map(
             "productEtcDIS" -> productEtcDIS

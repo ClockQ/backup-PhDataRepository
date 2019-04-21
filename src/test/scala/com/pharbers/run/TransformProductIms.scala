@@ -35,6 +35,7 @@ object TransformProductIms extends App {
         , "molDF" -> molDF
     ))("productImsERD")
     productImsERD.show(false)
+
     if(args.isEmpty || args(0) == "TRUE") {
         val prodBaseDFCount = prodBaseDF.count()
         val productImsERDCount = productImsERD.dropDuplicates("IMS_PACK_ID").count()
@@ -51,5 +52,5 @@ object TransformProductIms extends App {
         , "oadERD" -> Parquet2DF(PROD_OADTABLE_LOCATION)
     ))("productImsDIS")
     productImsDIS.show(false)
-    productImsDIS.filter(col("OAD_TYPE").isNotNull).show(false)
+    productImsDIS.filter(col("OAD_TYPE").isNull).show(false)
 }

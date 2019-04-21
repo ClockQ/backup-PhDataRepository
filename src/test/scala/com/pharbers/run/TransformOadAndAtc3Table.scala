@@ -18,7 +18,6 @@ object TransformOadAndAtc3Table extends App {
         oadERD.save2Mongo(PROD_OADTABLE_LOCATION.split("/").last)
     }
 
-
     val atc3ERD = result("atc3ERD")
     atc3ERD.show(false)
     if (args.isEmpty || args(0) == "TRUE") {

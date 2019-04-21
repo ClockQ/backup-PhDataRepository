@@ -6,6 +6,10 @@ package com.pharbers.data.util
   * @date: 2019-03-28 17:29
   */
 object ParquetLocation {
+    // COMPANY_ID
+    val NHWA_COMPANY_ID = "5ca069bceeefcc012918ec72"
+    val PFIZER_COMPANY_ID = "5ca069e2eeefcc012918ec73"
+
     // hospital
     val HOSP_BASE_LOCATION = "/repository/hosp"
     val HOSP_BED_LOCATION = "/test/hosp/bed"

@@ -19,7 +19,7 @@ object TransformCHC extends App {
     val chcDFCount = chcDF.count()
     val cityDF = Parquet2DF(HOSP_ADDRESS_CITY_LOCATION)
 
-    val pdc = ProductDevConversion()
+    val pdc = ProductDevConversion()(ProductImsConversion(), ProductEtcConversion())
     val chcCvs = CHCConversion()
 
     val productDIS = pdc.toDIS(Map(
