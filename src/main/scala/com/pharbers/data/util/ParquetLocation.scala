@@ -46,4 +46,11 @@ object ParquetLocation {
     // CHC
     val CHC_LOCATION = "/repository/chc"
     val CHC_DATE_LOCATION = "/repository/chc_date"
+
+    //source 可能又问题,先用着
+    val SOURCE_LOCATION = "/test/dcs/source.csv"
+
+    //agg
+    val MAX_RESULT_MARKET_AGG_LOCATION = "/repository/agg/maxResult/market"
+    val MAX_RESULT_ADDRESS_AGG_LOCATION = "/repository/agg/maxResult/address"
 }

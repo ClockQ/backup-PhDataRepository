@@ -11,12 +11,14 @@ case class MaxResultConversion(company_id: String) extends PhDataConversion {
         val maxDF = args.getOrElse("maxDF", throw new Exception("not found maxDF"))
         //Date, Province, City, Panel_ID, Product, Factor, f_sales, f_units, MARKET
 
-        val sourceERD = maxDF
-            .select("MARKET")
-            .distinct()
-            .withColumn("COMPANY_ID", lit(company_id))
-            .generateId
-            .cache()
+//        val sourceERD = maxDF
+//            .select("MARKET")
+//            .distinct()
+//            .withColumn("COMPANY_ID", lit(company_id))
+//            .generateId
+//            .cache()
+
+        val sourceERD = args.getOrElse("sourceERD", throw new Exception("not found maxDF"))
 
         val maxERD = maxDF
             .distinct()
