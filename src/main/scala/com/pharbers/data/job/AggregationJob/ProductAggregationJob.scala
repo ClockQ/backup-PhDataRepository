@@ -69,8 +69,8 @@ case class ProductAggregationJob(args: Map[String, String]) extends sequenceJobW
 
         val uuid = UUID.randomUUID().toString
         val productAgg = productTrendDF unionByName productCompositionDF unionByName marketCompositionDF
-        productAgg.save2Parquet(MAX_RESULT_PRODUCT_AGG_LOCATION + "/" + uuid)
+        productAgg.save2Parquet(MAX_RESULT_ADDRESS_AGG_LOCATION + "/" + uuid)
         phDebugLog("productAggregationDf完成")
-        StringArgs(MAX_RESULT_PRODUCT_AGG_LOCATION + "/" + uuid)
+        StringArgs(MAX_RESULT_ADDRESS_AGG_LOCATION + "/" + uuid)
     }
 }

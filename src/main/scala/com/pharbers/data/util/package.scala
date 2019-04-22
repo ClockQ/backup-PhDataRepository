@@ -90,6 +90,12 @@ package object util {
         def alignAt(alignDF: DataFrame): DataFrame = {
             alignDF.columns.foldRight(df)((a, b) => b.trim(a, null))
         }
+
+        def addMonth: DataFrame = {
+            if (df.columns.contains("MONTH")) df
+            else
+                df.withColumn("MONTH", commonUDF.Ym2MonthUdf(col("YM")))
+        }
     }
 
     val FILE2DF: (String, String) => DataFrame = sparkDriver.setUtil(csv2RDD()).csv2RDD(_, _, header = true).na.fill("")

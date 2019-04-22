@@ -22,4 +22,8 @@ object commonUDF {
     }
 
     val generateIdUdf: UserDefinedFunction = udf { () => ObjectId.get().toString }
+
+    val Ym2MonthUdf: UserDefinedFunction = udf { Ym: String =>
+        Ym.toInt % 100
+    }
 }
