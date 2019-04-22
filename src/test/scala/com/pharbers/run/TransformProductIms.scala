@@ -36,12 +36,12 @@ object TransformProductIms extends App {
     ))("productImsERD")
     productImsERD.show(false)
 
-    if(args.isEmpty || args(0) == "TRUE") {
-        val prodBaseDFCount = prodBaseDF.count()
-        val productImsERDCount = productImsERD.dropDuplicates("IMS_PACK_ID").count()
-        val prodImsMinus = prodBaseDFCount - productImsERDCount
-        assert(prodImsMinus == 0, "prodIms: 转换后的ERD比源数据减少`" + prodImsMinus + "`条记录")
+    val prodBaseDFCount = prodBaseDF.count()
+    val productImsERDCount = productImsERD.dropDuplicates("IMS_PACK_ID").count()
+    val prodImsMinus = prodBaseDFCount - productImsERDCount
+    assert(prodImsMinus == 0, "prodIms: 转换后的ERD比源数据减少`" + prodImsMinus + "`条记录")
 
+    if(args.isEmpty || args(0) == "TRUE") {
         productImsERD.save2Mongo(PROD_IMS_LOCATION.split("/").last)
         productImsERD.save2Parquet(PROD_IMS_LOCATION)
     }

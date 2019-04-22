@@ -16,22 +16,22 @@ object TransformProductDev extends App {
 
     val pdc = ProductDevConversion()(ProductImsConversion(), ProductEtcConversion())
 
-//    val nhwaMatchDF = CSV2DF(nhwaProductMatchFile)
-//    val pfizerMatchDF = CSV2DF(pfizerProductMatchFile)
-//    val chcDF = CSV2DF(chcFile)
-//
-//    val productDevERD = pdc.toERD(Map(
-//        "nhwaMatchDF" -> pdc.matchTable2Product(nhwaMatchDF.withColumnRenamed("PACK_COUNT", "PACK_NUMBER"))
-//        , "pfizerMatchDF" -> pdc.matchTable2Product(pfizerMatchDF)
-//        , "chcDF" -> pdc.chc2Product(chcDF)
-//    ))("productDevERD")
-//    productDevERD.show(false)
-//    println(productDevERD.count())
-//
-//    if (args.isEmpty || args(0) == "TRUE") {
-//        productDevERD.save2Mongo(PROD_DEV_LOCATION.split("/").last)
-//        productDevERD.save2Parquet(PROD_DEV_LOCATION)
-//    }
+    val nhwaMatchDF = CSV2DF(nhwaProductMatchFile)
+    val pfizerMatchDF = CSV2DF(pfizerProductMatchFile)
+    val chcDF = CSV2DF(chcFile)
+
+    val productDevERD = pdc.toERD(Map(
+        "nhwaMatchDF" -> pdc.matchTable2Product(nhwaMatchDF.withColumnRenamed("PACK_COUNT", "PACK_NUMBER"))
+        , "pfizerMatchDF" -> pdc.matchTable2Product(pfizerMatchDF)
+        , "chcDF" -> pdc.chc2Product(chcDF)
+    ))("productDevERD")
+    productDevERD.show(false)
+    println(productDevERD.count())
+
+    if (args.isEmpty || args(0) == "TRUE") {
+        productDevERD.save2Mongo(PROD_DEV_LOCATION.split("/").last)
+        productDevERD.save2Parquet(PROD_DEV_LOCATION)
+    }
 
     val productImsERDArgs = Parquet2DF(PROD_IMS_LOCATION) // 112848
 //    println(productImsERDArgs.count())

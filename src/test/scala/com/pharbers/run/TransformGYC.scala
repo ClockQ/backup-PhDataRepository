@@ -12,7 +12,7 @@ object TransformGYC extends App {
     val pfizer_gyc_csv = "/test/CPA&GYCX/Pfizer_201804_Gycx_20181127.csv"
 
     val hospCvs = HospConversion()
-    val pfizerProdCvs = ProductEtcConversion(pfizer_source_id)
+    val pfizerProdCvs = ProductEtcConversion()
     val pfizerGycCvs = GYCConversion(pfizer_source_id)(pfizerProdCvs)
 
     val pfizerGycDF = CSV2DF(pfizer_gyc_csv)

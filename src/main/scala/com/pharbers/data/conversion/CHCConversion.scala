@@ -10,17 +10,12 @@ case class CHCConversion() extends PhDataConversion {
 
     override def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val chcDF = args.getOrElse("chcDF", throw new Exception("not found chcDF"))
+        val dateDF =  args.getOrElse("dateDF", throw new Exception("not found dateDF"))
         val prodDF = args.getOrElse("prodDF", throw new Exception("not found prodDF"))
                 .dropDuplicates("PACK_ID")
         val cityDF = args.getOrElse("cityDF", throw new Exception("not found cityDF"))
                 .select($"_id".as("CITY_ID"), regexp_replace($"name", "市", "").as("NAME"))
                 .dropDuplicates("NAME")
-
-        val dateDF = chcDF.select($"Date".as("TIME"))
-                .distinct()
-                .withColumn("PERIOD", lit("quarter"))
-                .generateId
-                .cache()
 
         val chcERD = {
             chcDF
@@ -42,18 +37,15 @@ case class CHCConversion() extends PhDataConversion {
         }
 
         Map(
-            "chcERD" -> chcERD,
-            "dateERD" -> dateDF
+            "chcERD" -> chcERD
         )
     }
 
     override def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val chcERD = args.getOrElse("chcERD", throw new Exception("not found chcERD"))
-        val dateERD = args.getOrElse("dateERD", throw new Exception("not found dateERD"))
-        val cityERD = args.getOrElse("cityERD", throw new Exception("not found cityERD"))
-        val oadERD = args.getOrElse("oadERD", throw new Exception("not found oadERD"))
-        val atc3ERD = args.getOrElse("atc3ERD", throw new Exception("not found atc3ERD"))
         val productDIS = args.getOrElse("productDIS", throw new Exception("not found productDIS"))
+        val cityERD = args.getOrElse("cityERD", throw new Exception("not found cityERD"))
+        val dateERD = args.getOrElse("dateERD", throw new Exception("not found dateERD"))
 
         val chcDIS = {
             chcERD
@@ -72,16 +64,6 @@ case class CHCConversion() extends PhDataConversion {
                         chcERD("CITY_ID") === cityERD("_id"),
                         "left"
                     ).drop(cityERD("_id"))
-                    .join(
-                        atc3ERD,
-                        productDIS("PACK_ID") === atc3ERD("PACK_ID"),
-                        "left"
-                    ).drop(atc3ERD("PACK_ID")).drop(atc3ERD("_id"))
-                    .join(
-                        oadERD,
-                        atc3ERD("ATC3") === oadERD("ATC3"),
-                        "left"
-                    ).drop(oadERD("ATC3")).drop(oadERD("_id"))
         }
 
         Map("chcDIS" -> chcDIS)

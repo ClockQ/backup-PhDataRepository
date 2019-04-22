@@ -67,7 +67,7 @@ object TransformProductEtc extends App {
 
         val pfizerCpaDF = CSV2DF(pfizer_cpa_csv).trim("COMPANY_ID", lit(pfizer_company_id)).trim("SOURCE", "CPA")
         val pfizerGycDF = CSV2DF(pfizer_gycx_csv).trim("COMPANY_ID", lit(pfizer_company_id)).trim("SOURCE", "GYCX")
-        val pfizerSource = pfizerCpaDF union pfizerGycDF
+        val pfizerSource = pfizerCpaDF unionByName pfizerGycDF
         val pfizerProcMatch = CSV2DF(pfizer_prod_match)
 
         val pfizerProductEtcERD = prodCvs.toERD(

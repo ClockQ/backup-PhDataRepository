@@ -38,7 +38,7 @@ case class GYC2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
     val pha_file_temp: String = args.getOrElse("pha_file_temp", "")
 
     val hospCvs: HospConversion = HospConversion()
-    val prodCvs: ProductEtcConversion = ProductEtcConversion(company_id)
+    val prodCvs: ProductEtcConversion = ProductEtcConversion()
     val gycCvs: GYCConversion = GYCConversion(company_id)(prodCvs)
 
     override def perform(pr: pActionArgs = MapArgs(Map())): pActionArgs = {

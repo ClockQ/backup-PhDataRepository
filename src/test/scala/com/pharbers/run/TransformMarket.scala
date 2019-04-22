@@ -86,7 +86,7 @@ object TransformMarket extends App {
                     .select(prodDevERD("_id").as("PRODUCT_ID"), maxDF("MARKET"))
                     .distinct()
         }
-                .reduce(_ union _)
+                .reduce(_ unionByName _)
                 .groupBy("PRODUCT_ID")
                 .agg(sort_array(collect_list("MARKET")) as "MARKET")
                 .withColumn("MARKET", commonUDF.mkStringByArray(col("MARKET"), lit("+")))

@@ -8,7 +8,7 @@ import com.pharbers.data.util.commonUDF
   * @author: clock
   * @date: 2019-03-28 16:40
   */
-case class ProductEtcConversion(old: String = "") extends PhDataConversion {
+case class ProductEtcConversion() extends PhDataConversion {
 
     import com.pharbers.data.util.DFUtil
     import org.apache.spark.sql.functions._
