@@ -25,7 +25,7 @@ object TransformProductDev extends App {
         , "pfizerMatchDF" -> pdc.matchTable2Product(pfizerMatchDF)
         , "chcDF" -> pdc.chc2Product(chcDF)
     ))("productDevERD")
-    productDevERD.show(false)
+//    productDevERD.show(false)
     println(productDevERD.count())
 
     if (args.isEmpty || args(0) == "TRUE") {

@@ -31,7 +31,7 @@ object ParquetLocation {
     val HOSP_PHA_LOCATION = "/test/hosp/pha"
 
     // Product Dev
-    val PROD_DEV_LOCATION = "/repository/prod_dev"
+    val PROD_DEV_LOCATION = "/repository/prod_dev2"
     // Product IMS
     val PROD_IMS_LOCATION = "/repository/prod_ims"
     val PROD_ATC3TABLE_LOCATION = "/repository/atc3_table"
@@ -44,7 +44,7 @@ object ParquetLocation {
     val PROD_MARKET_LOCATION = "/repository/market"
 
     // CHC
-    val CHC_LOCATION = "/repository/chc"
+    val CHC_LOCATION = "/repository/chc2"
     val CHC_DATE_LOCATION = "/repository/chc_date"
 
     //source 可能又问题,先用着

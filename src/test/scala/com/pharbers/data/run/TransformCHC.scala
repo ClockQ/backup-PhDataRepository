@@ -12,6 +12,7 @@ object TransformCHC extends App {
     import com.pharbers.data.util._
     import com.pharbers.data.conversion._
     import com.pharbers.data.util.ParquetLocation._
+    import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     val chcFile = "/test/OAD CHC data for 5 cities to 2018Q3 v3.csv"
 
@@ -37,6 +38,7 @@ object TransformCHC extends App {
     ))("chcERD")
     val chcERDCount = chcERD.count() // 4053
 //    chcERD.show(false)
+    chcERD.filter($"PRODUCT_ID".isNull).show(false)
     phDebugLog("chcERD", chcDFCount, chcERDCount)
 
     val chcMinus = chcDFCount - chcERDCount
@@ -58,4 +60,5 @@ object TransformCHC extends App {
 //    chcDIS.show(false)
     chcCvs.toCHCStruct(chcDIS).show(false)
     phDebugLog("chcDIS", chcDF.count(), chcDIS.count())
+    chcDIS.filter($"OAD_TYPE".isNull).show(false)
 }

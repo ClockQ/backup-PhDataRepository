@@ -44,7 +44,7 @@ case class ProductDevConversion()(imsCvs: ProductImsConversion, etcCvs: ProductE
     override def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val productDevERD = args.values.reduce(_ unionByName _)
                 .dropDuplicates("PRODUCT_NAME", "MOLE_NAME", "PACKAGE_DES",
-                    "PACKAGE_NUMBER", "CORP_NAME", "DELIVERY_WAY", "DOSAGE_NAME")
+                    "PACKAGE_NUMBER", "CORP_NAME", "DELIVERY_WAY", "DOSAGE_NAME", "PACK_ID")
                 .generateId
         Map(
             "productDevERD" -> productDevERD
