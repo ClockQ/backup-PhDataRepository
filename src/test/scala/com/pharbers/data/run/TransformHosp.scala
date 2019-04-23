@@ -1,4 +1,4 @@
-package com.pharbers.run
+package com.pharbers.data.run
 
 import com.pharbers.common.phFactory
 import com.pharbers.phDataConversion.{phDataHandFunc, phHospData, phRegionData}

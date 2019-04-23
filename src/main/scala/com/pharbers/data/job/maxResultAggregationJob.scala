@@ -1,6 +1,6 @@
 package com.pharbers.data.job
 
-import com.pharbers.data.conversion.{HospConversion, MaxResultConversion, ProductDevConversion}
+import com.pharbers.data.conversion._
 import com.pharbers.data.job.AggregationJob.{MarketAggregationJob, ProductAggregationJob}
 import com.pharbers.data.util.ParquetLocation._
 import com.pharbers.data.util._
@@ -23,7 +23,7 @@ case class maxResultAggregationJob(args: Map[String, String])(implicit any: Any 
     val hospCvs = HospConversion()
 //    val prodCvs = ProdConversion()
     val pfizerInfMaxCvs = MaxResultConversion(companyId)
-    val PROD_DEV_CVS = ProductDevConversion()
+    val PROD_DEV_CVS = ProductDevConversion()(ProductImsConversion(), ProductEtcConversion())
 
     val maxResultERD: DataFrame = Parquet2DF(maxResultERDLocation)
 

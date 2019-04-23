@@ -1,8 +1,9 @@
-package com.pharbers.agg
+package com.pharbers.data.agg
 
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 import com.pharbers.data.util.ParquetLocation._
+import com.pharbers.util.log.phLogTrait.phDebugLog
 
 /**
   * @description:
@@ -10,18 +11,51 @@ import com.pharbers.data.util.ParquetLocation._
   * @date: 2019-04-19 13:07
   */
 object Main extends App {
+//    val aggFactory = new Agg(NHWA_COMPANY_ID)
+//    aggFactory.setSource("/test/CPA&GYCX/Nhwa_201804_CPA_20181227.csv")
     val aggFactory = new Agg(PFIZER_COMPANY_ID)
-//    aggFactory.setSource("/test/CPA&GYCX/Pfizer_201804_CPA_20181227.csv", "/test/CPA&GYCX/Pfizer_201804_Gycx_20181127.csv")
-    println("market count = " + aggFactory.getMarket.length)
-    println("mole count = " + aggFactory.getMole.length)
-    println("product name count = " + aggFactory.getProductName.length)
-    println("provinces count = " + aggFactory.getProvinces.length)
-    println("city count = " + aggFactory.getCity.length)
-    println("hospital count = " + aggFactory.getHosp.length)
-    aggFactory.getCountByTime.foreach(println)
-    aggFactory.getCountByProvince.foreach(println)
-    aggFactory.getHospType.foreach(println)
-//    aggFactory.getSampleHosp
+    aggFactory.setSource("/test/CPA&GYCX/Pfizer_201804_CPA_20181227.csv", "/test/CPA&GYCX/Pfizer_201804_Gycx_20181127.csv")
+
+    phDebugLog("Market")
+    val market = aggFactory.getMarket
+    println("market count = " + market.length)
+//    market.foreach(println)
+
+    phDebugLog("Mole")
+    val mole = aggFactory.getMole
+    println("mole count = " + mole.length)
+//    mole.foreach(println)
+
+    phDebugLog("Product Name")
+    val product = aggFactory.getProductName
+    println("product count = " + product.length)
+//    product.foreach(println)
+
+    phDebugLog("Provinces")
+    val provinces = aggFactory.getProvinces
+    println("provinces count = " + provinces.length)
+
+    phDebugLog("City")
+    val city = aggFactory.getCity
+    println("city count = " + city.length)
+
+    phDebugLog("Hospital")
+    val hospital = aggFactory.getHosp
+    println("hospital count = " + hospital.length)
+//    hospital.foreach(println)
+
+    phDebugLog("countByTime")
+    val countByTime = aggFactory.getCountByTime
+    countByTime.foreach(println)
+
+    phDebugLog("countByProvince")
+    val countByProvince = aggFactory.getCountByProvince
+    countByProvince.foreach(println)
+
+    phDebugLog("countByHospType")
+    val countByHospType = aggFactory.getCountByHospType
+    countByHospType.foreach(println)
+
 }
 
 class Agg(company_id: String) {
@@ -61,11 +95,15 @@ class Agg(company_id: String) {
 
     lazy val phaDF = Parquet2DF(HOSP_PHA_LOCATION)
 
-    var sourceDF: DataFrame = Parquet2DF("/test/qi/sourceDF")//Seq.empty[String].toDF("_id")
+    var sourceDF: DataFrame = Seq.empty[String].toDF("_id")
 
-    def getMarket: Array[String] = marketDF.select("MARKET").distinct().collect().map(_.getAs[String](0))
+    def getMarket: List[(String, String)] = marketDF.groupBy("MARKET").count().collect()
+            .map(x => x.getAs[String](0) -> x.getAs[String](1))
+            .toList
 
-    def getMole: Array[String] = prodDIS.select("ETC_MOLE_NAME").distinct().collect().map(_.getAs[String](0))
+    def getMole: List[(String, String)] = prodDIS.groupBy("ETC_MOLE_NAME").count().collect()
+            .map(x => x.getAs[String](0) -> x.getAs[String](1))
+            .toList
 
     def getProductName: Array[String] = prodDIS.select("ETC_PRODUCT_NAME").distinct().collect().map(_.getAs[String](0))
 
@@ -122,7 +160,7 @@ class Agg(company_id: String) {
 
     def getCity: Array[String] = sourceHosp.select("city-name").distinct().collect().map(_.getAs[String](0))
 
-    def getHosp: Array[String] = sourceHosp.select("hosp-name").distinct().collect().map(_.getAs[String](0))
+    def getHosp: Array[String] = sourceHosp.select("HOSP_ID").distinct().collect().map(_.getAs[String](0))
 
     def getCountByTime: List[(String, String)] = sourceDF.groupBy("YM").count().sort(col("YM").asc).collect()
             .map(x => x.getAs[String](0) -> x.getAs[String](1))
@@ -132,8 +170,8 @@ class Agg(company_id: String) {
             .map(x => x.getAs[String](0) -> x.getAs[Long](1))
             .toList
 
-    def getHospType: List[(String, Long, Double)] = {
-        val hospDF = sourceHosp.select("hosp-name", "type")
+    def getCountByHospType: List[(String, Long, Double)] = {
+        val hospDF = sourceHosp.select("HOSP_ID", "type").distinct()
         val hospCount = hospDF.count()
         val hospTypeCount = hospDF.groupBy("type").count().sort(col("count").desc).collect()
                 .map(x => (

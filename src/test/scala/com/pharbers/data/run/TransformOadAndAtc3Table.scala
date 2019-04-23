@@ -1,4 +1,4 @@
-package com.pharbers.run
+package com.pharbers.data.run
 
 object TransformOadAndAtc3Table extends App {
 

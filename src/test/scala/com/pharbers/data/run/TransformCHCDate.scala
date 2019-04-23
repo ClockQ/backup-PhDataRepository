@@ -1,4 +1,4 @@
-package com.pharbers.run
+package com.pharbers.data.run
 
 /**
   * @description:

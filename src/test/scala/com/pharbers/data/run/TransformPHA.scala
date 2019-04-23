@@ -1,4 +1,4 @@
-package com.pharbers.run
+package com.pharbers.data.run
 
 import com.pharbers.data.util.{CSV2DF, SaveParquet}
 import com.pharbers.data.util.ParquetLocation.HOSP_PHA_LOCATION

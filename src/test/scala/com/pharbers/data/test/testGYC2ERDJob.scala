@@ -1,4 +1,4 @@
-package com.pharbers.test
+package com.pharbers.data.test
 
 import com.pharbers.data.job.GYC2ERDJob
 
