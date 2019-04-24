@@ -1,8 +1,7 @@
-package com.pharbers.phDataConversion
+package com.pharbers.data.conversion.hosp
 
-import com.pharbers.common.phFactory
 import com.pharbers.spark.phSparkDriver
-import org.apache.spark.sql.{DataFrame, SaveMode}
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.{col, lit}
 
 class phSpecialtyData {

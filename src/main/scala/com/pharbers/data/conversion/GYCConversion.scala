@@ -4,7 +4,7 @@ import org.apache.spark.sql.DataFrame
 import com.pharbers.util.log.phLogTrait.phDebugLog
 import com.pharbers.data.util.commonUDF.generateIdUdf
 
-case class GYCConversion(company_id: String)(prodCvs: ProductEtcConversion) extends PhDataConversion {
+case class GYCConversion(company_id: String)(prodCvs: ProductEtcConversion) extends PhDataConversion2 {
 
     import com.pharbers.data.util._
     import org.apache.spark.sql.functions._

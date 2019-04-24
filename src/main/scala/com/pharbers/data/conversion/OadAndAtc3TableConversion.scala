@@ -1,6 +1,6 @@
 package com.pharbers.data.conversion
 
-import org.apache.spark.sql.DataFrame
+import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
 
 /**
   * @description:
@@ -9,24 +9,23 @@ import org.apache.spark.sql.DataFrame
   */
 case class OadAndAtc3TableConversion() extends PhDataConversion {
 
-    import com.pharbers.data.util.DFUtil
+    import com.pharbers.data.util._
     import com.pharbers.data.util.sparkDriver.ss.implicits._
 
-    def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {
-        val chcDF = args.getOrElse("chcDF", throw new Exception("not found chcDF"))
+    override def toERD(args: MapArgs): MapArgs = {
+        val chcDF = args.get.getOrElse("chcDF", throw new Exception("not found chcDF")).getBy[DFArgs]
 
-        val atc3AndOadTable = chcDF
-                .select($"Pack_ID".as("PACK_ID"), $"ATC3", $"OAD类别".as("OAD_TYPE"))
+        val atc3AndOadTable = chcDF.select($"Pack_ID".as("PACK_ID"), $"ATC3", $"OAD类别".as("OAD_TYPE"))
 
         val atc3ERD = atc3AndOadTable.select("PACK_ID", "ATC3").distinct().generateId
 
         val oadERD = atc3AndOadTable.select("ATC3", "OAD_TYPE").distinct().generateId
 
-        Map(
-            "atc3ERD" -> atc3ERD
-            , "oadERD" -> oadERD
-        )
+        MapArgs(Map(
+            "atc3ERD" -> DFArgs(atc3ERD)
+            , "oadERD" -> DFArgs(oadERD)
+        ))
     }
 
-    def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = ???
+    override def toDIS(args: MapArgs): MapArgs = ???
 }

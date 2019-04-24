@@ -1,4 +1,4 @@
-package com.pharbers.model
+package com.pharbers.data.conversion.hosp.model
 
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types.{StringType, StructField, StructType}

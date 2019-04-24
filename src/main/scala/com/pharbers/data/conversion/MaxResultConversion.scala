@@ -2,7 +2,7 @@ package com.pharbers.data.conversion
 
 import org.apache.spark.sql.DataFrame
 
-case class MaxResultConversion(company_id: String) extends PhDataConversion {
+case class MaxResultConversion(company_id: String) extends PhDataConversion2 {
 
     import com.pharbers.data.util._
     import org.apache.spark.sql.functions._

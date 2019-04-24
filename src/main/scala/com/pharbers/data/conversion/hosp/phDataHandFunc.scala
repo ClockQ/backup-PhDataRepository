@@ -1,11 +1,18 @@
-package com.pharbers.phDataConversion
+package com.pharbers.data.conversion.hosp
 
-import com.pharbers.model.hosp.hospData
-import org.apache.spark.sql.{DataFrame, SaveMode}
-import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.udf
 import org.bson.types.ObjectId
+import java.text.SimpleDateFormat
 
+import com.pharbers.data.conversion.hosp.model.hosp.hospData
+import org.apache.spark.sql.{DataFrame, SaveMode}
+import org.apache.spark.sql.functions.udf
+import org.apache.spark.sql.expressions.UserDefinedFunction
+
+/**
+  * @description:
+  * @author: clock
+  * @date: 2019-04-24 10:23
+  */
 object phDataHandFunc {
 	val setIdCol: UserDefinedFunction = udf {
 		() => ObjectId.get().toString

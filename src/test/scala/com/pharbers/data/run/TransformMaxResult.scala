@@ -1,6 +1,7 @@
 package com.pharbers.run
 
 import com.pharbers.util.log.phLogTrait.phDebugLog
+import org.apache.spark.sql.DataFrame
 
 import scala.io.Source
 
@@ -14,7 +15,7 @@ object TransformMaxResult extends App {
     val pfizer_inf_csv = "/test/dcs/201801_201901_CNS_R_panel_result_test.csv"
 //
     val hospCvs = HospConversion()
-    val PROD_DEV_CVS = ProductDevConversion()(ProductImsConversion(), ProductEtcConversion())
+    val PROD_DEV_CVS = ProductDevConversion()//(ProductImsConversion(), ProductEtcConversion())
     val pfizerInfMaxCvs = MaxResultConversion(pfizer_source_id)
 
     val pfizerInfDF = FILE2DF(pfizer_inf_csv, 31.toChar.toString)
@@ -41,13 +42,14 @@ object TransformMaxResult extends App {
             "hospProvinceERD" -> Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION)
         )
     )("hospDIS")
-    val PROD_DEV_DIS = PROD_DEV_CVS.toDIS(
-        Map(
-            "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION),
-            "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_source_id),
-            "productImsERD" -> Parquet2DF(PROD_IMS_LOCATION)
-        )
-    )("productDIS")
+    val PROD_DEV_DIS: DataFrame = ???
+//    PROD_DEV_CVS.toDIS(
+//        Map(
+//            "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION),
+//            "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_source_id),
+//            "productImsERD" -> Parquet2DF(PROD_IMS_LOCATION)
+//        )
+//    )("productDIS")
 
     val maxDIS = pfizerInfMaxCvs.toDIS(
         Map(

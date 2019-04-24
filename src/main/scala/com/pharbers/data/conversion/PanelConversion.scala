@@ -7,7 +7,7 @@ import com.pharbers.util.log.phLogTrait.phDebugLog
 
 
 case class PanelConversion(company_id: String)
-        extends PhDataConversion {
+        extends PhDataConversion2 {
 
 
     override def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {

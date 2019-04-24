@@ -2,6 +2,7 @@ package com.pharbers.data.conversion
 
 import org.apache.spark.sql.DataFrame
 import com.pharbers.data.util.commonUDF
+import com.pharbers.pactions.actionbase.MapArgs
 
 /**
   * @description: product of pharbers
@@ -91,4 +92,8 @@ case class ProductEtcConversion() extends PhDataConversion {
             "productEtcDIS" -> productEtcDIS
         )
     }
+
+    override def toERD(args: MapArgs): MapArgs = ???
+
+    override def toDIS(args: MapArgs): MapArgs = ???
 }

@@ -11,6 +11,8 @@ import org.apache.spark.sql.expressions.UserDefinedFunction
   * @date: 2019-03-31 21:24
   */
 object commonUDF {
+    val generateIdUdf: UserDefinedFunction = udf { () => ObjectId.get().toString }
+
     val str2TimeUdf: UserDefinedFunction = udf { str: String =>
         val dateFormat = new SimpleDateFormat("yyyyMM")
         dateFormat.parse(str).getTime
@@ -21,13 +23,9 @@ object commonUDF {
         dateFormat.format(time)
     }
 
-    val generateIdUdf: UserDefinedFunction = udf { () => ObjectId.get().toString }
+    val ym2MonthUdf: UserDefinedFunction = udf { ym: String => ym.toInt % 100 }
 
     val mkStringByArray: UserDefinedFunction = udf { (array: Seq[String], seg: String) =>
         array.distinct.mkString(seg)
-    }
-
-    val Ym2MonthUdf: UserDefinedFunction = udf { Ym: String =>
-        Ym.toInt % 100
     }
 }

@@ -7,7 +7,7 @@ import org.apache.spark.sql.DataFrame
   * @author: clock
   * @date: 2019-03-28 16:40
   */
-case class HospConversion() extends PhDataConversion {
+case class HospConversion() extends PhDataConversion2 {
 
     import com.pharbers.data.util.sparkDriver.ss.implicits._
     import org.apache.spark.sql.functions._

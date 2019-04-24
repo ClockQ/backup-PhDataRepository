@@ -1,10 +1,10 @@
-package com.pharbers.phDataConversion
+package com.pharbers.data.conversion.hosp
 
+import com.pharbers.data.conversion.hosp.phFactory
 import com.pharbers.spark.phSparkDriver
-import com.pharbers.model.hosp._
+import com.pharbers.data.conversion.hosp.model.hosp._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
-import com.pharbers.common.phFactory
 
 
 class phHospData() extends Serializable {

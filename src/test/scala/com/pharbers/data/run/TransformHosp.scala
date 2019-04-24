@@ -1,7 +1,6 @@
 package com.pharbers.data.run
 
-import com.pharbers.common.phFactory
-import com.pharbers.phDataConversion.{phDataHandFunc, phHospData, phRegionData}
+import com.pharbers.data.conversion.hosp.{phDataHandFunc, phFactory, phHospData, phRegionData}
 
 /**
   * @description:

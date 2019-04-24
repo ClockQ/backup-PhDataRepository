@@ -16,19 +16,20 @@ object TransformCHC extends App {
 
     val chcFile = "/test/OAD CHC data for 5 cities to 2018Q3 v3.csv"
 
-    val pdc = ProductDevConversion()(ProductImsConversion(), ProductEtcConversion())
+    val pdc = ProductDevConversion()//(ProductImsConversion(), ProductEtcConversion())
     val chcCvs = CHCConversion()
 
     val chcDF = CSV2DF(chcFile)
     val chcDFCount = chcDF.count()
     val cityDF = Parquet2DF(HOSP_ADDRESS_CITY_LOCATION)
 
-    val productDIS = pdc.toDIS(Map(
-        "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION)
-        , "productImsERD" -> Parquet2DF(PROD_IMS_LOCATION)
-        , "oadERD" -> Parquet2DF(PROD_OADTABLE_LOCATION)
-        , "atc3ERD" -> Parquet2DF(PROD_ATC3TABLE_LOCATION)
-    ))("productDIS")
+    val productDIS = ???
+//        pdc.toDIS(Map(
+//        "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION)
+//        , "productImsERD" -> Parquet2DF(PROD_IMS_LOCATION)
+//        , "oadERD" -> Parquet2DF(PROD_OADTABLE_LOCATION)
+//        , "atc3ERD" -> Parquet2DF(PROD_ATC3TABLE_LOCATION)
+//    ))("productDIS")
 
     val chcERD = chcCvs.toERD(Map(
         "chcDF" -> chcDF
@@ -57,7 +58,7 @@ object TransformCHC extends App {
         , "cityERD" -> Parquet2DF(HOSP_ADDRESS_CITY_LOCATION)
         , "productDIS" -> productDIS
     ))("chcDIS")
-//    chcDIS.show(false)
+    chcDIS.show(false)
     chcCvs.toCHCStruct(chcDIS).show(false)
     phDebugLog("chcDIS", chcDF.count(), chcDIS.count())
     chcDIS.filter($"OAD_TYPE".isNull).show(false)

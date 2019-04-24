@@ -7,7 +7,7 @@ import org.apache.spark.sql.DataFrame
   * @author: clock
   * @date: 2019-04-18 17:09
   */
-case class MarketConversion() extends PhDataConversion {
+case class MarketConversion() extends PhDataConversion2 {
 
     import com.pharbers.data.util.sparkDriver.ss.implicits._
 

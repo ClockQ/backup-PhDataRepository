@@ -1,4 +1,4 @@
-package com.pharbers.model.hosp
+package com.pharbers.data.conversion.hosp.model.hosp
 
 
 case class hospData(_id: String,

@@ -11,12 +11,12 @@ object Main extends App {
     val STATUS = NOT_SAVE
 
     // product
+    TransformProductDev.main(STATUS)
     TransformOadAndAtc3Table.main(STATUS)
     TransformProductIms.main(STATUS)
     TransformAtcTable.main(STATUS)
     TransformMarket.main(STATUS)
     TransformProductEtc.main(STATUS)
-    TransformProductDev.main(STATUS)
 
     // chc
     TransformCHCDate.main(SAVE)

@@ -1,6 +1,7 @@
 package com.pharbers.data.run
 
 import com.pharbers.util.log.phLogTrait.phDebugLog
+import org.apache.spark.sql.DataFrame
 
 object TransformCPA extends App {
 
@@ -11,7 +12,7 @@ object TransformCPA extends App {
     import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     val hospCvs = HospConversion()
-    val prodCvs = ProductDevConversion()(ProductImsConversion(), ProductEtcConversion())
+    val prodCvs = ProductDevConversion()//(ProductImsConversion(), ProductEtcConversion())
     val cpaCvs = CPAConversion()(ProductEtcConversion())
 
     val phaDF = Parquet2DF(HOSP_PHA_LOCATION)
@@ -32,11 +33,12 @@ object TransformCPA extends App {
 
         val cpaDF = CSV2DF(nhwa_cpa_csv)
 
-        val nhwaProductDIS = prodCvs.toDIS(Map(
-            "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION)
-            , "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + nhwa_source_id)
-        ))("productDIS")
-        nhwaProductDIS.show(false)
+        val nhwaProductDIS: DataFrame = ???
+//        prodCvs.toDIS(Map(
+//            "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION)
+//            , "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + nhwa_source_id)
+//        ))("productDIS")
+//        nhwaProductDIS.show(false)
 
         val nhwaResult = cpaCvs.toERD(Map(
             "cpaDF" -> cpaDF.withColumn("COMPANY_ID", lit(nhwa_source_id))
@@ -67,10 +69,11 @@ object TransformCPA extends App {
 
         val cpaDF = CSV2DF(pfizer_cpa_csv)
 
-        val pfizerProductDIS = prodCvs.toDIS(Map(
-            "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION)
-            , "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_cpa_csv)
-        ))("productDIS")
+        val pfizerProductDIS: DataFrame = ???
+//        prodCvs.toDIS(Map(
+//            "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION)
+//            , "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_cpa_csv)
+//        ))("productDIS")
 
         val pfizerResult = cpaCvs.toERD(Map(
             "cpaDF" -> cpaDF.withColumn("COMPANY_ID", lit(pfizer_source_id))

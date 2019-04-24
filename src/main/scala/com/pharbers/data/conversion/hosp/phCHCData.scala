@@ -1,7 +1,7 @@
-package com.pharbers.phDataConversion
+package com.pharbers.data.conversion.hosp
 
-import com.pharbers.common.phDataTrait
-import com.pharbers.model.chcData
+import com.pharbers.data.conversion.hosp.phDataTrait
+import com.pharbers.data.conversion.hosp.model.chcData
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
 import org.bson.types.ObjectId

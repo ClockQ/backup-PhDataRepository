@@ -1,4 +1,4 @@
-package com.pharbers.model
+package com.pharbers.data.conversion.hosp.model
 
 case class pointPolygon(coordinates: Seq[String], `type`: String = "Point") {
     override def toString: String = {

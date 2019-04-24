@@ -31,26 +31,23 @@ object ParquetLocation {
     val HOSP_PHA_LOCATION = "/test/hosp/pha"
 
     // Product Dev
-    val PROD_DEV_LOCATION = "/repository/prod_dev2"
+    val PROD_DEV_LOCATION = "/repository/prod_dev3"
     // Product IMS
-    val PROD_IMS_LOCATION = "/repository/prod_ims"
-    val PROD_ATC3TABLE_LOCATION = "/repository/atc3_table"
-    val PROD_OADTABLE_LOCATION = "/repository/oad_table"
+    val PROD_IMS_LOCATION = "/repository/prod_ims3"
+    val PROD_ATC3TABLE_LOCATION = "/repository/atc3_table3"
+    val PROD_OADTABLE_LOCATION = "/repository/oad_table3"
     // Product ATC
-    val PROD_ATCTABLE_LOCATION = "/repository/atc_table"
+    val PROD_ATCTABLE_LOCATION = "/repository/atc_table3"
     // Product Etc
-    val PROD_ETC_LOCATION = "/repository/prod_etc2"
+    val PROD_ETC_LOCATION = "/repository/prod_etc3"
     // Product Market
-    val PROD_MARKET_LOCATION = "/repository/market"
+    val PROD_MARKET_LOCATION = "/repository/market3"
 
     // CHC
-    val CHC_LOCATION = "/repository/chc2"
-    val CHC_DATE_LOCATION = "/repository/chc_date"
+    val CHC_LOCATION = "/repository/chc3"
+    val CHC_DATE_LOCATION = "/repository/chc_date3"
 
-    //source 可能又问题,先用着
-    val SOURCE_LOCATION = "/test/dcs/source.csv"
-
-    //agg
-    val MAX_RESULT_MARKET_AGG_LOCATION = "/repository/agg/maxResult/market"
-    val MAX_RESULT_ADDRESS_AGG_LOCATION = "/repository/agg/maxResult/address"
+    // Agg
+    val MAX_RESULT_MARKET_AGG_LOCATION = "/repository/agg/maxResult/market3"
+    val MAX_RESULT_ADDRESS_AGG_LOCATION = "/repository/agg/maxResult/address3"
 }

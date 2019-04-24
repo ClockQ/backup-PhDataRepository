@@ -1,5 +1,8 @@
 package com.pharbers.data.run
 
+import com.pharbers.util.log.phLogTrait.phDebugLog
+import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
+
 /**
   * @description:
   * @author: clock
@@ -24,19 +27,19 @@ object TransformProductIms extends App {
     val molDF = TXT2DF(ImsMolFile) //20328
 //    molDF.show(false)
     val prodBaseDF = TXT2DF(ImsProdFile) //112848
+    val prodBaseDFCount = prodBaseDF.count()
 //    prodBaseDF.show(false)
 
     val piCvs = ProductImsConversion()
 
-    val productImsERD = piCvs.toERD(Map(
-        "prodBaseDF" -> prodBaseDF
-        , "mnfDF" -> mnfDF
-        , "lkpDF" -> lkpDF
-        , "molDF" -> molDF
-    ))("productImsERD")
-    productImsERD.show(false)
+    val productImsERD = piCvs.toERD(MapArgs(Map(
+        "prodBaseDF" -> DFArgs(prodBaseDF)
+        , "mnfDF" -> DFArgs(mnfDF)
+        , "lkpDF" -> DFArgs(lkpDF)
+        , "molDF" -> DFArgs(molDF)
+    ))).getAs[DFArgs]("productImsERD")
+//    productImsERD.show(false)
 
-    val prodBaseDFCount = prodBaseDF.count()
     val productImsERDCount = productImsERD.dropDuplicates("IMS_PACK_ID").count()
     val prodImsMinus = prodBaseDFCount - productImsERDCount
     assert(prodImsMinus == 0, "prodIms: 转换后的ERD比源数据减少`" + prodImsMinus + "`条记录")
@@ -46,11 +49,19 @@ object TransformProductIms extends App {
         productImsERD.save2Parquet(PROD_IMS_LOCATION)
     }
 
-    val productImsDIS = piCvs.toDIS(Map(
-        "productImsERD" -> Parquet2DF(PROD_IMS_LOCATION)
-        , "atc3ERD" -> Parquet2DF(PROD_ATC3TABLE_LOCATION)
-        , "oadERD" -> Parquet2DF(PROD_OADTABLE_LOCATION)
-    ))("productImsDIS")
-    productImsDIS.show(false)
-    productImsDIS.filter(col("OAD_TYPE").isNull).show(false)
+    val productImsDIS = piCvs.toDIS(MapArgs(Map(
+        "productImsERD" -> DFArgs(productImsERD) //DFArgs(Parquet2DF(PROD_IMS_LOCATION))
+        , "atc3ERD" -> DFArgs(Parquet2DF(PROD_ATC3TABLE_LOCATION))
+        , "oadERD" -> DFArgs(Parquet2DF(PROD_OADTABLE_LOCATION))
+        , "productDevERD" -> DFArgs(Parquet2DF(PROD_DEV_LOCATION))
+    ))).getAs[DFArgs]("productImsDIS")
+//    productImsDIS.show(false)
+
+    val imsOadIsNull = productImsDIS.filter(col("OAD_TYPE").isNull)
+//    imsOadIsNull.show(false)
+    phDebugLog(imsOadIsNull.count() == 0, "IMS 产品有" + imsOadIsNull.count() + "条未匹配到OAD")
+
+    val devIdIsNull = productImsDIS.filter(col("DEV_PRODUCT_ID").isNull)
+//    devIdIsNull.show(false)
+    phDebugLog(devIdIsNull.count() == 0, "IMS 产品有" + devIdIsNull.count() + "条未匹配到 DEV_PRODUCT")
 }

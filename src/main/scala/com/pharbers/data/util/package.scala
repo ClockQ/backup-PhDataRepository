@@ -1,8 +1,10 @@
 package com.pharbers.data
 
+import org.apache.spark.rdd.RDD
 import com.pharbers.spark.util._
 import org.apache.spark.sql.functions._
 import com.pharbers.spark.phSparkDriver
+import com.pharbers.pactions.actionbase._
 import org.apache.spark.sql.{DataFrame, SaveMode}
 import com.pharbers.util.log.phLogTrait.phDebugLog
 import com.pharbers.spark.session.spark_conn_instance
@@ -54,14 +56,12 @@ package object util {
     implicit class DFUtil(df: DataFrame) {
 
         def trim(colName: String, colValue: Any = ""): DataFrame = {
-//            phDebugLog(s"trim `$colName`&`$colValue` in DataFrame")
             if (df.columns.contains(colName))
                 df.withColumn(colName, when(col(colName).isNull, colValue).otherwise(col(colName)))
             else df.withColumn(colName, lit(colValue))
         }
 
         def generateId: DataFrame = {
-//            phDebugLog(s"generate `ID` in DataFrame")
             if (df.columns.contains("_id")) df
             else df.withColumn("_id", commonUDF.generateIdUdf())
         }
@@ -83,19 +83,22 @@ package object util {
 
         def time2ym: DataFrame = {
             if (df.columns.contains("YM")) df
-            else
-                df.withColumn("YM", commonUDF.time2StrUdf(col("TIME")))
+            else df.withColumn("YM", commonUDF.time2StrUdf(col("TIME")))
         }
 
         def alignAt(alignDF: DataFrame): DataFrame = {
             alignDF.columns.foldRight(df)((a, b) => b.trim(a, null))
         }
 
-        def addMonth: DataFrame = {
+        def addMonth(): DataFrame = {
             if (df.columns.contains("MONTH")) df
-            else
-                df.withColumn("MONTH", commonUDF.Ym2MonthUdf(col("YM")))
+            else df.withColumn("MONTH", commonUDF.ym2MonthUdf(col("YM")))
         }
+    }
+
+    implicit class pActionArgsGetValue(args: pActionArgs) {
+        def getBy[T <: pActionArgs]: T#t = args.asInstanceOf[T].get
+        def getAs[T <: pActionArgs](index: String): T#t = args.asInstanceOf[MapArgs].get(index).asInstanceOf[T].get
     }
 
     val FILE2DF: (String, String) => DataFrame = sparkDriver.setUtil(csv2RDD()).csv2RDD(_, _, header = true).na.fill("")

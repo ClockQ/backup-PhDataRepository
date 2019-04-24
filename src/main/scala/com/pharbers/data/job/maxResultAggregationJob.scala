@@ -23,7 +23,7 @@ case class maxResultAggregationJob(args: Map[String, String])(implicit any: Any 
     val hospCvs = HospConversion()
 //    val prodCvs = ProdConversion()
     val pfizerInfMaxCvs = MaxResultConversion(companyId)
-    val PROD_DEV_CVS = ProductDevConversion()(ProductImsConversion(), ProductEtcConversion())
+    val PROD_DEV_CVS = ProductDevConversion()//(ProductImsConversion(), ProductEtcConversion())
 
     val maxResultERD: DataFrame = Parquet2DF(maxResultERDLocation)
 
@@ -36,20 +36,21 @@ case class maxResultAggregationJob(args: Map[String, String])(implicit any: Any 
             "hospProvinceERD" -> Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION)
         )
     )("hospDIS")
-    val productDIS: DataFrame = PROD_DEV_CVS.toDIS(
-            Map(
-                "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION),
-                "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + companyId),
-                "productImsERD" -> Parquet2DF(PROD_IMS_LOCATION)
-            )
-        )("productDIS")
+    val productDIS: DataFrame = ???
+//        PROD_DEV_CVS.toDIS(
+//            Map(
+//                "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION),
+//                "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + companyId),
+//                "productImsERD" -> Parquet2DF(PROD_IMS_LOCATION)
+//            )
+//        )("productDIS")
 
     val maxDIS: DataFrame = pfizerInfMaxCvs.toDIS(
         Map(
             "maxERD" -> maxResultERD,
             "hospDIS" -> hospDIS,
             "prodDIS" -> productDIS,
-            "sourceERD" -> CSV2DF(SOURCE_LOCATION)
+            "sourceERD" -> CSV2DF("/test/dcs/source.csv")
         )
     )("maxDIS")
 

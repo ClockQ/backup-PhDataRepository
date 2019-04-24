@@ -1,13 +1,12 @@
-package com.pharbers.phDataConversion
+package com.pharbers.data.conversion.hosp
 
+import com.pharbers.data.conversion.hosp.model._
 import com.pharbers.spark.phSparkDriver
-import com.pharbers.model._
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame,SaveMode}
-import org.apache.spark.sql.functions._
 import com.pharbers.spark.util.readParquet
-import com.pharbers.common.phFactory
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.expressions.UserDefinedFunction
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.{DataFrame, SaveMode}
 import org.bson.types.ObjectId
 
 

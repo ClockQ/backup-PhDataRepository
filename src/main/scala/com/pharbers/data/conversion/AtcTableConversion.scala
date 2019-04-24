@@ -7,7 +7,7 @@ import org.apache.spark.sql.DataFrame
   * @author: clock
   * @date: 2019-03-28 16:40
   */
-case class AtcTableConversion() extends PhDataConversion {
+case class AtcTableConversion() extends PhDataConversion2 {
 
     import com.pharbers.data.util.DFUtil
     import org.apache.spark.sql.functions._

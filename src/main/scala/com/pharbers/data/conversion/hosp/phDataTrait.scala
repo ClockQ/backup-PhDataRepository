@@ -1,4 +1,4 @@
-package com.pharbers.common
+package com.pharbers.data.conversion.hosp
 
 import org.apache.spark.sql.DataFrame
 
