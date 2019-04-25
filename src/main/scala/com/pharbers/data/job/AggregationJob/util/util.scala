@@ -1,4 +1,4 @@
-package com.pharbers.data.job.AggregationJob
+package com.pharbers.data.job.aggregationJob
 
 import org.apache.spark.sql.{Column, DataFrame}
 import org.apache.spark.sql.expressions.Window
