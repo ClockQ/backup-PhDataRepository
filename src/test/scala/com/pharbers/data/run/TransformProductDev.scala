@@ -89,9 +89,10 @@ object TransformProductDev extends App {
         , "packIdDF" -> DFArgs(packIdDF)
     ))).getAs[DFArgs]("productDevERD")
 
-    productDevERD.show(false)
-    productDevERD.groupBy($"DEV_PACK_ID").count().sort($"count".desc).show(false)
-    println(productDevERD.count())
+//    productDevERD.show(false)
+//    productDevERD.groupBy($"DEV_PACK_ID").count().sort($"count".desc).show(false)
+//    println(productDevERD.count())
+//    productDevERD.filter($"DEV_PACK_ID" === "3801002").show(false)
 
     if (args.isEmpty || args(0) == "TRUE") {
         productDevERD.save2Mongo(PROD_DEV_LOCATION.split("/").last)

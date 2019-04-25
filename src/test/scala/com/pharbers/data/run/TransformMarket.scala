@@ -1,6 +1,8 @@
 package com.pharbers.data.run
 
 import com.pharbers.util.log.phLogTrait.phDebugLog
+import com.pharbers.data.conversion.ProductEtcConversion
+import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
 
 object TransformMarket extends App {
 
@@ -8,45 +10,57 @@ object TransformMarket extends App {
     import org.apache.spark.sql.functions._
     import com.pharbers.data.util.ParquetLocation._
 
-    val prodDevERD = {
-        Parquet2DF(PROD_DEV_LOCATION)
-                .withColumn("MIN2",
-                    concat(col("PRODUCT_NAME"), col("DOSAGE_NAME"), col("PACKAGE_DES"), col("PACKAGE_NUMBER"), col("CORP_NAME"))
-                )
-    }
+    val productDevERD = Parquet2DF(PROD_DEV_LOCATION)
+
+    val prodCvs = ProductEtcConversion()
 
     def nhwaMarketDF(): Unit = {
         val nhwa_company_id = NHWA_COMPANY_ID
 
-        val nhwa_marketTable_csv = "/data/nhwa/pha_config_repository1809/Nhwa_MarketMatchTable_20180629.csv"
+        val market_match_file = "/data/nhwa/pha_config_repository1809/Nhwa_MarketMatchTable_20180629.csv"
+        val prod_match_file = "/data/nhwa/pha_config_repository1809/Nhwa_ProductMatchTable_20181126.csv"
 
-        val nhwaCpaERDDF = Parquet2DF(PROD_ETC_LOCATION + "/" + nhwa_company_id)
-        val marketTableDF = CSV2DF(nhwa_marketTable_csv)
+        val marketTableDF = CSV2DF(market_match_file)
+        val procMatchDF = CSV2DF(prod_match_file).withColumnRenamed("PACK_COUNT", "PACK_NUMBER")
 
-        val marketDF = nhwaCpaERDDF
+        val productEtcDIS = prodCvs
+                .toDIS(MapArgs(Map(
+                    "productEtcERD" -> DFArgs(Parquet2DF(PROD_ETC_LOCATION + "/" + nhwa_company_id))
+                    , "productDevERD" -> DFArgs(productDevERD)
+                    , "productMatchDF" -> DFArgs(procMatchDF)
+                )))
+                .getAs[DFArgs]("productEtcDIS")
+                .withColumn("MIN2",
+                    concat(col("DEV_PRODUCT_NAME"), col("DEV_DOSAGE_NAME"), col("DEV_PACKAGE_DES"), col("DEV_PACKAGE_NUMBER"), col("DEV_CORP_NAME"))
+                )
+
+        val marketERD = productEtcDIS
                 .join(
                     marketTableDF,
-                    nhwaCpaERDDF("ETC_MOLE_NAME") === marketTableDF("MOLE_NAME"),
+                    productEtcDIS("ETC_MOLE_NAME") === marketTableDF("MOLE_NAME"),
                     "left"
                 )
-                .withColumn("COMPANY_ID", lit(nhwa_company_id))
-                .select(nhwaCpaERDDF("PRODUCT_ID"), col("COMPANY_ID"), marketTableDF("MARKET"))
+                .select(productEtcDIS("DEV_PRODUCT_ID").as("PRODUCT_ID"), marketTableDF("MARKET"))
                 .distinct()
                 .generateId
+        marketERD.show(false)
 
         if (args.isEmpty || args(0) == "TRUE") {
-            marketDF.save2Mongo(PROD_MARKET_LOCATION.split("/").last)
-            marketDF.save2Parquet(PROD_MARKET_LOCATION + "/" + nhwa_company_id)
+            marketERD.save2Mongo(PROD_MARKET_LOCATION.split("/").last)
+            marketERD.save2Parquet(PROD_MARKET_LOCATION + "/" + nhwa_company_id)
         }
 
         val marketParquet = Parquet2DF(PROD_MARKET_LOCATION + "/" + nhwa_company_id)
-        println("nhwa market:" + marketParquet.count())
-        println("nhwa market by duplicates:" + marketParquet.dropDuplicates("PRODUCT_ID").count())
+        phDebugLog("nhwa market:" + marketParquet.count())
+        phDebugLog("nhwa market by duplicates:" + marketParquet.dropDuplicates("PRODUCT_ID").count())
     }
-    nhwaMarketDF()
+
+//    nhwaMarketDF()
 
     def phizerMarketDF(): Unit = {
         val pfizer_company_id = PFIZER_COMPANY_ID
+
+        val prod_match_file = "/data/pfizer/pha_config_repository1901/Pfizer_ProductMatchTable_20190403.csv"
 
         val pfizer_AI_D_csv = "/workData/Export/88339191-a312-d9e3-6d8e-b7443f434aea/5b028f95ed925c2c705b85ba-201804-AI_D.csv"
         val pfizer_AI_R_other_csv = "/workData/Export/88339191-a312-d9e3-6d8e-b7443f434aea/5b028f95ed925c2c705b85ba-201804-AI_R_other.csv"
@@ -80,28 +94,41 @@ object TransformMarket extends App {
                     pfizer_Specialty_champix_csv :: pfizer_Specialty_other_csv ::
                     pfizer_Urology_other_csv :: pfizer_Urology_viagra_csv :: pfizer_ZYVOX_csv :: Nil
 
-        val pfizerMarketDF = maxResultLst.map { file =>
+        val procMatchDF = CSV2DF(prod_match_file)
+
+        val productEtcDIS = prodCvs
+                .toDIS(MapArgs(Map(
+                    "productEtcERD" -> DFArgs(Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_company_id))
+                    , "productDevERD" -> DFArgs(productDevERD)
+                    , "productMatchDF" -> DFArgs(procMatchDF)
+                )))
+                .getAs[DFArgs]("productEtcDIS")
+                .withColumn("MIN2",
+                    concat(col("DEV_PRODUCT_NAME"), col("DEV_DOSAGE_NAME"), col("DEV_PACKAGE_DES"), col("DEV_PACKAGE_NUMBER"), col("DEV_CORP_NAME"))
+                )
+
+        val marketERD = maxResultLst.map { file =>
             val maxDF = FILE2DF(file, 31.toChar.toString)
-            maxDF.join(prodDevERD, maxDF("Product") === prodDevERD("MIN2"))
-                    .select(prodDevERD("_id").as("PRODUCT_ID"), maxDF("MARKET"))
+            maxDF.join(productEtcDIS, maxDF("Product") === productEtcDIS("MIN2"))
+                    .select(productEtcDIS("DEV_PRODUCT_ID").as("PRODUCT_ID"), maxDF("MARKET"))
                     .distinct()
         }
                 .reduce(_ unionByName _)
                 .groupBy("PRODUCT_ID")
                 .agg(sort_array(collect_list("MARKET")) as "MARKET")
                 .withColumn("MARKET", commonUDF.mkStringByArray(col("MARKET"), lit("+")))
-                .withColumn("COMPANY_ID", lit(pfizer_company_id))
                 .generateId
-                .select("_id", "PRODUCT_ID", "COMPANY_ID", "MARKET")
+                .select("_id", "PRODUCT_ID", "MARKET")
 
         if (args.isEmpty || args(0) == "TRUE") {
-            pfizerMarketDF.save2Mongo(PROD_MARKET_LOCATION.split("/").last)
-            pfizerMarketDF.save2Parquet(PROD_MARKET_LOCATION + "/" + pfizer_company_id)
+            marketERD.save2Mongo(PROD_MARKET_LOCATION.split("/").last)
+            marketERD.save2Parquet(PROD_MARKET_LOCATION + "/" + pfizer_company_id)
         }
+        marketERD.show(false)
 
         val marketParquet = Parquet2DF(PROD_MARKET_LOCATION + "/" + pfizer_company_id)
-        println("pfizer market:" + marketParquet.count())
-        println("pfizer market by duplicates:" + marketParquet.dropDuplicates("PRODUCT_ID").count())
+        phDebugLog("pfizer market:" + marketParquet.count())
+        phDebugLog("pfizer market by duplicates:" + marketParquet.dropDuplicates("PRODUCT_ID").count())
     }
 
     phizerMarketDF()

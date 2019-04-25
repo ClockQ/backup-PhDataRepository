@@ -113,7 +113,7 @@ case class ProductImsConversion() extends PhDataConversion {
                     .drop(oadERD("_id"))
                     .drop(oadERD("ATC3"))
                     .join(
-                        productDevERD.dropDuplicates("DEV_PACK_ID")
+                        productDevERD.withColumnRenamed("_id", "DEV_PRODUCT_ID").dropDuplicates("DEV_PACK_ID")
                         , productImsERD("IMS_PACK_ID") === productDevERD("DEV_PACK_ID")
                         , "left"
                     )

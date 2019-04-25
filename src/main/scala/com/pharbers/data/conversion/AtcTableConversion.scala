@@ -1,28 +1,26 @@
 package com.pharbers.data.conversion
 
-import org.apache.spark.sql.DataFrame
+import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
 
 /**
   * @description:
   * @author: clock
   * @date: 2019-03-28 16:40
   */
-case class AtcTableConversion() extends PhDataConversion2 {
+case class AtcTableConversion() extends PhDataConversion {
 
-    import com.pharbers.data.util.DFUtil
+    import com.pharbers.data.util._
     import org.apache.spark.sql.functions._
 
-    def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {
-        val atcTableDF = args.map(x => x._2.trim("ATC_CODE").select("MOLE_NAME", "ATC_CODE"))
+    override def toERD(args: MapArgs): MapArgs = {
+        val atcTableDF = args.get.values.map(_.getBy[DFArgs].trim("ATC_CODE").select("MOLE_NAME", "ATC_CODE"))
                 .reduce(_ unionByName _)
                 .filter(col("ATC_CODE") =!= "")
                 .distinct()
                 .generateId
 
-        Map(
-            "atcTableDF" -> atcTableDF
-        )
+        MapArgs(Map("atcTableDF" -> DFArgs(atcTableDF)))
     }
 
-    def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = ???
+    override def toDIS(args: MapArgs): MapArgs = ???
 }

@@ -1,6 +1,7 @@
 package com.pharbers.data.run
 
 import com.pharbers.util.log.phLogTrait.phDebugLog
+import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
 
 object TransformAtcTable extends App {
     import com.pharbers.data.util._
@@ -13,13 +14,12 @@ object TransformAtcTable extends App {
 
     val atcCvs = AtcTableConversion()
 
-    val atcTableDF = atcCvs.toERD(
-        Map(
-            "pfizerCpaDF" -> CSV2DF(pfizer_cpa_csv)
-            , "astellasCpaDF" -> CSV2DF(astellas_cpa_csv)
-            , "nhwaCpaDF" -> CSV2DF(nhwa_cpa_csv)
+    val atcTableDF = atcCvs.toERD(MapArgs(Map(
+            "pfizerCpaDF" -> DFArgs(CSV2DF(pfizer_cpa_csv))
+            , "astellasCpaDF" -> DFArgs(CSV2DF(astellas_cpa_csv))
+            , "nhwaCpaDF" -> DFArgs(CSV2DF(nhwa_cpa_csv))
         )
-    )("atcTableDF")
+    )).getAs[DFArgs]("atcTableDF")
 
     phDebugLog("atcTableDF `ERD` count = " + atcTableDF.count())
     atcTableDF.show(true)
@@ -28,10 +28,4 @@ object TransformAtcTable extends App {
         atcTableDF.save2Parquet(PROD_ATCTABLE_LOCATION)
         atcTableDF.save2Mongo(PROD_ATCTABLE_LOCATION.split("/").last)
     }
-
-    val atcTableMongoDF = Mongo2DF(PROD_ATCTABLE_LOCATION.split("/").last)
-    atcTableMongoDF.show(true)
-
-    phDebugLog("atcTableDF `mongodb` count = " + atcTableMongoDF.count())
-    phDebugLog("atcTableDF `mongodb` contrast `ERD` = " + (atcTableMongoDF.count() == atcTableDF.count()))
 }

@@ -15,8 +15,8 @@ object Main extends App {
     TransformOadAndAtc3Table.main(STATUS)
     TransformProductIms.main(STATUS)
     TransformAtcTable.main(STATUS)
-    TransformMarket.main(STATUS)
     TransformProductEtc.main(STATUS)
+    TransformMarket.main(STATUS)
 
     // chc
     TransformCHCDate.main(SAVE)

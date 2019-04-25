@@ -10,12 +10,14 @@ import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
 case class ProductDevConversion() extends PhDataConversion {
 
     import com.pharbers.data.util._
+    import org.apache.spark.sql.functions._
     import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     override def toERD(args: MapArgs): MapArgs = {
         val productDevERD = args.get.values.map(_.getBy[DFArgs]).reduce(_ unionByName _)
-                .dropDuplicates("DEV_PRODUCT_NAME", "DEV_CORP_NAME", "DEV_MOLE_NAME",
-                    "DEV_PACKAGE_DES", "DEV_PACKAGE_NUMBER", "DEV_DOSAGE_NAME", "DEV_PACK_ID")
+                .groupBy("DEV_PRODUCT_NAME", "DEV_CORP_NAME", "DEV_MOLE_NAME",
+                    "DEV_PACKAGE_DES", "DEV_PACKAGE_NUMBER", "DEV_DOSAGE_NAME")
+                .agg(max("DEV_PACK_ID") as "DEV_PACK_ID")
                 .generateId
 
         MapArgs(Map(

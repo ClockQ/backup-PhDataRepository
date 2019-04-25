@@ -55,7 +55,7 @@ object TransformProductIms extends App {
         , "oadERD" -> DFArgs(Parquet2DF(PROD_OADTABLE_LOCATION))
         , "productDevERD" -> DFArgs(Parquet2DF(PROD_DEV_LOCATION))
     ))).getAs[DFArgs]("productImsDIS")
-//    productImsDIS.show(false)
+//    productImsDIS.filter(col("DEV_PRODUCT_ID").isNotNull).show(false)
 
     val imsOadIsNull = productImsDIS.filter(col("OAD_TYPE").isNull)
 //    imsOadIsNull.show(false)
