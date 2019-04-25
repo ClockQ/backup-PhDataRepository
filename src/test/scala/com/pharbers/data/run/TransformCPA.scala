@@ -1,8 +1,7 @@
 package com.pharbers.data.run
 
-import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
 import com.pharbers.util.log.phLogTrait.phDebugLog
-import org.apache.spark.sql.DataFrame
+import com.pharbers.pactions.actionbase.{DFArgs, MapArgs, SingleArgFuncArgs}
 
 object TransformCPA extends App {
 
@@ -13,11 +12,14 @@ object TransformCPA extends App {
     import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     val hospCvs = HospConversion()
-    val prodCvs = ProductDevConversion()
-    //(ProductImsConversion(), ProductEtcConversion())
-    val cpaCvs = CPAConversion()(ProductEtcConversion())
+    val prodCvs = ProductEtcConversion()
+    val cpaCvs = CPAConversion()
 
     val phaDF = Parquet2DF(HOSP_PHA_LOCATION)
+    val phaDFCount = phaDF.count()
+    val atcDF = Parquet2DF(PROD_ATCTABLE_LOCATION)
+    val productDevERD = Parquet2DF(PROD_DEV_LOCATION)
+
     val hospDIS = hospCvs.toDIS(MapArgs(Map(
         "hospBaseERD" -> DFArgs(Parquet2DF(HOSP_BASE_LOCATION))
         , "hospAddressERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_BASE_LOCATION))
@@ -25,95 +27,125 @@ object TransformCPA extends App {
         , "hospCityERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_CITY_LOCATION))
         , "hospProvinceERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION))
     ))).getAs[DFArgs]("hospDIS")
+    val hospDISCount = hospDIS.count()
 
     def nhwaCpaERD(): Unit = {
-        val nhwa_source_id = NHWA_COMPANY_ID
+        val nhwa_company_id = NHWA_COMPANY_ID
 
         val nhwa_cpa_csv = "/test/CPA&GYCX/Nhwa_201804_CPA_20181227.csv"
+        val nhwa_prod_match = "/data/nhwa/pha_config_repository1809/Nhwa_ProductMatchTable_20181126.csv"
 
         val cpaDF = CSV2DF(nhwa_cpa_csv)
+        val cpaDFCount = cpaDF.count()
 
-        val nhwaProductDIS: DataFrame = ???
-//        prodCvs.toDIS(Map(
-//            "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION)
-//            , "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + nhwa_source_id)
-//        ))("productDIS")
-//        nhwaProductDIS.show(false)
+        val marketDF = try{
+            Parquet2DF(PROD_MARKET_LOCATION + "/" + nhwa_company_id)
+        } catch {
+            case _: Exception => Seq.empty[(String, String, String)].toDF("_id", "PRODUCT_ID", "MARKET")
+        }
 
-        val nhwaResult = cpaCvs.toERD(Map(
-            "cpaDF" -> cpaDF.withColumn("COMPANY_ID", lit(nhwa_source_id))
-            , "hospDF" -> hospDIS
-            , "prodDF" -> nhwaProductDIS
-            , "phaDF" -> phaDF
-        ))
+        val procMatchDF = CSV2DF(nhwa_prod_match)
+                .trim("PACK_NUMBER")
+                .trim("PACK_COUNT")
+                .withColumn("PACK_NUMBER", when($"PACK_NUMBER".isNotNull, $"PACK_NUMBER").otherwise($"PACK_COUNT"))
 
-        val nhwaERD = nhwaResult("cpaERD")
-        val nhwaProd = nhwaResult("prodDIS")
-        val nhwaHosp = nhwaResult("hospDIS")
-        val nhwaPha = nhwaResult("phaDIS")
-        phDebugLog("nhwaERD", cpaDF.count(), nhwaERD.count())
-        phDebugLog("nhwaProd", nhwaProductDIS.count(), nhwaProd.count())
-        phDebugLog("nhwaHosp", hospDIS.count(), nhwaHosp.count())
-        phDebugLog("nhwaPha", phaDF.count(), nhwaPha.count())
-        val nhwaMinus = cpaDF.count() - nhwaERD.count()
-        assert(nhwaMinus == 0, "nhwa: 转换后的ERD比源数据减少`" + nhwaMinus + "`条记录")
+        val productEtcDIS = prodCvs.toDIS(MapArgs(Map(
+            "productEtcERD" -> DFArgs(Parquet2DF(PROD_ETC_LOCATION + "/" + nhwa_company_id))
+            , "atcERD" -> DFArgs(atcDF)
+            , "marketERD" -> DFArgs(marketDF)
+            , "productDevERD" -> DFArgs(productDevERD)
+            , "productMatchDF" -> DFArgs(procMatchDF)
+        ))).getAs[DFArgs]("productEtcDIS")
+        val productEtcDISCount = productEtcDIS.count()
 
+        val result = cpaCvs.toERD(MapArgs(Map(
+            "cpaDF" -> DFArgs(cpaDF.trim("COMPANY_ID", nhwa_company_id).trim("SOURCE", "CPA"))
+            , "hospDF" -> DFArgs(hospDIS)
+            , "prodDF" -> DFArgs(productEtcDIS)
+            , "phaDF" -> DFArgs(phaDF)
+            , "appendProdFunc" -> SingleArgFuncArgs { args: MapArgs =>
+                prodCvs.toDIS(prodCvs.toERD(args))
+            }
+        )))
 
+        val cpaERD = result.getAs[DFArgs]("cpaERD")
+        val cpaERDCount = cpaERD.count()
+        val cpaERDMinus = cpaDFCount - cpaERDCount
+        assert(cpaERDMinus == 0, "nhwa: 转换后的ERD比源数据减少`" + cpaERDMinus + "`条记录")
+
+//        if (args.isEmpty || args(0) == "TRUE") {
+//            cpaDF.save2Parquet(CPA_LOCATION + "/" + nhwa_company_id)
+//            cpaDF.save2Mongo(CPA_LOCATION.split("/").last)
+//        }
+
+        val cpaProd = result.getAs[DFArgs]("prodDIS")
+        val cpaHosp = result.getAs[DFArgs]("hospDIS")
+        val cpaPha = result.getAs[DFArgs]("phaDIS")
+        phDebugLog("nhwa cpa ERD", cpaDFCount, cpaERDCount)
+        phDebugLog("nhwa cpa Prod", productEtcDISCount, cpaProd.count())
+        phDebugLog("nhwa cpa Hosp", hospDISCount, cpaHosp.count())
+        phDebugLog("nhwa cpa Pha", phaDFCount, cpaPha.count())
     }
 
     nhwaCpaERD()
 
     def pfizerCpaERD(): Unit = {
-        val pfizer_source_id = PFIZER_COMPANY_ID
+        val pfizer_company_id = PFIZER_COMPANY_ID
 
         val pfizer_cpa_csv = "/test/CPA&GYCX/Pfizer_201804_CPA_20181227.csv"
+        val pfizer_prod_match = "/data/pfizer/pha_config_repository1901/Pfizer_ProductMatchTable_20190403.csv"
 
         val cpaDF = CSV2DF(pfizer_cpa_csv)
+        val cpaDFCount = cpaDF.count()
 
-        val pfizerProductDIS: DataFrame = ???
-//        prodCvs.toDIS(Map(
-//            "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION)
-//            , "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_cpa_csv)
-//        ))("productDIS")
+        val marketDF = try{
+            Parquet2DF(PROD_MARKET_LOCATION + "/" + pfizer_company_id)
+        } catch {
+            case _: Exception => Seq.empty[(String, String, String)].toDF("_id", "PRODUCT_ID", "MARKET")
+        }
 
-        val pfizerResult = cpaCvs.toERD(Map(
-            "cpaDF" -> cpaDF.withColumn("COMPANY_ID", lit(pfizer_source_id))
-            , "hospDF" -> hospDIS
-            , "prodDF" -> pfizerProductDIS
-            , "phaDF" -> phaDF
-        ))
+        val procMatchDF = CSV2DF(pfizer_prod_match)
+                .trim("PACK_NUMBER")
+                .trim("PACK_COUNT")
+                .withColumn("PACK_NUMBER", when($"PACK_NUMBER".isNotNull, $"PACK_NUMBER").otherwise($"PACK_COUNT"))
 
-        val pfizerERD = pfizerResult("cpaERD")
-        val pfizerProd = pfizerResult("prodDIS")
-        val pfizerHosp = pfizerResult("hospDIS")
-        val pfizerPha = pfizerResult("phaDIS")
-        phDebugLog("pfizerERD", cpaDF.count(), pfizerERD.count())
-        phDebugLog("pfizerProd", pfizerProductDIS.count(), pfizerProd.count())
-        phDebugLog("pfizerHosp", hospDIS.count(), pfizerHosp.count())
-        phDebugLog("pfizerPha", phaDF.count(), pfizerPha.count())
-        val pfizerMinus = cpaDF.count() - pfizerERD.count()
-        assert(pfizerMinus == 0, "pfizer: 转换后的ERD比源数据减少`" + pfizerMinus + "`条记录")
+        val productEtcDIS = prodCvs.toDIS(MapArgs(Map(
+            "productEtcERD" -> DFArgs(Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_company_id))
+            , "atcERD" -> DFArgs(atcDF)
+            , "marketERD" -> DFArgs(marketDF)
+            , "productDevERD" -> DFArgs(productDevERD)
+            , "productMatchDF" -> DFArgs(procMatchDF)
+        ))).getAs[DFArgs]("productEtcDIS")
+        val productEtcDISCount = productEtcDIS.count()
 
+        val result = cpaCvs.toERD(MapArgs(Map(
+            "cpaDF" -> DFArgs(cpaDF.trim("COMPANY_ID", pfizer_company_id).trim("SOURCE", "CPA"))
+            , "hospDF" -> DFArgs(hospDIS)
+            , "prodDF" -> DFArgs(productEtcDIS)
+            , "phaDF" -> DFArgs(phaDF)
+            , "appendProdFunc" -> SingleArgFuncArgs { args: MapArgs =>
+                prodCvs.toDIS(prodCvs.toERD(args))
+            }
+        )))
+
+        val cpaERD = result.getAs[DFArgs]("cpaERD")
+        val cpaERDCount = cpaERD.count()
+        val cpaERDMinus = cpaDFCount - cpaERDCount
+        assert(cpaERDMinus == 0, "pfizer: 转换后的ERD比源数据减少`" + cpaERDMinus + "`条记录")
+
+//        if (args.isEmpty || args(0) == "TRUE") {
+//            cpaDF.save2Parquet(CPA_LOCATION + "/" + pfizer_company_id)
+//            cpaDF.save2Mongo(CPA_LOCATION.split("/").last)
+//        }
+
+        val cpaProd = result.getAs[DFArgs]("prodDIS")
+        val cpaHosp = result.getAs[DFArgs]("hospDIS")
+        val cpaPha = result.getAs[DFArgs]("phaDIS")
+        phDebugLog("pfizer cpa ERD", cpaDFCount, cpaERDCount)
+        phDebugLog("pfizer cpa Prod", productEtcDISCount, cpaProd.count())
+        phDebugLog("pfizer cpa Hosp", hospDISCount, cpaHosp.count())
+        phDebugLog("pfizer cpa Pha", phaDFCount, cpaPha.count())
     }
 
     pfizerCpaERD()
-
-
-//    cpaDF.save2Parquet(PFIZER_CPA_LOCATION)
-//    cpaDF.save2Mongo(PFIZER_CPA_LOCATION.split("/").last)
-//
-//    revenueDF.save2Parquet(HOSP_REVENUE_LOCATION)
-//    revenueDF.save2Mongo(HOSP_REVENUE_LOCATION.split("/").last)
-//
-//
-//
-//
-//
-//    val cpaMongoDF = Mongo2DF(PFIZER_CPA_LOCATION.split("/").last)
-//    phDebugLog("cpaMongoDF `mongodb` count = " + cpaMongoDF.count())
-//    phDebugLog("cpaMongoDF `mongodb` contrast `ERD` = " + (cpaMongoDF.count() == cpaDF.count()))
-//
-//    val revenueMongoDF = Mongo2DF(HOSP_REVENUE_LOCATION.split("/").last)
-//    phDebugLog("revenueMongoDF `mongodb` count = " + revenueMongoDF.count())
-//    phDebugLog("revenueMongoDF `mongodb` contrast `ERD` = " + (revenueMongoDF.count() == revenueDF.count()))
 }

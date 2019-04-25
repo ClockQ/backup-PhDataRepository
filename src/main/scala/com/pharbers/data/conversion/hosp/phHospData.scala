@@ -1,6 +1,5 @@
 package com.pharbers.data.conversion.hosp
 
-import com.pharbers.data.conversion.hosp.phFactory
 import com.pharbers.spark.phSparkDriver
 import com.pharbers.data.model.hosp._
 import org.apache.spark.rdd.RDD

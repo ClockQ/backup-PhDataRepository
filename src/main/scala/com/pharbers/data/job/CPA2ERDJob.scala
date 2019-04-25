@@ -39,7 +39,7 @@ case class CPA2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
 
     val hospCvs: HospConversion = HospConversion()
     val prodCvs: ProductEtcConversion = ProductEtcConversion()
-    val cpaCvs: CPAConversion = CPAConversion(company_id)(prodCvs)
+    val cpaCvs: CPAConversion = CPAConversion()
 
     override def perform(pr: pActionArgs = MapArgs(Map())): pActionArgs = {
         phDebugLog("开始转换:" + cpa_file)
@@ -75,14 +75,15 @@ case class CPA2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
 //        }("prodDIS")
         val prodDISCount: Long = prodDIS.count()
 
-        val cpaResult: Map[String, DataFrame] = cpaCvs.toERD(
-            Map(
-                "cpaDF" -> cpaDF,
-                "hospDF" -> hospDIS,
-                "prodDF" -> prodDIS,
-                "phaDF" -> phaDF
-            )
-        )
+        val cpaResult: Map[String, DataFrame] = ???
+//            cpaCvs.toERD(
+//            Map(
+//                "cpaDF" -> cpaDF,
+//                "hospDF" -> hospDIS,
+//                "prodDF" -> prodDIS,
+//                "phaDF" -> phaDF
+//            )
+//        )
         val cpaERD = cpaResult("cpaERD")
         val cpaERDCount: Long = cpaERD.count()
         val cpaProd = cpaResult("prodDIS")

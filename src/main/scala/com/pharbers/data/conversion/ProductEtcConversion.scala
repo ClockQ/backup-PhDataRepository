@@ -20,9 +20,10 @@ case class ProductEtcConversion() extends PhDataConversion {
         val prodERD = sourceDataDF
                 .select("COMPANY_ID", "SOURCE", "PRODUCT_NAME", "MOLE_NAME", "PACK_DES", "PACK_NUMBER", "DOSAGE", "DELIVERY_WAY", "CORP_NAME")
                 // 1. SOURCE
-                .groupBy("COMPANY_ID", "PRODUCT_NAME", "MOLE_NAME", "PACK_DES", "PACK_NUMBER", "DOSAGE", "DELIVERY_WAY", "CORP_NAME")
-                .agg(sort_array(collect_list("SOURCE")) as "SOURCE")
+                .groupBy("PRODUCT_NAME", "MOLE_NAME", "PACK_DES", "PACK_NUMBER", "DOSAGE", "DELIVERY_WAY", "CORP_NAME")
+                .agg(sort_array(collect_list("SOURCE")) as "SOURCE", sort_array(collect_list("COMPANY_ID")) as "COMPANY_ID")
                 .withColumn("SOURCE", commonUDF.mkStringByArray($"SOURCE", lit("+")))
+                .withColumn("COMPANY_ID", commonUDF.mkStringByArray($"COMPANY_ID", lit("+")))
                 // 2. MIN1
                 .withColumn("MIN1", concat(col("PRODUCT_NAME"), col("DOSAGE"), col("PACK_DES"), col("PACK_NUMBER"), col("CORP_NAME")))
                 .select(

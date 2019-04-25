@@ -43,9 +43,11 @@ object ParquetLocation {
     // Product Market
     val PROD_MARKET_LOCATION = "/repository/market3"
 
-    // CHC
+    // SOURCE
     val CHC_LOCATION = "/repository/chc3"
     val CHC_DATE_LOCATION = "/repository/chc_date3"
+    val CPA_LOCATION = "/repository/cpa"
+    val GYCX_LOCATION = "/repository/gycx"
 
     // Agg
     val MAX_RESULT_MARKET_AGG_LOCATION = "/repository/agg/maxResult/market3"

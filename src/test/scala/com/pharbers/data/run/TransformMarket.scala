@@ -55,7 +55,7 @@ object TransformMarket extends App {
         phDebugLog("nhwa market by duplicates:" + marketParquet.dropDuplicates("PRODUCT_ID").count())
     }
 
-//    nhwaMarketDF()
+    nhwaMarketDF()
 
     def phizerMarketDF(): Unit = {
         val pfizer_company_id = PFIZER_COMPANY_ID
