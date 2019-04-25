@@ -55,7 +55,7 @@ package object util {
 
     implicit class DFUtil(df: DataFrame) {
 
-        def trim(colName: String, colValue: Any = ""): DataFrame = {
+        def trim(colName: String, colValue: Any = null): DataFrame = {
             if (df.columns.contains(colName))
                 df.withColumn(colName, when(col(colName).isNull, colValue).otherwise(col(colName)))
             else df.withColumn(colName, lit(colValue))
@@ -87,7 +87,7 @@ package object util {
         }
 
         def alignAt(alignDF: DataFrame): DataFrame = {
-            alignDF.columns.foldRight(df)((a, b) => b.trim(a, null))
+            alignDF.columns.foldRight(df)((a, b) => b.trim(a))
         }
 
         def addMonth(): DataFrame = {

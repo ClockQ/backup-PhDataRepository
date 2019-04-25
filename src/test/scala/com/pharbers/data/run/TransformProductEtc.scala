@@ -63,7 +63,7 @@ object TransformProductEtc extends App {
         phDebugLog("nhwa product is null ATC_CODE count:" + atcNotMatch.count())
         atcNotMatch.show(false)
     }
-//    nhwaProdEtcDF()
+    nhwaProdEtcDF()
 
     def pfizerProdEtcDF(): Unit = {
         val pfizer_company_id = PFIZER_COMPANY_ID
@@ -88,10 +88,10 @@ object TransformProductEtc extends App {
             ))).getAs[DFArgs]("productEtcERD")
 //        productEtcERD.show(false)
 
-//        if (args.isEmpty || args(0) == "TRUE") {
-//            productEtcERD.save2Mongo(PROD_ETC_LOCATION.split("/").last)
-//            productEtcERD.save2Parquet(PROD_ETC_LOCATION + "/" + pfizer_company_id)
-//        }
+        if (args.isEmpty || args(0) == "TRUE") {
+            productEtcERD.save2Mongo(PROD_ETC_LOCATION.split("/").last)
+            productEtcERD.save2Parquet(PROD_ETC_LOCATION + "/" + pfizer_company_id)
+        }
 
         val productEtcDIS = prodCvs.toDIS(MapArgs(Map(
             "productEtcERD" -> DFArgs(Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_company_id))

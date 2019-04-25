@@ -26,29 +26,12 @@ object TransformProductDev extends App {
                 , $"PACK_ID" as "DEV_PACK_ID"
             )
 
-    def chc2Product(df: DataFrame): DataFrame = df
-            .trim("DEV_PACKAGE_DES")
-            .trim("DEV_PACKAGE_NUMBER")
-            .trim("DEV_DOSAGE_NAME")
-            .select(
-                $"Prod_Desc" as "DEV_PRODUCT_NAME"
-                , $"MNF_Desc" as "DEV_CORP_NAME"
-                , $"Molecule_Desc" as "DEV_MOLE_NAME"
-                , $"DEV_PACKAGE_DES"
-                , $"DEV_PACKAGE_NUMBER"
-                , $"DEV_DOSAGE_NAME"
-                , $"Pack_ID" as "DEV_PACK_ID"
-            )
-
     val nhwaProductMatchFile = "/data/nhwa/pha_config_repository1809/Nhwa_ProductMatchTable_20181126.csv"
     val pfizerProductMatchFile = "/data/pfizer/pha_config_repository1901/Pfizer_ProductMatchTable_20190403.csv"
 
-    val chcFile = "/test/OAD CHC data for 5 cities to 2018Q3 v3.csv"
     val packIdFile1 = "/test/chc/CHC_packid匹配表1.csv"
     val packIdFile2 = "/test/chc/CHC_packid匹配表2.csv"
     val packIdFile3 = "/test/chc/CHC_packid匹配表3.csv"
-
-    val chcDF = chc2Product(CSV2DF(chcFile))
 
     val packIdDF = CSV2DF(packIdFile1).select(
         $"商品名" as "DEV_PRODUCT_NAME"
@@ -85,7 +68,6 @@ object TransformProductDev extends App {
     val productDevERD: DataFrame = pdc.toERD(MapArgs(Map(
         "nhwaMatchDF" -> DFArgs(nhwaMatchDF)
         , "pfizerMatchDF" -> DFArgs(pfizerMatchDF)
-        , "chcDF" -> DFArgs(chcDF)
         , "packIdDF" -> DFArgs(packIdDF)
     ))).getAs[DFArgs]("productDevERD")
 

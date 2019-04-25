@@ -18,6 +18,9 @@ object Main extends App {
     TransformProductEtc.main(STATUS)
     TransformMarket.main(STATUS)
 
+    // hosp
+//    TransformHosp.main(STATUS)
+
     // chc
     TransformCHCDate.main(SAVE)
     TransformCHC.main(STATUS)
