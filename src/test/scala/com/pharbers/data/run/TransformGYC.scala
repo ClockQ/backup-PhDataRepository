@@ -1,5 +1,6 @@
 package com.pharbers.data.run
 
+import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
 import com.pharbers.util.log.phLogTrait.phDebugLog
 
 object TransformGYC extends App {
@@ -19,15 +20,13 @@ object TransformGYC extends App {
     val phaDF = Parquet2DF(HOSP_PHA_LOCATION)
     val pfizerProdEtcERD = Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_source_id)
 
-    val hospDIS = hospCvs.toDIS(
-        Map(
-            "hospBaseERD" -> Parquet2DF(HOSP_BASE_LOCATION),
-            "hospAddressERD" -> Parquet2DF(HOSP_ADDRESS_BASE_LOCATION),
-            "hospPrefectureERD" -> Parquet2DF(HOSP_ADDRESS_PREFECTURE_LOCATION),
-            "hospCityERD" -> Parquet2DF(HOSP_ADDRESS_CITY_LOCATION),
-            "hospProvinceERD" -> Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION)
-        )
-    )("hospDIS")
+    val hospDIS = hospCvs.toDIS(MapArgs(Map(
+        "hospBaseERD" -> DFArgs(Parquet2DF(HOSP_BASE_LOCATION))
+        , "hospAddressERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_BASE_LOCATION))
+        , "hospPrefectureERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_PREFECTURE_LOCATION))
+        , "hospCityERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_CITY_LOCATION))
+        , "hospProvinceERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION))
+    ))).getAs[DFArgs]("hospDIS")
 
     val pfizerERD = pfizerGycCvs.toERD(
         Map(

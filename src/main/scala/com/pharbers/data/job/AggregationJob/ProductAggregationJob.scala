@@ -1,4 +1,4 @@
-package com.pharbers.data.job.AggregationJob
+package com.pharbers.data.job.aggregationJob
 
 import java.util.UUID
 

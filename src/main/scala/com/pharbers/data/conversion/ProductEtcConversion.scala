@@ -67,6 +67,7 @@ case class ProductEtcConversion() extends PhDataConversion {
                 }
 
                 productEtcERD
+                        .withColumn("ETC_PRODUCT_ID", $"_id")
                         .withColumn("MIN1", concat(
                             col("ETC_PRODUCT_NAME"),
                             col("ETC_DOSAGE_NAME"),

@@ -1,7 +1,10 @@
-package com.pharbers.data.conversion.hosp.model
+package com.pharbers.data.model.hosp
 
-import org.bson.types.ObjectId
-
+/**
+  * @description:
+  * @author: clock
+  * @date: 2019-04-25 18:14
+  */
 case class cityData(_id: String, name: String, polygon: polygon, var tier: List[String], province:  String) {
 
 }

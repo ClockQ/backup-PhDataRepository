@@ -41,18 +41,19 @@ class Panel2ERDJob(args: Map[String, String])(implicit any: Any = null) extends 
         val panelDF = Parquet2DF(panel_file)
         val panelDFCount: Long = panelDF.count()
 
-        val hospDIS: DataFrame = hospCvs.toDIS {
-            val args = Map.newBuilder[String, DataFrame]
-            args += "hospBaseERD" -> Parquet2DF(hosp_base_file)
-//            if (hosp_bed_file.nonEmpty) args += "hospBedERD" -> Parquet2DF(hosp_bed_file)
-//            if (hosp_estimate_file.nonEmpty) args += "hospEstimateERD" -> Parquet2DF(hosp_estimate_file)
-//            if (hosp_outpatient_file.nonEmpty) args += "hospOutpatientERD" -> Parquet2DF(hosp_outpatient_file)
-//            if (hosp_revenue_file.nonEmpty) args += "hospRevenueERD" -> Parquet2DF(hosp_revenue_file)
-//            if (hosp_specialty_file.nonEmpty) args += "hospSpecialtyERD" -> Parquet2DF(hosp_specialty_file)
-//            if (hosp_staffnum_file.nonEmpty) args += "hospStaffNumERD" -> Parquet2DF(hosp_staffnum_file)
-//            if (hosp_unit_file.nonEmpty) args += "hospUnitERD" -> Parquet2DF(hosp_unit_file)
-            args.result()
-        }("hospDIS")
+        val hospDIS: DataFrame = ???
+//        hospCvs.toDIS {
+//            val args = Map.newBuilder[String, DataFrame]
+//            args += "hospBaseERD" -> Parquet2DF(hosp_base_file)
+////            if (hosp_bed_file.nonEmpty) args += "hospBedERD" -> Parquet2DF(hosp_bed_file)
+////            if (hosp_estimate_file.nonEmpty) args += "hospEstimateERD" -> Parquet2DF(hosp_estimate_file)
+////            if (hosp_outpatient_file.nonEmpty) args += "hospOutpatientERD" -> Parquet2DF(hosp_outpatient_file)
+////            if (hosp_revenue_file.nonEmpty) args += "hospRevenueERD" -> Parquet2DF(hosp_revenue_file)
+////            if (hosp_specialty_file.nonEmpty) args += "hospSpecialtyERD" -> Parquet2DF(hosp_specialty_file)
+////            if (hosp_staffnum_file.nonEmpty) args += "hospStaffNumERD" -> Parquet2DF(hosp_staffnum_file)
+////            if (hosp_unit_file.nonEmpty) args += "hospUnitERD" -> Parquet2DF(hosp_unit_file)
+//            args.result()
+//        }("hospDIS")
         val hospDISCount: Long = hospDIS.count()
 
         val sourceDF = Parquet2DF(source_file)

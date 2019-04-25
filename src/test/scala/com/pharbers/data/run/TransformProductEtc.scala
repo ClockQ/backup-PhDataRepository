@@ -48,7 +48,7 @@ object TransformProductEtc extends App {
             , "productDevERD" -> DFArgs(productDevERD)
             , "productMatchDF" -> DFArgs(procMatchDF)
         ))).getAs[DFArgs]("productEtcDIS")
-        productEtcDIS.show(false)
+//        productEtcDIS.show(false)
 
         // 未匹配到标准形式的只存在公司维度，max计算中是不计这部分的。
         val devNotMatch = productEtcDIS.filter(col("DEV_PRODUCT_ID").isNull)

@@ -22,7 +22,7 @@ case class CHCConversion() extends PhDataConversion {
         val dateDF = args.get.getOrElse("dateDF", throw new Exception("not found dateDF")).getBy[DFArgs]
         val productDIS = args.get.getOrElse("productDIS", throw new Exception("not found productDIS")).getBy[DFArgs]
                 .dropDuplicates("IMS_PACK_ID")
-                .select($"DEV_PRODUCT_ID".as("PRODUCT_ID"), $"IMS_PACK_ID")
+                .select($"IMS_PRODUCT_ID".as("PRODUCT_ID"), $"IMS_PACK_ID")
         val cityDF = args.get.getOrElse("cityDF", throw new Exception("not found cityDF")).getBy[DFArgs]
                 .select($"_id".as("CITY_ID"), regexp_replace($"name", "市", "").as("NAME"))
                 .dropDuplicates("NAME")
@@ -69,7 +69,7 @@ case class CHCConversion() extends PhDataConversion {
             chcERD
                     .join(
                         productDIS,
-                        chcERD("PRODUCT_ID") === productDIS("DEV_PRODUCT_ID"),
+                        chcERD("PRODUCT_ID") === productDIS("IMS_PRODUCT_ID"),
                         "left"
                     ).drop(productDIS("_id"))
                     .join(

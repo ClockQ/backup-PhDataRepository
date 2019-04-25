@@ -25,29 +25,31 @@ case class MaxResultAggregationForMonthJob(args: Map[String, String])(implicit a
 
     val maxResultERD: DataFrame = Parquet2DF(maxResultERDLocation)
 
-    val hospDIS: DataFrame = hospCvs.toDIS(
-        Map(
-            "hospBaseERD" -> Parquet2DF(HOSP_BASE_LOCATION),
-            "hospAddressERD" -> Parquet2DF(HOSP_ADDRESS_BASE_LOCATION),
-            "hospPrefectureERD" -> Parquet2DF(HOSP_ADDRESS_PREFECTURE_LOCATION),
-            "hospCityERD" -> Parquet2DF(HOSP_ADDRESS_CITY_LOCATION),
-            "hospProvinceERD" -> Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION)
-        )
-    )("hospDIS")
-    val productDIS: DataFrame = PROD_DEV_CVS.toDIS(
-        Map(
-            "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION),
-            "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + companyId),
-            "productImsERD" -> Parquet2DF(PROD_IMS_LOCATION)
-        )
-    )("productDIS")
+    val hospDIS: DataFrame = ???
+//        hospCvs.toDIS(
+//        Map(
+//            "hospBaseERD" -> Parquet2DF(HOSP_BASE_LOCATION),
+//            "hospAddressERD" -> Parquet2DF(HOSP_ADDRESS_BASE_LOCATION),
+//            "hospPrefectureERD" -> Parquet2DF(HOSP_ADDRESS_PREFECTURE_LOCATION),
+//            "hospCityERD" -> Parquet2DF(HOSP_ADDRESS_CITY_LOCATION),
+//            "hospProvinceERD" -> Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION)
+//        )
+//    )("hospDIS")
+    val productDIS: DataFrame = ???
+//    PROD_DEV_CVS.toDIS(
+//        Map(
+//            "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION),
+//            "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + companyId),
+//            "productImsERD" -> Parquet2DF(PROD_IMS_LOCATION)
+//        )
+//    )("productDIS")
 
     val maxDIS: DataFrame = pfizerInfMaxCvs.toDIS(
         Map(
             "maxERD" -> maxResultERD,
             "hospDIS" -> hospDIS,
-            "prodDIS" -> productDIS,
-            "sourceERD" -> CSV2DF(SOURCE_LOCATION)
+            "prodDIS" -> productDIS
+//            "sourceERD" -> CSV2DF(SOURCE_LOCATION)
         )
     )("maxDIS")
 

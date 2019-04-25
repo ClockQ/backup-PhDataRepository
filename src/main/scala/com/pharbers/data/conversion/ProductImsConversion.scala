@@ -98,6 +98,7 @@ case class ProductImsConversion() extends PhDataConversion {
 
         val productImsDIS = {
             productImsERD
+                    .withColumn("IMS_PRODUCT_ID", $"_id")
                     .join(
                         atc3ERD.dropDuplicates("PACK_ID")
                         , productImsERD("IMS_PACK_ID").cast("string") === atc3ERD("PACK_ID").cast("string")

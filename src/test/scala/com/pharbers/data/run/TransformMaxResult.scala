@@ -1,5 +1,6 @@
 package com.pharbers.run
 
+import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
 import com.pharbers.util.log.phLogTrait.phDebugLog
 import org.apache.spark.sql.DataFrame
 
@@ -33,15 +34,13 @@ object TransformMaxResult extends App {
     phDebugLog("maxERD count = " + maxERD.count())
     assert(pfizerMinus == 0, "pfizer INF max result: 转换后的ERD比源数据减少`" + pfizerMinus + "`条记录")
     maxERD.save2Parquet("/repository/maxResult")
-    val hospDIS = hospCvs.toDIS(
-        Map(
-            "hospBaseERD" -> Parquet2DF(HOSP_BASE_LOCATION),
-            "hospAddressERD" -> Parquet2DF(HOSP_ADDRESS_BASE_LOCATION),
-            "hospPrefectureERD" -> Parquet2DF(HOSP_ADDRESS_PREFECTURE_LOCATION),
-            "hospCityERD" -> Parquet2DF(HOSP_ADDRESS_CITY_LOCATION),
-            "hospProvinceERD" -> Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION)
-        )
-    )("hospDIS")
+    val hospDIS = hospCvs.toDIS(MapArgs(Map(
+        "hospBaseERD" -> DFArgs(Parquet2DF(HOSP_BASE_LOCATION))
+        , "hospAddressERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_BASE_LOCATION))
+        , "hospPrefectureERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_PREFECTURE_LOCATION))
+        , "hospCityERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_CITY_LOCATION))
+        , "hospProvinceERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION))
+    ))).getAs[DFArgs]("hospDIS")
     val PROD_DEV_DIS: DataFrame = ???
 //    PROD_DEV_CVS.toDIS(
 //        Map(

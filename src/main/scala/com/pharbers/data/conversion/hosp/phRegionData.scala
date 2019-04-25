@@ -1,6 +1,6 @@
 package com.pharbers.data.conversion.hosp
 
-import com.pharbers.data.conversion.hosp.model._
+import com.pharbers.data.model.hosp._
 import com.pharbers.spark.phSparkDriver
 import com.pharbers.spark.util.readParquet
 import org.apache.spark.rdd.RDD
@@ -8,7 +8,6 @@ import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SaveMode}
 import org.bson.types.ObjectId
-
 
 class phRegionData extends Serializable {
 	def getRegionDataFromCsv(df: DataFrame): Unit = {

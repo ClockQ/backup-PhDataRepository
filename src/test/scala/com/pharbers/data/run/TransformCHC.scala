@@ -63,8 +63,8 @@ object TransformCHC extends App {
         , "cityERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_CITY_LOCATION))
         , "productDIS" -> DFArgs(productImsDIS)
     ))).getAs[DFArgs]("chcDIS")
-//    chcDIS.show(false)
-//    chcCvs.toCHCStruct(chcDIS).show(false)
+    chcDIS.show(false)
+    chcCvs.toCHCStruct(chcDIS).show(false)
 
     val chcDISCount = chcDIS.count() // 8728
     val chcDisMinus = chcDFCount - chcDISCount

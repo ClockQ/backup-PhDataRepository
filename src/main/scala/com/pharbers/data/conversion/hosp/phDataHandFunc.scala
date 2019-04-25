@@ -3,7 +3,7 @@ package com.pharbers.data.conversion.hosp
 import org.bson.types.ObjectId
 import java.text.SimpleDateFormat
 
-import com.pharbers.data.conversion.hosp.model.hosp.hospData
+import com.pharbers.data.model.hosp.hospData
 import org.apache.spark.sql.{DataFrame, SaveMode}
 import org.apache.spark.sql.functions.udf
 import org.apache.spark.sql.expressions.UserDefinedFunction

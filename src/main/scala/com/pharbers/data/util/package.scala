@@ -1,5 +1,6 @@
 package com.pharbers.data
 
+import com.pharbers.data.model.oidSchema
 import org.apache.spark.rdd.RDD
 import com.pharbers.spark.util._
 import org.apache.spark.sql.functions._
