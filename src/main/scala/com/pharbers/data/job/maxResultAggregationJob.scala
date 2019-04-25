@@ -1,7 +1,7 @@
 package com.pharbers.data.job
 
 import com.pharbers.data.conversion.{HospConversion, MaxResultConversion, ProductDevConversion}
-import com.pharbers.data.job.AggregationJob.{MarketAggregationJob, ProductAggregationJob}
+import com.pharbers.data.job.aggregationJob.{MarketAggregationJob, ProductAggregationJob}
 import com.pharbers.data.util.ParquetLocation._
 import com.pharbers.data.util._
 import com.pharbers.pactions.actionbase._
