@@ -30,7 +30,7 @@ object TransformCPA extends App {
     val hospDISCount = hospDIS.count()
 
     def nhwaCpaERD(): Unit = {
-        val nhwa_company_id = NHWA_COMPANY_ID
+        val company_id = NHWA_COMPANY_ID
 
         val nhwa_cpa_csv = "/test/CPA&GYCX/Nhwa_201804_CPA_20181227.csv"
         val nhwa_prod_match = "/data/nhwa/pha_config_repository1809/Nhwa_ProductMatchTable_20181126.csv"
@@ -39,7 +39,7 @@ object TransformCPA extends App {
         val cpaDFCount = cpaDF.count()
 
         val marketDF = try{
-            Parquet2DF(PROD_MARKET_LOCATION + "/" + nhwa_company_id)
+            Parquet2DF(PROD_MARKET_LOCATION + "/" + company_id)
         } catch {
             case _: Exception => Seq.empty[(String, String, String)].toDF("_id", "PRODUCT_ID", "MARKET")
         }
@@ -50,7 +50,7 @@ object TransformCPA extends App {
                 .withColumn("PACK_NUMBER", when($"PACK_NUMBER".isNotNull, $"PACK_NUMBER").otherwise($"PACK_COUNT"))
 
         val productEtcDIS = prodCvs.toDIS(MapArgs(Map(
-            "productEtcERD" -> DFArgs(Parquet2DF(PROD_ETC_LOCATION + "/" + nhwa_company_id))
+            "productEtcERD" -> DFArgs(Parquet2DF(PROD_ETC_LOCATION + "/" + company_id))
             , "atcERD" -> DFArgs(atcDF)
             , "marketERD" -> DFArgs(marketDF)
             , "productDevERD" -> DFArgs(productDevERD)
@@ -59,7 +59,7 @@ object TransformCPA extends App {
         val productEtcDISCount = productEtcDIS.count()
 
         val result = cpaCvs.toERD(MapArgs(Map(
-            "cpaDF" -> DFArgs(cpaDF.trim("COMPANY_ID", nhwa_company_id).trim("SOURCE", "CPA"))
+            "cpaDF" -> DFArgs(cpaDF.trim("COMPANY_ID", company_id).trim("SOURCE", "CPA"))
             , "hospDF" -> DFArgs(hospDIS)
             , "prodDF" -> DFArgs(productEtcDIS)
             , "phaDF" -> DFArgs(phaDF)
@@ -73,10 +73,10 @@ object TransformCPA extends App {
         val cpaERDMinus = cpaDFCount - cpaERDCount
         assert(cpaERDMinus == 0, "nhwa: 转换后的ERD比源数据减少`" + cpaERDMinus + "`条记录")
 
-//        if (args.isEmpty || args(0) == "TRUE") {
-//            cpaDF.save2Parquet(CPA_LOCATION + "/" + nhwa_company_id)
-//            cpaDF.save2Mongo(CPA_LOCATION.split("/").last)
-//        }
+        if(args.nonEmpty && args(0) == "TRUE"){
+            cpaDF.save2Parquet(CPA_LOCATION + "/" + company_id)
+            cpaDF.save2Mongo(CPA_LOCATION.split("/").last)
+        }
 
         val cpaProd = result.getAs[DFArgs]("prodDIS")
         val cpaHosp = result.getAs[DFArgs]("hospDIS")
@@ -99,7 +99,7 @@ object TransformCPA extends App {
     nhwaCpaERD()
 
     def pfizerCpaERD(): Unit = {
-        val pfizer_company_id = PFIZER_COMPANY_ID
+        val company_id = PFIZER_COMPANY_ID
 
         val pfizer_cpa_csv = "/test/CPA&GYCX/Pfizer_201804_CPA_20181227.csv"
         val pfizer_prod_match = "/data/pfizer/pha_config_repository1901/Pfizer_ProductMatchTable_20190403.csv"
@@ -108,7 +108,7 @@ object TransformCPA extends App {
         val cpaDFCount = cpaDF.count()
 
         val marketDF = try{
-            Parquet2DF(PROD_MARKET_LOCATION + "/" + pfizer_company_id)
+            Parquet2DF(PROD_MARKET_LOCATION + "/" + company_id)
         } catch {
             case _: Exception => Seq.empty[(String, String, String)].toDF("_id", "PRODUCT_ID", "MARKET")
         }
@@ -119,7 +119,7 @@ object TransformCPA extends App {
                 .withColumn("PACK_NUMBER", when($"PACK_NUMBER".isNotNull, $"PACK_NUMBER").otherwise($"PACK_COUNT"))
 
         val productEtcDIS = prodCvs.toDIS(MapArgs(Map(
-            "productEtcERD" -> DFArgs(Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_company_id))
+            "productEtcERD" -> DFArgs(Parquet2DF(PROD_ETC_LOCATION + "/" + company_id))
             , "atcERD" -> DFArgs(atcDF)
             , "marketERD" -> DFArgs(marketDF)
             , "productDevERD" -> DFArgs(productDevERD)
@@ -128,7 +128,7 @@ object TransformCPA extends App {
         val productEtcDISCount = productEtcDIS.count()
 
         val result = cpaCvs.toERD(MapArgs(Map(
-            "cpaDF" -> DFArgs(cpaDF.trim("COMPANY_ID", pfizer_company_id).trim("SOURCE", "CPA"))
+            "cpaDF" -> DFArgs(cpaDF.trim("COMPANY_ID", company_id).trim("SOURCE", "CPA"))
             , "hospDF" -> DFArgs(hospDIS)
             , "prodDF" -> DFArgs(productEtcDIS)
             , "phaDF" -> DFArgs(phaDF)
@@ -142,10 +142,10 @@ object TransformCPA extends App {
         val cpaERDMinus = cpaDFCount - cpaERDCount
         assert(cpaERDMinus == 0, "pfizer: 转换后的ERD比源数据减少`" + cpaERDMinus + "`条记录")
 
-//        if (args.isEmpty || args(0) == "TRUE") {
-//            cpaDF.save2Parquet(CPA_LOCATION + "/" + pfizer_company_id)
-//            cpaDF.save2Mongo(CPA_LOCATION.split("/").last)
-//        }
+        if(args.nonEmpty && args(0) == "TRUE"){
+            cpaDF.save2Parquet(CPA_LOCATION + "/" + company_id)
+            cpaDF.save2Mongo(CPA_LOCATION.split("/").last)
+        }
 
         val cpaProd = result.getAs[DFArgs]("prodDIS")
         val cpaHosp = result.getAs[DFArgs]("hospDIS")
@@ -165,5 +165,5 @@ object TransformCPA extends App {
         assert(cpaERDMinus == 0, "pfizer: 转换后的DIS比源数据减少`" + cpaDISMinus + "`条记录")
     }
 
-//    pfizerCpaERD()
+    pfizerCpaERD()
 }

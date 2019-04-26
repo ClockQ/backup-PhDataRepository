@@ -29,8 +29,8 @@ case class CPAConversion() extends PhDataConversion {
                         , "left"
                     )
                     .join(
-                        hospDF.withColumnRenamed("_id", "HOSPITAL_ID").dropDuplicates("PHAHospId")
-                        , phaDF("PHA_ID_NEW") === hospDF("PHAHospId")
+                        hospDF.withColumnRenamed("_id", "HOSPITAL_ID").dropDuplicates("PHA_HOSP_ID")
+                        , phaDF("PHA_ID_NEW") === hospDF("PHA_HOSP_ID")
                         , "left"
                     )
                     .join(
@@ -69,7 +69,7 @@ case class CPAConversion() extends PhDataConversion {
                     .cache()
 
             val notConnHospDIS = notConnPhaDIS.select("PHA_ID_NEW")
-                    .withColumnRenamed("PHA_ID_NEW", "PHAHospId")
+                    .withColumnRenamed("PHA_ID_NEW", "PHA_HOSP_ID")
                     .generateId
 
             return toERD(MapArgs(args.get +
@@ -83,7 +83,7 @@ case class CPAConversion() extends PhDataConversion {
                 .str2Time
                 .trim("PRODUCT_NAME_NOTE")
                 .select($"_id", cpaDF("COMPANY_ID"), $"YM",
-                    $"HOSPITAL_ID".as("HOSP_ID"), $"ETC_PRODUCT_ID".as("PRODUCT_ID"),
+                    $"HOSPITAL_ID", $"ETC_PRODUCT_ID".as("PRODUCT_ID"),
                     $"VALUE".as("SALES"), $"STANDARD_UNIT".as("UNITS"), $"PRODUCT_NAME_NOTE")
 
         MapArgs(Map(
@@ -102,7 +102,7 @@ case class CPAConversion() extends PhDataConversion {
         val cpaDIS = cpaERD
                 .join(
                     hospERD,
-                    cpaERD("HOSP_ID") === hospERD("_id"),
+                    cpaERD("HOSPITAL_ID") === hospERD("_id"),
                     "left"
                 )
                 .drop(hospERD("_id"))

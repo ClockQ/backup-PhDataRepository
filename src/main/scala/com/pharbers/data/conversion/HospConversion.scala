@@ -59,6 +59,17 @@ case class HospConversion() extends PhDataConversion {
                     col("province") === col("main-id"),
                     "left"
                 ).drop(col("main-id"))
+                .select($"_id"
+                    , $"title" as "HOSP_NAME"
+                    , $"PHAIsRepeat" as "PHA_IS_REPEAT"
+                    , $"PHAHospId" as "PHA_HOSP_ID"
+                    , $"type" as "HOSP_TYPE"
+                    , $"level" as "HOSP_LEVEL"
+                    , $"character" as "HOSP_CHARACTER"
+                    , $"province-name" as "HOSP_PROVINCE_NAME"
+                    , $"city-name" as "HOSP_CITY_NAME"
+                    , $"prefecture-name" as "HOSP_PREFECTURE_NAME"
+                )
 
         MapArgs(Map("hospDIS" -> DFArgs(hospDIS)))
     }

@@ -76,7 +76,7 @@ object TransformProductDev extends App {
 //    println(productDevERD.count())
 //    productDevERD.filter($"DEV_PACK_ID" === "3801002").show(false)
 
-    if (args.isEmpty || args(0) == "TRUE") {
+    if(args.nonEmpty && args(0) == "TRUE"){
         productDevERD.save2Mongo(PROD_DEV_LOCATION.split("/").last)
         productDevERD.save2Parquet(PROD_DEV_LOCATION)
     }

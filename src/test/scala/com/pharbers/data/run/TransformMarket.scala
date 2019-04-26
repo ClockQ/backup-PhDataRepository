@@ -2,6 +2,7 @@ package com.pharbers.data.run
 
 import com.pharbers.util.log.phLogTrait.phDebugLog
 import com.pharbers.data.conversion.ProductEtcConversion
+import com.pharbers.data.run.TransformGYCX.args
 import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
 
 object TransformMarket extends App {
@@ -45,7 +46,7 @@ object TransformMarket extends App {
                 .generateId
         marketERD.show(false)
 
-        if (args.isEmpty || args(0) == "TRUE") {
+        if(args.nonEmpty && args(0) == "TRUE"){
             marketERD.save2Mongo(PROD_MARKET_LOCATION.split("/").last)
             marketERD.save2Parquet(PROD_MARKET_LOCATION + "/" + nhwa_company_id)
         }
@@ -120,7 +121,7 @@ object TransformMarket extends App {
                 .generateId
                 .select("_id", "PRODUCT_ID", "MARKET")
 
-        if (args.isEmpty || args(0) == "TRUE") {
+        if(args.nonEmpty && args(0) == "TRUE"){
             marketERD.save2Mongo(PROD_MARKET_LOCATION.split("/").last)
             marketERD.save2Parquet(PROD_MARKET_LOCATION + "/" + pfizer_company_id)
         }

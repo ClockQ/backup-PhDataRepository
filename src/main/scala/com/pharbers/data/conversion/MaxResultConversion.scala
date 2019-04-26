@@ -1,84 +1,72 @@
 package com.pharbers.data.conversion
 
 import org.apache.spark.sql.DataFrame
+import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
 
-case class MaxResultConversion(company_id: String) extends PhDataConversion2 {
+case class MaxResultConversion() extends PhDataConversion {
 
     import com.pharbers.data.util._
     import org.apache.spark.sql.functions._
+    import com.pharbers.data.util.sparkDriver.ss.implicits._
 
-    def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {
-        val maxDF = args.getOrElse("maxDF", throw new Exception("not found maxDF"))
-        //Date, Province, City, Panel_ID, Product, Factor, f_sales, f_units, MARKET
+    override def toERD(args: MapArgs): MapArgs = {
+        val maxDF = args.get.getOrElse("maxDF", throw new Exception("not found maxDF")).getBy[DFArgs]
+        val hospDF = args.get.getOrElse("hospDF", throw new Exception("not found hospDF")).getBy[DFArgs]
+        val prodDF = {
+            args.get.getOrElse("prodDF", throw new Exception("not found prodDF")).getBy[DFArgs]
+                    .withColumn("MIN2", concat(
+                        col("DEV_PRODUCT_NAME"),
+                        col("DEV_DOSAGE_NAME"),
+                        col("DEV_PACKAGE_DES"),
+                        col("DEV_PACKAGE_NUMBER"),
+                        col("DEV_CORP_NAME"))
+                    ).dropDuplicates("MIN2")
+        }
 
-//        val sourceERD = maxDF
-//            .select("MARKET")
-//            .distinct()
-//            .withColumn("COMPANY_ID", lit(company_id))
-//            .generateId
-//            .cache()
+        val maxERD = maxDF.join(
+            prodDF
+            , maxDF("Product") === prodDF("MIN2")
+            , "left"
+        ).join(
+            hospDF.dropDuplicates("PHA_HOSP_ID")
+            , maxDF("Panel_ID") === hospDF("PHA_HOSP_ID")
+            , "left"
+        ).select(
+            $"COMPANY_ID"
+            , $"Date" as "YM"
+            , hospDF("_id") as "HOSPITAL_ID"
+            , prodDF("_id") as "PRODUCT_ID"
+            , $"MARKET"
+            , $"Factor"
+            , $"belong2company"
+            , $"f_sales" as "SALES"
+            , $"f_units" as "UNITS"
+        ).generateId
 
-        val sourceERD = args.getOrElse("sourceERD", throw new Exception("not found maxDF"))
-
-        val maxERD = maxDF
-            .distinct()
-            .generateId
-            .join(sourceERD
-                .withColumnRenamed("MARKET", "mkt")
-                .withColumnRenamed("_id", "SOURCE_ID"),
-                col("MARKET") === col("mkt"),
-                "left")
-            .withColumnRenamed("Date", "YM")
-            .str2Time
-            .withColumnRenamed("Panel_ID", "PHA_ID")
-            .withColumnRenamed("Product", "MIN_PRODUCT")
-            .withColumnRenamed("Factor", "FACTOR")
-            .withColumnRenamed("f_sales", "SALES")
-            .withColumnRenamed("f_units", "UNITS")
-            .select("_ID", "SOURCE_ID", "TIME", "PHA_ID", "MIN_PRODUCT", "FACTOR", "SALES", "UNITS")
-
-        Map(
-            "maxERD" -> maxERD,
-            "sourceERD" -> sourceERD
-        )
+        MapArgs(Map("maxERD" -> DFArgs(maxERD)))
     }
 
-    def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = {
-        val maxERD = args.getOrElse("maxERD", throw new Exception("not found maxERD"))
-        val sourceERD = args.getOrElse("sourceERD", throw new Exception("not found sourceERD"))
-        val hospDIS = args.getOrElse("hospDIS", throw new Exception("not found hospDIS"))
-        val prodDIS = args.getOrElse("prodDIS", throw new Exception("not found prodDIS"))
+    override def toDIS(args: MapArgs): MapArgs = {
+        val maxERD = args.get.getOrElse("maxERD", throw new Exception("not found maxERD")).getBy[DFArgs]
+        val prodDIS = args.get.getOrElse("prodDIS", throw new Exception("not found prodDIS")).getBy[DFArgs]
+        val hospDIS = args.get.getOrElse("hospDIS", throw new Exception("not found hospDIS")).getBy[DFArgs]
 
-        // TODO:匹配医院已完成对数，目前MaxResultHospDIS只使用了[PHAHospId / City / Province]，原因是HospDIS数据中有PHAHospId一对多的问题，
-        // TODO:匹配产品已完成对数，但是max结果数据中的min_product是规范产品名等的数据，理论上能完全匹配到PH_PROD_DIS中，待测试。
-//        val hospDistinct = hospDIS.filter(col("PHAIsRepeat") === 0).select("PHAHospId", "prefecture-name", "city-name", "province-name").distinct()
-//            .groupBy("PHAHospId").agg(("PHAHospId" -> "count"))
+        val maxDIS = {
+            maxERD
+                    .join(
+                        hospDIS
+                        , maxERD("HOSPITAL_ID") === hospDIS("_id")
+                        , "left"
+                    )
+                    .drop(hospDIS("_id"))
+                    .join(
+                        prodDIS
+                        , maxERD("PRODUCT_ID") === prodDIS("_id")
+                        , "left"
+                    )
+                    .drop(prodDIS("_id"))
+        }
 
-        val maxDIS = maxERD
-            .join(
-                sourceERD.withColumnRenamed("_id", "main-id"),
-                col("SOURCE_ID") === col("main-id"),
-                "left"
-            ).drop(col("main-id"))
-            .join(
-                hospDIS.filter(col("PHAIsRepeat") === 0).select("PHAHospId", "city-name", "province-name").distinct(),
-                col("PHA_ID") === col("PHAHospId"),
-                "left"
-            ).drop(col("PHAHospId"))
-            .join(
-                prodDIS
-                    .withColumnRenamed("_id", "PRODUCT_ID")
-                    .withColumn("PH_MIN", concat(col("PRODUCT_NAME"), col("DOSAGE_NAME"), col("PACKAGE_DES"), col("PACKAGE_NUMBER"), col("CORP_NAME")))
-                    .dropDuplicates("PH_MIN")
-                    .drop("COMPANY_ID"),
-                col("MIN_PRODUCT") === col("PH_MIN"),
-                "left"
-            ).drop(col("PH_MIN"))
-            .na.fill("")
-            .time2ym
-
-        Map(
-            "maxDIS" -> maxDIS
-        )
+        MapArgs(Map("maxDIS" -> DFArgs(maxDIS)))
     }
 }

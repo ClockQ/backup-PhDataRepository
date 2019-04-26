@@ -43,16 +43,16 @@ object TransformCHC extends App {
             ))).getAs[DFArgs]("productDevERD")
         }
     ))).getAs[DFArgs]("chcERD")
-//    chcERD.show(false)
-
     val chcERDCount = chcERD.count() // 8728
+    chcERD.show(false)
+
     val chcProdIsNullCount = chcERD.filter($"PRODUCT_ID".isNull).count()
     assert(chcProdIsNullCount == 0, "chc: 转换后的ERD有`" + chcProdIsNullCount + "`条产品未匹配")
 
     val chcErdMinus = chcDFCount - chcERDCount
     assert(chcErdMinus == 0, "chc: 转换后的ERD比源数据减少`" + chcErdMinus + "`条记录")
 
-    if (args.isEmpty || args(0) == "TRUE") {
+    if(args.nonEmpty && args(0) == "TRUE"){
         chcERD.save2Parquet(CHC_LOCATION)
         chcERD.save2Mongo(CHC_LOCATION.split("/").last)
     }
@@ -63,10 +63,10 @@ object TransformCHC extends App {
         , "cityERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_CITY_LOCATION))
         , "productDIS" -> DFArgs(productImsDIS)
     ))).getAs[DFArgs]("chcDIS")
+    val chcDISCount = chcDIS.count() // 8728
     chcDIS.show(false)
     chcCvs.toCHCStruct(chcDIS).show(false)
 
-    val chcDISCount = chcDIS.count() // 8728
     val chcDisMinus = chcDFCount - chcDISCount
     assert(chcDisMinus == 0, "chc: 转换后的DIS比源数据减少`" + chcDisMinus + "`条记录")
 
@@ -97,7 +97,7 @@ object TransformCHC extends App {
             "chcDF" -> DFArgs(chc2Product(prodIdIsNull))
         ))).getAs[DFArgs]("productDevERD")
 
-        if (args.isEmpty || args(0) == "TRUE") {
+        if(args.nonEmpty && args(0) == "TRUE"){
             productDevERD.save2Mongo(PROD_DEV_LOCATION.split("/").last)
             productDevERD.save2Parquet(PROD_DEV_LOCATION)
         }

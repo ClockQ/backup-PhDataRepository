@@ -9,7 +9,6 @@ import com.pharbers.pactions.actionbase.MapArgs
 
 case class PanelConversion(company_id: String) extends PhDataConversion {
 
-
     def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val panelDF = args.getOrElse("panelDF", throw new Exception("not found panelDF"))
         val hospDF = args.getOrElse("hospDF", throw new Exception("not found hospDF"))

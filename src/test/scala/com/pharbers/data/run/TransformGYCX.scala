@@ -30,7 +30,7 @@ object TransformGYCX extends App {
     val hospDISCount = hospDIS.count()
 
     def pfizerGycxERD(): Unit = {
-        val pfizer_company_id = PFIZER_COMPANY_ID
+        val company_id = PFIZER_COMPANY_ID
 
         val pfizer_gycx_csv = "/test/CPA&GYCX/Pfizer_201804_Gycx_20181127.csv"
         val pfizer_prod_match = "/data/pfizer/pha_config_repository1901/Pfizer_ProductMatchTable_20190403.csv"
@@ -40,7 +40,7 @@ object TransformGYCX extends App {
 
         val marketDF = {
             try{
-                Parquet2DF(PROD_MARKET_LOCATION + "/" + pfizer_company_id)
+                Parquet2DF(PROD_MARKET_LOCATION + "/" + company_id)
             } catch {
                 case _: Exception => Seq.empty[(String, String, String)].toDF("_id", "PRODUCT_ID", "MARKET")
             }
@@ -52,7 +52,7 @@ object TransformGYCX extends App {
                     .withColumn("PACK_NUMBER", when($"PACK_NUMBER".isNotNull, $"PACK_NUMBER").otherwise($"PACK_COUNT"))
         }
         val productEtcDIS = prodCvs.toDIS(MapArgs(Map(
-            "productEtcERD" -> DFArgs(Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_company_id))
+            "productEtcERD" -> DFArgs(Parquet2DF(PROD_ETC_LOCATION + "/" + company_id))
             , "atcERD" -> DFArgs(atcDF)
             , "marketERD" -> DFArgs(marketDF)
             , "productDevERD" -> DFArgs(productDevERD)
@@ -61,7 +61,7 @@ object TransformGYCX extends App {
         val productEtcDISCount = productEtcDIS.count()
 
         val result = gycxCvs.toERD(MapArgs(Map(
-            "gycxDF" -> DFArgs(gycxDF.trim("COMPANY_ID", pfizer_company_id).trim("SOURCE", "GYCX"))
+            "gycxDF" -> DFArgs(gycxDF.trim("COMPANY_ID", company_id).trim("SOURCE", "GYCX"))
             , "hospDF" -> DFArgs(hospDIS)
             , "prodDF" -> DFArgs(productEtcDIS)
             , "phaDF" -> DFArgs(phaDF)
@@ -75,10 +75,10 @@ object TransformGYCX extends App {
         val gycxERDMinus = gycxDFCount - gycxERDCount
         assert(gycxERDMinus == 0, "pfizer: 转换后的ERD比源数据减少`" + gycxERDMinus + "`条记录")
 
-//        if (args.isEmpty || args(0) == "TRUE") {
-//            gycxDF.save2Parquet(GYCX_LOCATION + "/" + pfizer_company_id)
-//            gycxDF.save2Mongo(GYCX_LOCATION.split("/").last)
-//        }
+        if(args.nonEmpty && args(0) == "TRUE"){
+            gycxDF.save2Parquet(GYCX_LOCATION + "/" + company_id)
+            gycxDF.save2Mongo(GYCX_LOCATION.split("/").last)
+        }
 
         val gycxProd = result.getAs[DFArgs]("prodDIS")
         val gycxHosp = result.getAs[DFArgs]("hospDIS")

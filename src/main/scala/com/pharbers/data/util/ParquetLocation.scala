@@ -49,6 +49,9 @@ object ParquetLocation {
     val CPA_LOCATION = "/repository/cpa"
     val GYCX_LOCATION = "/repository/gycx"
 
+    val PANEL_LOCATION = "/repository/panel3"
+    val MAX_RESULT_LOCATION = "/repository/max3"
+
     // Agg
     val MAX_RESULT_MARKET_AGG_LOCATION = "/repository/agg/maxResult/market3"
     val MAX_RESULT_ADDRESS_AGG_LOCATION = "/repository/agg/maxResult/address3"

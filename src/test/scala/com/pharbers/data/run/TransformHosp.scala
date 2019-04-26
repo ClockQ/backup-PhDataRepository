@@ -33,6 +33,11 @@ object TransformHosp extends App {
 
         new phHospData().getHospDataFromCsv(df)
         new phRegionData().getRegionDataFromCsv(df)
+
+        // 这里可以看到四条医院实际是一个医院，对于医院这种底层数据，要注意垃圾数据的清理
+//        val abc = CSV2DF("/test/2019年Universe更新维护1.0.csv")
+//        abc.filter($"新版ID" === "PHA0004258").show(false)
+//        Parquet2DF(HOSP_BASE_LOCATION).filter($"PHAHospId" === "PHA0004258").show(false)
     }
 //    transformHosp()
 
@@ -49,8 +54,9 @@ object TransformHosp extends App {
         , "hospCityERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_CITY_LOCATION))
         , "hospProvinceERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION))
     ))).getAs[DFArgs]("hospDIS")
-    hospDIS.show(false)
     val hospDISCount = hospDIS.count()
+    hospDIS.show(false)
+
     val hospMinus = hospBaseERDCount - hospDISCount
     assert(hospMinus == 0, "prodIms: 转换后的DIS比ERD减少`" + hospMinus + "`条记录")
 }

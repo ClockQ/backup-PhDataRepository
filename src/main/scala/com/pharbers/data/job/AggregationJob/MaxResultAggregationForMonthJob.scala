@@ -20,7 +20,7 @@ case class MaxResultAggregationForMonthJob(args: Map[String, String])(implicit a
 
     val hospCvs = HospConversion()
     //    val prodCvs = ProdConversion()
-    val pfizerInfMaxCvs = MaxResultConversion(companyId)
+    val pfizerInfMaxCvs = MaxResultConversion()
     val PROD_DEV_CVS = ProductDevConversion()
 
     val maxResultERD: DataFrame = Parquet2DF(maxResultERDLocation)

@@ -1,11 +1,11 @@
-//package com.pharbers.run
-//
-//import com.pharbers.data.conversion._
-//import com.pharbers.data.util._
-//import com.pharbers.data.util.ParquetLocation._
-//import com.pharbers.util.log.phLogTrait.phDebugLog
-//
-//object TransformPanel extends App {
+package com.pharbers.data.run
+
+import com.pharbers.data.conversion._
+import com.pharbers.data.util._
+import com.pharbers.data.util.ParquetLocation._
+import com.pharbers.util.log.phLogTrait.phDebugLog
+
+object TransformPanel extends App {
 //    import org.apache.spark.sql.functions._
 //    import com.pharbers.data.util.sparkDriver.ss.implicits._
 //
@@ -61,4 +61,4 @@
 //
 //    val panelDISCount = panelDIS.count()
 //    phDebugLog(s"panelERDCount = $panelERDCount;panelDISCount = $panelDISCount")
-//}
+}

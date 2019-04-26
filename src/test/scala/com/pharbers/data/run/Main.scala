@@ -21,10 +21,15 @@ object Main extends App {
     // hosp
     TransformHosp.main(STATUS)
 
-    // chc
+    // CHC
     TransformCHCDate.main(SAVE)
     TransformCHC.main(STATUS)
 
-    // cpa
+    // source
+    TransformPHA.main(SAVE)
     TransformCPA.main(STATUS)
+    TransformGYCX.main(STATUS)
+
+    TransformPanel.main(STATUS)
+    TransformMaxResult.main(STATUS)
 }

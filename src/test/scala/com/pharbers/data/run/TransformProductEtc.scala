@@ -34,9 +34,9 @@ object TransformProductEtc extends App {
         val productEtcERD = prodCvs.toERD(MapArgs(Map(
                 "sourceDataDF" -> DFArgs(sourceDF)
             ))).getAs[DFArgs]("productEtcERD")
-//        productEtcERD.show(false)
+        productEtcERD.show(false)
 
-        if (args.isEmpty || args(0) == "TRUE") {
+        if(args.nonEmpty && args(0) == "TRUE"){
             productEtcERD.save2Mongo(PROD_ETC_LOCATION.split("/").last)
             productEtcERD.save2Parquet(PROD_ETC_LOCATION + "/" + nhwa_company_id)
         }
@@ -48,7 +48,7 @@ object TransformProductEtc extends App {
             , "productDevERD" -> DFArgs(productDevERD)
             , "productMatchDF" -> DFArgs(procMatchDF)
         ))).getAs[DFArgs]("productEtcDIS")
-//        productEtcDIS.show(false)
+        productEtcDIS.show(false)
 
         // 未匹配到标准形式的只存在公司维度，max计算中是不计这部分的。
         val devNotMatch = productEtcDIS.filter(col("DEV_PRODUCT_ID").isNull)
@@ -86,9 +86,9 @@ object TransformProductEtc extends App {
         val productEtcERD = prodCvs.toERD(MapArgs(Map(
                 "sourceDataDF" -> DFArgs(sourceDF)
             ))).getAs[DFArgs]("productEtcERD")
-//        productEtcERD.show(false)
+        productEtcERD.show(false)
 
-        if (args.isEmpty || args(0) == "TRUE") {
+        if(args.nonEmpty && args(0) == "TRUE"){
             productEtcERD.save2Mongo(PROD_ETC_LOCATION.split("/").last)
             productEtcERD.save2Parquet(PROD_ETC_LOCATION + "/" + pfizer_company_id)
         }
@@ -100,7 +100,7 @@ object TransformProductEtc extends App {
             , "productDevERD" -> DFArgs(productDevERD)
             , "productMatchDF" -> DFArgs(procMatchDF)
         ))).getAs[DFArgs]("productEtcDIS")
-//        productEtcDIS.show(false)
+        productEtcDIS.show(false)
 
         phDebugLog("pfizer:", productEtcERD.count(), productEtcDIS.count())
         // 未匹配到标准形式的只存在公司维度，max计算中是不计这部分的。
@@ -109,11 +109,11 @@ object TransformProductEtc extends App {
         devNotMatch.show(false)
 
         val marketNotMatch = productEtcDIS.filter(col("MARKET").isNull)
-        phDebugLog(" product is null MARKET count:" + marketNotMatch.count())
+        phDebugLog("pfizer product is null MARKET count:" + marketNotMatch.count())
         marketNotMatch.show(false)
 
         val atcNotMatch = productEtcDIS.filter(col("ATC_CODE").isNull)
-        phDebugLog("nhwa product is null ATC_CODE count:" + atcNotMatch.count())
+        phDebugLog("pfizer product is null ATC_CODE count:" + atcNotMatch.count())
         atcNotMatch.show(false)
     }
     pfizerProdEtcDF()

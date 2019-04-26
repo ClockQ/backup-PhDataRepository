@@ -35,8 +35,8 @@ object TransformCHCDate extends App {
 
     newDateDF.show(false)
 
-    if (args.isEmpty || args(0) == "TRUE") {
-        newDateDF.save2Parquet(CHC_DATE_LOCATION)
-        newDateDF.save2Mongo(CHC_DATE_LOCATION.split("/").last)
+    if(args.nonEmpty && args(0) == "TRUE"){
+        newDateDF.save2Mongo(PROD_DEV_LOCATION.split("/").last)
+        newDateDF.save2Parquet(PROD_DEV_LOCATION)
     }
 }

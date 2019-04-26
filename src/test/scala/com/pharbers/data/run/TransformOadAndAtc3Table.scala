@@ -17,14 +17,14 @@ object TransformOadAndAtc3Table extends App {
 
     val oadERD = result.get("oadERD").getBy[DFArgs]
     oadERD.show(false)
-    if (args.isEmpty || args(0) == "TRUE") {
+    if(args.nonEmpty && args(0) == "TRUE"){
         oadERD.save2Parquet(PROD_OADTABLE_LOCATION)
         oadERD.save2Mongo(PROD_OADTABLE_LOCATION.split("/").last)
     }
 
     val atc3ERD = result.get("atc3ERD").getBy[DFArgs]
     atc3ERD.show(false)
-    if (args.isEmpty || args(0) == "TRUE") {
+    if(args.nonEmpty && args(0) == "TRUE"){
         atc3ERD.save2Parquet(PROD_ATC3TABLE_LOCATION)
         atc3ERD.save2Mongo(PROD_ATC3TABLE_LOCATION.split("/").last)
     }
