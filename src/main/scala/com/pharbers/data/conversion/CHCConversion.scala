@@ -1,6 +1,7 @@
 package com.pharbers.data.conversion
 
 import org.apache.spark.sql.DataFrame
+import com.pharbers.pactions.actionbase.{DFArgs, MapArgs, SingleArgFuncArgs}
 
 case class CHCConversion() extends PhDataConversion {
 
@@ -8,58 +9,67 @@ case class CHCConversion() extends PhDataConversion {
     import org.apache.spark.sql.functions._
     import com.pharbers.data.util.sparkDriver.ss.implicits._
 
-    override def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {
-        val chcDF = args.getOrElse("chcDF", throw new Exception("not found chcDF"))
-        val prodDF = args.getOrElse("prodDF", throw new Exception("not found prodDF"))
-                .dropDuplicates("PACK_ID")
-        val cityDF = args.getOrElse("cityDF", throw new Exception("not found cityDF"))
+    def toCHCStruct(dis: DataFrame): DataFrame = dis.select(
+        $"IMS_PACK_ID".as("PACK_ID"), $"TIME", $"name".as("CITY")
+        , $"DEV_PRODUCT_NAME", $"DEV_MOLE_NAME", $"DEV_CORP_NAME"
+        , $"DEV_PACKAGE_NUMBER", $"DEV_DOSAGE_NAME", $"DEV_PACKAGE_DES"
+        , $"ATC3", $"OAD_TYPE"
+        , $"SALES", $"UNITS"
+    )
+
+    override def toERD(args: MapArgs): MapArgs = {
+        val chcDF = args.get.getOrElse("chcDF", throw new Exception("not found chcDF")).getBy[DFArgs]
+        val dateDF = args.get.getOrElse("dateDF", throw new Exception("not found dateDF")).getBy[DFArgs]
+        val productDIS = args.get.getOrElse("productDIS", throw new Exception("not found productDIS")).getBy[DFArgs]
+                .dropDuplicates("IMS_PACK_ID")
+                .select($"IMS_PRODUCT_ID".as("PRODUCT_ID"), $"IMS_PACK_ID")
+        val cityDF = args.get.getOrElse("cityDF", throw new Exception("not found cityDF")).getBy[DFArgs]
                 .select($"_id".as("CITY_ID"), regexp_replace($"name", "市", "").as("NAME"))
                 .dropDuplicates("NAME")
-
-        val dateDF = chcDF.select($"Date".as("TIME"))
-                .distinct()
-                .withColumn("PERIOD", lit("quarter"))
-                .generateId
-                .cache()
+        val addCHCProdFunc = args.get.get("addCHCProdFunc")
 
         val chcERD = {
             chcDF
-                    // DATE_ID
-                    .join(
+                    .join(// DATE_ID
                         dateDF.withColumnRenamed("_id", "DATE_ID"),
-                        chcDF("Date") === dateDF("TIME"), "left")
-                    // PRODUCT_ID
-                    .join(
-                        prodDF.select($"_id".as("PRODUCT_ID"), $"PACK_ID"),
-                        chcDF("Pack_ID") === prodDF("PACK_ID"), "left")
-                    // CITY_ID
-                    .join(
+                        chcDF("Date") === dateDF("TIME"),
+                        "left"
+                    )
+                    .join( // PRODUCT_ID
+                        productDIS,
+                        chcDF("Pack_ID") === productDIS("IMS_PACK_ID"),
+                        "left"
+                    )
+                    .join( // CITY_ID
                         cityDF,
-                        chcDF("city") === cityDF("NAME"), "left")
-                    // Adjust the order
+                        chcDF("city") === cityDF("NAME"),
+                        "left"
+                    ) // Adjust the order
                     .select($"PRODUCT_ID", $"CITY_ID", $"DATE_ID", $"Sales".as("SALES"), $"Units".as("UNITS"))
                     .generateId
         }
 
-        Map(
-            "chcERD" -> chcERD,
-            "dateERD" -> dateDF
-        )
+//        val funcedERD = addCHCProdFunc match {
+//            case Some(funcArgs) =>
+//                val func = funcArgs.getBy[SingleArgFuncArgs[DataFrame, DataFrame]]
+//                func(chcERD)
+//            case None =>
+//        }
+
+        MapArgs(Map("chcERD" -> DFArgs(chcERD)))
     }
 
-    override def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = {
-        val chcERD = args.getOrElse("chcERD", throw new Exception("not found chcERD"))
-        val dateERD = args.getOrElse("dateERD", throw new Exception("not found dateERD"))
-        val cityERD = args.getOrElse("cityERD", throw new Exception("not found cityERD"))
-        val oadERD = args.getOrElse("oadERD", throw new Exception("not found oadERD"))
-        val atc3ERD = args.getOrElse("atc3ERD", throw new Exception("not found atc3ERD"))
-        val productDIS = args.getOrElse("productDIS", throw new Exception("not found productDIS"))
+    override def toDIS(args: MapArgs): MapArgs = {
+        val chcERD = args.get.getOrElse("chcERD", throw new Exception("not found chcERD")).getBy[DFArgs]
+        val productDIS = args.get.getOrElse("productDIS", throw new Exception("not found productDIS")).getBy[DFArgs]
+        val cityERD = args.get.getOrElse("cityERD", throw new Exception("not found cityERD")).getBy[DFArgs]
+        val dateERD = args.get.getOrElse("dateERD", throw new Exception("not found dateERD")).getBy[DFArgs]
 
         val chcDIS = {
             chcERD
                     .join(
                         productDIS,
-                        chcERD("PRODUCT_ID") === productDIS("_id"),
+                        chcERD("PRODUCT_ID") === productDIS("IMS_PRODUCT_ID"),
                         "left"
                     ).drop(productDIS("_id"))
                     .join(
@@ -72,27 +82,8 @@ case class CHCConversion() extends PhDataConversion {
                         chcERD("CITY_ID") === cityERD("_id"),
                         "left"
                     ).drop(cityERD("_id"))
-                    .join(
-                        atc3ERD,
-                        productDIS("PACK_ID") === atc3ERD("PACK_ID"),
-                        "left"
-                    ).drop(atc3ERD("PACK_ID")).drop(atc3ERD("_id"))
-                    .join(
-                        oadERD,
-                        atc3ERD("ATC3") === oadERD("ATC3"),
-                        "left"
-                    ).drop(oadERD("ATC3")).drop(oadERD("_id"))
         }
 
-        Map("chcDIS" -> chcDIS)
+        MapArgs(Map("chcDIS" -> DFArgs(chcDIS)))
     }
-
-    def toCHCStruct(dis: DataFrame): DataFrame =
-        dis.select(
-            $"PACK_ID", $"TIME", $"name"
-            , $"PRODUCT_NAME", $"MOLE_NAME", $"CORP_NAME"
-            , $"PACKAGE_NUMBER", $"DOSAGE_NAME", $"PACKAGE_DES"
-            , $"ATC3", $"OAD_TYPE"
-            , $"SALES", $"UNITS"
-        )
 }

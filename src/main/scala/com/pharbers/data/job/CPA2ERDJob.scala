@@ -38,8 +38,8 @@ case class CPA2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
     val pha_file_temp: String = args.getOrElse("pha_file_temp", "")
 
     val hospCvs: HospConversion = HospConversion()
-    val prodCvs: ProductEtcConversion = ProductEtcConversion(company_id)
-    val cpaCvs: CPAConversion = CPAConversion(company_id)(prodCvs)
+    val prodCvs: ProductEtcConversion = ProductEtcConversion()
+    val cpaCvs: CPAConversion = CPAConversion()
 
     override def perform(pr: pActionArgs = MapArgs(Map())): pActionArgs = {
         phDebugLog("开始转换:" + cpa_file)
@@ -48,39 +48,42 @@ case class CPA2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
         val phaDF = Parquet2DF(pha_file)
         val phaDFCount: Long = phaDF.count()
 
-        val hospDIS: DataFrame = hospCvs.toDIS {
-            val args = Map.newBuilder[String, DataFrame]
-            args += "hospBaseERD" -> Parquet2DF(hosp_base_file)
-            if (hosp_bed_file.nonEmpty) args += "hospBedERD" -> Parquet2DF(hosp_bed_file)
-            if (hosp_estimate_file.nonEmpty) args += "hospEstimateERD" -> Parquet2DF(hosp_estimate_file)
-            if (hosp_outpatient_file.nonEmpty) args += "hospOutpatientERD" -> Parquet2DF(hosp_outpatient_file)
-            if (hosp_revenue_file.nonEmpty) args += "hospRevenueERD" -> Parquet2DF(hosp_revenue_file)
-            if (hosp_specialty_file.nonEmpty) args += "hospSpecialtyERD" -> Parquet2DF(hosp_specialty_file)
-            if (hosp_staffnum_file.nonEmpty) args += "hospStaffNumERD" -> Parquet2DF(hosp_staffnum_file)
-            if (hosp_unit_file.nonEmpty) args += "hospUnitERD" -> Parquet2DF(hosp_unit_file)
-            args.result()
-        }("hospDIS")
+        val hospDIS: DataFrame = ???
+//        hospCvs.toDIS {
+//            val args = Map.newBuilder[String, DataFrame]
+//            args += "hospBaseERD" -> Parquet2DF(hosp_base_file)
+//            if (hosp_bed_file.nonEmpty) args += "hospBedERD" -> Parquet2DF(hosp_bed_file)
+//            if (hosp_estimate_file.nonEmpty) args += "hospEstimateERD" -> Parquet2DF(hosp_estimate_file)
+//            if (hosp_outpatient_file.nonEmpty) args += "hospOutpatientERD" -> Parquet2DF(hosp_outpatient_file)
+//            if (hosp_revenue_file.nonEmpty) args += "hospRevenueERD" -> Parquet2DF(hosp_revenue_file)
+//            if (hosp_specialty_file.nonEmpty) args += "hospSpecialtyERD" -> Parquet2DF(hosp_specialty_file)
+//            if (hosp_staffnum_file.nonEmpty) args += "hospStaffNumERD" -> Parquet2DF(hosp_staffnum_file)
+//            if (hosp_unit_file.nonEmpty) args += "hospUnitERD" -> Parquet2DF(hosp_unit_file)
+//            args.result()
+//        }("hospDIS")
         val hospDISCount: Long = hospDIS.count()
-        val prodDIS: DataFrame = prodCvs.toDIS {
-            val args = Map.newBuilder[String, DataFrame]
-            args += "prodERD" -> Parquet2DF(prod_base_file)
-//            if (prod_delivery_file.nonEmpty) args += "prodDeliveryERD" -> Parquet2DF(prod_delivery_file)
-//            if (prod_dosage_file.nonEmpty) args += "prodDosageERD" -> Parquet2DF(prod_dosage_file)
-//            if (prod_mole_file.nonEmpty) args += "prodMoleERD" -> Parquet2DF(prod_mole_file)
-//            if (prod_package_file.nonEmpty) args += "prodPackageERD" -> Parquet2DF(prod_package_file)
-//            if (prod_corp_file.nonEmpty) args += "prodCorpERD" -> Parquet2DF(prod_corp_file)
-            args.result()
-        }("prodDIS")
+        val prodDIS: DataFrame = ???
+//            prodCvs.toDIS {
+//            val args = Map.newBuilder[String, DataFrame]
+//            args += "prodERD" -> Parquet2DF(prod_base_file)
+////            if (prod_delivery_file.nonEmpty) args += "prodDeliveryERD" -> Parquet2DF(prod_delivery_file)
+////            if (prod_dosage_file.nonEmpty) args += "prodDosageERD" -> Parquet2DF(prod_dosage_file)
+////            if (prod_mole_file.nonEmpty) args += "prodMoleERD" -> Parquet2DF(prod_mole_file)
+////            if (prod_package_file.nonEmpty) args += "prodPackageERD" -> Parquet2DF(prod_package_file)
+////            if (prod_corp_file.nonEmpty) args += "prodCorpERD" -> Parquet2DF(prod_corp_file)
+//            args.result()
+//        }("prodDIS")
         val prodDISCount: Long = prodDIS.count()
 
-        val cpaResult: Map[String, DataFrame] = cpaCvs.toERD(
-            Map(
-                "cpaDF" -> cpaDF,
-                "hospDF" -> hospDIS,
-                "prodDF" -> prodDIS,
-                "phaDF" -> phaDF
-            )
-        )
+        val cpaResult: Map[String, DataFrame] = ???
+//            cpaCvs.toERD(
+//            Map(
+//                "cpaDF" -> cpaDF,
+//                "hospDF" -> hospDIS,
+//                "prodDF" -> prodDIS,
+//                "phaDF" -> phaDF
+//            )
+//        )
         val cpaERD = cpaResult("cpaERD")
         val cpaERDCount: Long = cpaERD.count()
         val cpaProd = cpaResult("prodDIS")

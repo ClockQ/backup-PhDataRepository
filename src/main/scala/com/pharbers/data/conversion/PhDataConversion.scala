@@ -1,6 +1,6 @@
 package com.pharbers.data.conversion
 
-import org.apache.spark.sql.DataFrame
+import com.pharbers.pactions.actionbase.MapArgs
 
 /**
   * @description: data conversion trait
@@ -9,7 +9,7 @@ import org.apache.spark.sql.DataFrame
   */
 trait PhDataConversion {
 
-    def toERD(args: Map[String, DataFrame]): Map[String, DataFrame]
+    def toERD(args: MapArgs): MapArgs
 
-    def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame]
+    def toDIS(args: MapArgs): MapArgs
 }
