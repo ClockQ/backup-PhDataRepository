@@ -1,16 +1,16 @@
 package com.pharbers.data.conversion
+
+import com.pharbers.data.util._
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
-import com.pharbers.data.util.commonUDF.generateIdUdf
-import com.pharbers.data.util._
 import com.pharbers.util.log.phLogTrait.phDebugLog
+import com.pharbers.data.util.commonUDF.generateIdUdf
+import com.pharbers.pactions.actionbase.MapArgs
+
+case class PanelConversion(company_id: String) extends PhDataConversion {
 
 
-case class PanelConversion(company_id: String)
-        extends PhDataConversion2 {
-
-
-    override def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {
+    def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val panelDF = args.getOrElse("panelDF", throw new Exception("not found panelDF"))
         val hospDF = args.getOrElse("hospDF", throw new Exception("not found hospDF"))
                 .filter(col("PHAIsRepeat") === "0")
@@ -70,7 +70,7 @@ case class PanelConversion(company_id: String)
         )
     }
 
-    override def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = {
+    def toDIS(args: Map[String, DataFrame]): Map[String, DataFrame] = {
 
         val panelERD = args.getOrElse("panelERD", throw new Exception("not found panelERD"))
         val sourceERD = args.getOrElse("sourceERD", throw new Exception("not found sourceERD"))
@@ -90,4 +90,8 @@ case class PanelConversion(company_id: String)
             "panelDIS" -> panelDIS
         )
     }
+
+    override def toERD(args: MapArgs): MapArgs = ???
+
+    override def toDIS(args: MapArgs): MapArgs = ???
 }

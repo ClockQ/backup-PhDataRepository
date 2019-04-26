@@ -4,7 +4,7 @@ import org.apache.spark.sql.DataFrame
 import com.pharbers.pactions.actionbase._
 import com.pharbers.util.log.phLogTrait.phDebugLog
 import com.pharbers.pactions.jobs.sequenceJobWithMap
-import com.pharbers.data.conversion.{GYCConversion, HospConversion, ProductEtcConversion}
+import com.pharbers.data.conversion.{GYCXConversion, HospConversion, ProductEtcConversion}
 
 /**
   * @description:
@@ -39,7 +39,7 @@ case class GYC2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
 
     val hospCvs: HospConversion = HospConversion()
     val prodCvs: ProductEtcConversion = ProductEtcConversion()
-    val gycCvs: GYCConversion = GYCConversion(company_id)(prodCvs)
+    val gycCvs: GYCXConversion = GYCXConversion()
 
     override def perform(pr: pActionArgs = MapArgs(Map())): pActionArgs = {
         phDebugLog("开始转换:" + gyc_file)
@@ -75,14 +75,15 @@ case class GYC2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
 //        }("prodDIS")
         val prodDISCount: Long = prodDIS.count()
 
-        val gycResult: Map[String, DataFrame] = gycCvs.toERD(
-            Map(
-                "gycDF" -> gycDF,
-                "hospDF" -> hospDIS,
-                "prodDF" -> prodDIS,
-                "phaDF" -> phaDF
-            )
-        )
+        val gycResult: Map[String, DataFrame] = ???
+//        gycCvs.toERD(
+//            Map(
+//                "gycDF" -> gycDF,
+//                "hospDF" -> hospDIS,
+//                "prodDF" -> prodDIS,
+//                "phaDF" -> phaDF
+//            )
+//        )
         val gycERD = gycResult("gycERD")
         val gycERDCount: Long = gycERD.count()
         val gycProd = gycResult("prodDIS")

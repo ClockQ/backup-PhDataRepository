@@ -3,29 +3,24 @@ package com.pharbers.data.conversion
 import com.pharbers.util.log.phLogTrait.phDebugLog
 import com.pharbers.pactions.actionbase.{DFArgs, MapArgs, SingleArgFuncArgs}
 
-/**
-  * @description:
-  * @author: clock
-  * @date: 2019-03-28 16:40
-  */
-case class CPAConversion() extends PhDataConversion {
+case class GYCXConversion() extends PhDataConversion {
 
     import com.pharbers.data.util._
     import org.apache.spark.sql.functions._
     import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     override def toERD(args: MapArgs): MapArgs = {
-        val cpaDF = args.get.getOrElse("cpaDF", throw new Exception("not found cpaDF")).getBy[DFArgs]
+        val gycxDF = args.get.getOrElse("gycxDF", throw new Exception("not found gycxDF")).getBy[DFArgs]
         val hospDF = args.get.getOrElse("hospDF", throw new Exception("not found hospDF")).getBy[DFArgs]
         val prodDF = args.get.getOrElse("prodDF", throw new Exception("not found prodDF")).getBy[DFArgs]
         val phaDF = args.get.getOrElse("phaDF", throw new Exception("not found phaDF")).getBy[DFArgs]
         val appendProdFunc = args.get.getOrElse("appendProdFunc", throw new Exception("not found appendProdFunc")).getBy[SingleArgFuncArgs[MapArgs, MapArgs]]
 
         val connProdHosp = {
-            cpaDF
+            gycxDF
                     .join(
-                        phaDF.drop("_id").dropDuplicates("CPA")
-                        , cpaDF("HOSP_ID") === phaDF("CPA")
+                        phaDF.drop("_id").dropDuplicates("GYC")
+                        , gycxDF("HOSP_ID") === phaDF("GYC")
                         , "left"
                     )
                     .join(
@@ -35,22 +30,22 @@ case class CPAConversion() extends PhDataConversion {
                     )
                     .join(
                         prodDF
-                        , cpaDF("PRODUCT_NAME") === prodDF("ETC_PRODUCT_NAME")
-                                && cpaDF("MOLE_NAME") === prodDF("ETC_MOLE_NAME")
-                                && cpaDF("DOSAGE") === prodDF("ETC_DOSAGE_NAME")
-                                && cpaDF("PACK_DES") === prodDF("ETC_PACKAGE_DES")
-                                && cpaDF("PACK_NUMBER") === prodDF("ETC_PACKAGE_NUMBER")
-                                && cpaDF("CORP_NAME") === prodDF("ETC_CORP_NAME")
+                        , gycxDF("PRODUCT_NAME") === prodDF("ETC_PRODUCT_NAME")
+                                && gycxDF("MOLE_NAME") === prodDF("ETC_MOLE_NAME")
+                                && gycxDF("DOSAGE") === prodDF("ETC_DOSAGE_NAME")
+                                && gycxDF("PACK_DES") === prodDF("ETC_PACKAGE_DES")
+                                && gycxDF("PACK_NUMBER") === prodDF("ETC_PACKAGE_NUMBER")
+                                && gycxDF("CORP_NAME") === prodDF("ETC_CORP_NAME")
                         , "left"
                     )
         }
 
         // 存在未成功匹配的产品, 递归执行self.toERD
-        val notConnProdOfCpa = connProdHosp.filter(col("ETC_PRODUCT_ID").isNull)
-        val notConnProdOfCpaCount = notConnProdOfCpa.count()
-        if (notConnProdOfCpaCount != 0) {
-            phDebugLog(notConnProdOfCpaCount + "条产品未匹配, 重新转换")
-            val notConnProdDIS = appendProdFunc(MapArgs(Map("sourceDataDF" -> DFArgs(notConnProdOfCpa))))
+        val notConnProdOfGycx = connProdHosp.filter(col("ETC_PRODUCT_ID").isNull)
+        val notConnProdOfGycxCount = notConnProdOfGycx.count()
+        if (notConnProdOfGycxCount != 0) {
+            phDebugLog(notConnProdOfGycxCount + "条产品未匹配, 重新转换")
+            val notConnProdDIS = appendProdFunc(MapArgs(Map("sourceDataDF" -> DFArgs(notConnProdOfGycx))))
                     .getAs[DFArgs]("productEtcDIS")
             return toERD(MapArgs(args.get +
                     ("prodDF" -> DFArgs(prodDF.unionByName(notConnProdDIS.alignAt(prodDF))))
@@ -58,13 +53,13 @@ case class CPAConversion() extends PhDataConversion {
         }
 
         // 存在未成功匹配的医院, 递归执行self.toERD
-        val notConnHospOfCpa = connProdHosp.filter(col("HOSPITAL_ID").isNull)
-        val notConnHospOfCpaCount = notConnHospOfCpa.count()
-        if (notConnHospOfCpaCount != 0) {
-            phDebugLog(notConnHospOfCpaCount + "条医院未匹配, 重新转换")
-            val notConnPhaDIS = notConnHospOfCpa.select(col("HOSP_ID"))
+        val notConnHospOfGycx = connProdHosp.filter(col("HOSPITAL_ID").isNull)
+        val notConnHospOfGycxCount = notConnHospOfGycx.count()
+        if (notConnHospOfGycxCount != 0) {
+            phDebugLog(notConnHospOfGycxCount + "条医院未匹配, 重新转换")
+            val notConnPhaDIS = notConnHospOfGycx.select(col("HOSP_ID"))
                     .distinct()
-                    .withColumnRenamed("HOSP_ID", "CPA")
+                    .withColumnRenamed("HOSP_ID", "GYC")
                     .withColumn("PHA_ID_NEW", commonUDF.generateIdUdf())
                     .cache()
 
@@ -78,16 +73,15 @@ case class CPAConversion() extends PhDataConversion {
             ))
         }
 
-        val cpaERD = connProdHosp
+        val gycxERD = connProdHosp
                 .generateId
                 .str2Time
-                .trim("PRODUCT_NAME_NOTE")
-                .select($"_id", cpaDF("COMPANY_ID"), $"YM",
+                .select($"_id", gycxDF("COMPANY_ID"), $"YM",
                     $"HOSPITAL_ID".as("HOSP_ID"), $"ETC_PRODUCT_ID".as("PRODUCT_ID"),
-                    $"VALUE".as("SALES"), $"STANDARD_UNIT".as("UNITS"), $"PRODUCT_NAME_NOTE")
+                    $"VALUE".as("SALES"), $"STANDARD_UNIT".as("UNITS"))
 
         MapArgs(Map(
-            "cpaERD" -> DFArgs(cpaERD),
+            "gycxERD" -> DFArgs(gycxERD),
             "prodDIS" -> DFArgs(prodDF),
             "hospDIS" -> DFArgs(hospDF),
             "phaDIS" -> DFArgs(phaDF)
@@ -95,24 +89,26 @@ case class CPAConversion() extends PhDataConversion {
     }
 
     override def toDIS(args: MapArgs): MapArgs = {
-        val cpaERD = args.get.getOrElse("cpaERD", throw new Exception("not found cpaERD")).getBy[DFArgs]
+        val gycxERD = args.get.getOrElse("gycxERD", throw new Exception("not found gycxERD")).getBy[DFArgs]
         val hospERD = args.get.getOrElse("hospERD", throw new Exception("not found hospERD")).getBy[DFArgs]
         val prodERD = args.get.getOrElse("prodERD", throw new Exception("not found prodERD")).getBy[DFArgs]
 
-        val cpaDIS = cpaERD
+        val gycDIS = gycxERD
                 .join(
                     hospERD,
-                    cpaERD("HOSP_ID") === hospERD("_id"),
+                    gycxERD("HOSP_ID") === hospERD("_id"),
                     "left"
                 )
                 .drop(hospERD("_id"))
                 .join(
                     prodERD,
-                    cpaERD("PRODUCT_ID") === prodERD("_id"),
+                    gycxERD("PRODUCT_ID") === prodERD("_id"),
                     "left"
                 )
                 .drop(prodERD("_id"))
 
-        MapArgs(Map("cpaDIS" -> DFArgs(cpaDIS)))
+
+        MapArgs(Map("gycxDIS" -> DFArgs(gycDIS)))
     }
+
 }

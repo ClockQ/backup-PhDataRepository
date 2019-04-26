@@ -85,6 +85,15 @@ object TransformCPA extends App {
         phDebugLog("nhwa cpa Prod", productEtcDISCount, cpaProd.count())
         phDebugLog("nhwa cpa Hosp", hospDISCount, cpaHosp.count())
         phDebugLog("nhwa cpa Pha", phaDFCount, cpaPha.count())
+
+        val cpaDIS = cpaCvs.toDIS(MapArgs(Map(
+            "cpaERD" -> DFArgs(cpaERD)
+            , "hospERD" -> DFArgs(cpaHosp)
+            , "prodERD" -> DFArgs(cpaProd)
+        ))).getAs[DFArgs]("cpaDIS")
+        cpaDIS.show(false)
+        val cpaDISMinus = cpaERDCount - cpaDIS.count()
+        assert(cpaERDMinus == 0, "nhwa: 转换后的DIS比源数据减少`" + cpaDISMinus + "`条记录")
     }
 
     nhwaCpaERD()
@@ -145,7 +154,16 @@ object TransformCPA extends App {
         phDebugLog("pfizer cpa Prod", productEtcDISCount, cpaProd.count())
         phDebugLog("pfizer cpa Hosp", hospDISCount, cpaHosp.count())
         phDebugLog("pfizer cpa Pha", phaDFCount, cpaPha.count())
+
+        val cpaDIS = cpaCvs.toDIS(MapArgs(Map(
+            "cpaERD" -> DFArgs(cpaERD)
+            , "hospERD" -> DFArgs(cpaHosp)
+            , "prodERD" -> DFArgs(cpaProd)
+        ))).getAs[DFArgs]("cpaDIS")
+        cpaDIS.show(false)
+        val cpaDISMinus = cpaERDCount - cpaDIS.count()
+        assert(cpaERDMinus == 0, "pfizer: 转换后的DIS比源数据减少`" + cpaDISMinus + "`条记录")
     }
 
-    pfizerCpaERD()
+//    pfizerCpaERD()
 }
