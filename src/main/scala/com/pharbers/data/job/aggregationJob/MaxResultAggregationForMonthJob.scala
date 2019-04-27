@@ -46,13 +46,13 @@ case class MaxResultAggregationForMonthJob(args: Map[String, String])(implicit a
 //    )("productDIS")
 
     val maxDIS: DataFrame = pfizerInfMaxCvs.toDIS(
-        Map(
-            "maxERD" -> maxResultERD,
-            "hospDIS" -> hospDIS,
-            "prodDIS" -> productDIS
-//            "sourceERD" -> CSV2DF(SOURCE_LOCATION)
+        MapArgs(
+            Map("maxERD" -> DFArgs(maxResultERD),
+                "hospDIS" -> DFArgs(hospDIS),
+                "prodDIS" -> DFArgs(productDIS)
+            )
         )
-    )("maxDIS")
+    ).get("maxDIS").get.asInstanceOf[DataFrame]
 
 
     override def perform(pr: pActionArgs): pActionArgs = {
