@@ -17,15 +17,16 @@ case class MaxResultAggregationForMonthJob(args: Map[String, String])(implicit a
     val ym: Seq[Int] = args("ym").split(",").map(x => x.toInt)
     val companyId: String = args("company")
     val months: Seq[String] = args("months").split(",")
+    val aggPath: String = args("aggPath")
 
-    val hospCvs = HospConversion()
+//    val hospCvs = HospConversion()
     //    val prodCvs = ProdConversion()
     val pfizerInfMaxCvs = MaxResultConversion()
-    val PROD_DEV_CVS = ProductDevConversion()
+//    val PROD_DEV_CVS = ProductDevConversion()
 
     val maxResultERD: DataFrame = Parquet2DF(maxResultERDLocation)
 
-    val hospDIS: DataFrame = ???
+    val hospDIS: DataFrame = args.getOrElse("hospDIS", throw new Exception("not found prodDIS")).asInstanceOf[DataFrame]
 //        hospCvs.toDIS(
 //        Map(
 //            "hospBaseERD" -> Parquet2DF(HOSP_BASE_LOCATION),
@@ -35,7 +36,7 @@ case class MaxResultAggregationForMonthJob(args: Map[String, String])(implicit a
 //            "hospProvinceERD" -> Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION)
 //        )
 //    )("hospDIS")
-    val productDIS: DataFrame = ???
+    val productDIS: DataFrame = args.getOrElse("productDIS", throw new Exception("not found prodDIS")).asInstanceOf[DataFrame]
 //    PROD_DEV_CVS.toDIS(
 //        Map(
 //            "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION),
@@ -74,9 +75,7 @@ case class MaxResultAggregationForMonthJob(args: Map[String, String])(implicit a
                     val oneMonthAgg = maxMiddleDF
                             .filter(col("MONTH") === x)
                             .groupBy("MIN_PRODUCT", "YM") // 消除了地区维度
-                            .agg(expr("count(province) as PROVINCE_COUNT"),
-                                expr("count(city) as CITY_COUNT"),
-                                expr("sum(SALES) as SALES"),
+                            .agg(expr("sum(SALES) as SALES"),
                                 expr("sum(UNITS) as UNITS"),
                                 expr("first(COMPANY_ID) as COMPANY_ID"),
                                 expr("first(PRODUCT_NAME) as PRODUCT_NAME"),
@@ -85,7 +84,7 @@ case class MaxResultAggregationForMonthJob(args: Map[String, String])(implicit a
                                 expr("first(PH_CORP_NAME) as PH_CORP_NAME"))
                             .withColumn("time", unix_timestamp)
                     phDebugLog(s"消除了地区,聚合$x 月 maxAggDF完成")
-                    oneMonthAgg.save2Parquet(MAX_RESULT_ADDRESS_AGG_LOCATION)
+                    oneMonthAgg.save2Parquet(aggPath)
                 })
 
 //        val dfMap = super.perform(MapArgs(Map("productDF" -> DFArgs(productDF)))).asInstanceOf[MapArgs].get
