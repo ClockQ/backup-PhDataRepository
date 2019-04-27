@@ -10,6 +10,7 @@ object TransformMarket extends App {
     import com.pharbers.data.util._
     import org.apache.spark.sql.functions._
     import com.pharbers.data.util.ParquetLocation._
+    import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     val productDevERD = Parquet2DF(PROD_DEV_LOCATION)
 
@@ -22,13 +23,15 @@ object TransformMarket extends App {
         val prod_match_file = "/data/nhwa/pha_config_repository1809/Nhwa_ProductMatchTable_20181126.csv"
 
         val marketTableDF = CSV2DF(market_match_file)
-        val procMatchDF = CSV2DF(prod_match_file).withColumnRenamed("PACK_COUNT", "PACK_NUMBER")
+        val prodMatchDF = CSV2DF(prod_match_file)
+                .trim("PACK_NUMBER").trim("PACK_COUNT")
+                .withColumn("PACK_NUMBER", when($"PACK_NUMBER".isNotNull, $"PACK_NUMBER").otherwise($"PACK_COUNT"))
 
         val productEtcDIS = prodCvs
                 .toDIS(MapArgs(Map(
                     "productEtcERD" -> DFArgs(Parquet2DF(PROD_ETC_LOCATION + "/" + nhwa_company_id))
                     , "productDevERD" -> DFArgs(productDevERD)
-                    , "productMatchDF" -> DFArgs(procMatchDF)
+                    , "productMatchDF" -> DFArgs(prodMatchDF)
                 )))
                 .getAs[DFArgs]("productEtcDIS")
                 .withColumn("MIN2",
@@ -95,13 +98,15 @@ object TransformMarket extends App {
                     pfizer_Specialty_champix_csv :: pfizer_Specialty_other_csv ::
                     pfizer_Urology_other_csv :: pfizer_Urology_viagra_csv :: pfizer_ZYVOX_csv :: Nil
 
-        val procMatchDF = CSV2DF(prod_match_file)
+        val prodMatchDF = CSV2DF(prod_match_file)
+                .trim("PACK_NUMBER").trim("PACK_COUNT")
+                .withColumn("PACK_NUMBER", when($"PACK_NUMBER".isNotNull, $"PACK_NUMBER").otherwise($"PACK_COUNT"))
 
         val productEtcDIS = prodCvs
                 .toDIS(MapArgs(Map(
                     "productEtcERD" -> DFArgs(Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_company_id))
                     , "productDevERD" -> DFArgs(productDevERD)
-                    , "productMatchDF" -> DFArgs(procMatchDF)
+                    , "productMatchDF" -> DFArgs(prodMatchDF)
                 )))
                 .getAs[DFArgs]("productEtcDIS")
                 .withColumn("MIN2",

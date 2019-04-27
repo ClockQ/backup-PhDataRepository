@@ -24,7 +24,9 @@ object TransformProductEtc extends App {
 
         val cpaDF = CSV2DF(nhwa_cpa_csv).trim("COMPANY_ID", lit(nhwa_company_id)).trim("SOURCE", "CPA")
         val sourceDF = cpaDF
-        val procMatchDF = CSV2DF(nhwa_prod_match).withColumnRenamed("PACK_COUNT", "PACK_NUMBER")
+        val prodMatchDF = CSV2DF(nhwa_prod_match)
+                .trim("PACK_NUMBER").trim("PACK_COUNT")
+                .withColumn("PACK_NUMBER", when($"PACK_NUMBER".isNotNull, $"PACK_NUMBER").otherwise($"PACK_COUNT"))
         val marketDF = try{
             Parquet2DF(PROD_MARKET_LOCATION + "/" + nhwa_company_id)
         } catch {
@@ -46,7 +48,7 @@ object TransformProductEtc extends App {
             , "atcERD" -> DFArgs(atcDF)
             , "marketERD" -> DFArgs(marketDF)
             , "productDevERD" -> DFArgs(productDevERD)
-            , "productMatchDF" -> DFArgs(procMatchDF)
+            , "productMatchDF" -> DFArgs(prodMatchDF)
         ))).getAs[DFArgs]("productEtcDIS")
         productEtcDIS.show(false)
 
@@ -75,7 +77,9 @@ object TransformProductEtc extends App {
         val cpaDF = CSV2DF(pfizer_cpa_csv).trim("COMPANY_ID", lit(pfizer_company_id)).trim("SOURCE", "CPA")
         val gycDF = CSV2DF(pfizer_gycx_csv).trim("COMPANY_ID", lit(pfizer_company_id)).trim("SOURCE", "GYCX")
         val sourceDF = cpaDF unionByName gycDF
-        val procMatchDF = CSV2DF(pfizer_prod_match)
+        val prodMatchDF = CSV2DF(pfizer_prod_match)
+                .trim("PACK_NUMBER").trim("PACK_COUNT")
+                .withColumn("PACK_NUMBER", when($"PACK_NUMBER".isNotNull, $"PACK_NUMBER").otherwise($"PACK_COUNT"))
 
         val marketDF = try{
             Parquet2DF(PROD_MARKET_LOCATION + "/" + pfizer_company_id)
@@ -98,7 +102,7 @@ object TransformProductEtc extends App {
             , "atcERD" -> DFArgs(atcDF)
             , "marketERD" -> DFArgs(marketDF)
             , "productDevERD" -> DFArgs(productDevERD)
-            , "productMatchDF" -> DFArgs(procMatchDF)
+            , "productMatchDF" -> DFArgs(prodMatchDF)
         ))).getAs[DFArgs]("productEtcDIS")
         productEtcDIS.show(false)
 
