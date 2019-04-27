@@ -24,52 +24,76 @@ case class HospConversion() extends PhDataConversion {
         val hospSpecialtyERD = args.get.getOrElse("hospSpecialtyERD", Seq.empty[String].toDF("_id"))
         val hospStaffNumERD = args.get.getOrElse("hospStaffNumERD", Seq.empty[String].toDF("_id"))
         val hospUnitERD = args.get.getOrElse("hospUnitERD", Seq.empty[String].toDF("_id"))
-        val hospAddressERD = args.get.getOrElse("hospAddressERD", DFArgs(Seq.empty[String].toDF("_id"))).getBy[DFArgs]
-        val hospPrefectureERD = args.get.getOrElse("hospPrefectureERD", DFArgs(Seq.empty[String].toDF("_id"))).getBy[DFArgs]
-        val hospCityERD = args.get.getOrElse("hospCityERD", DFArgs(Seq.empty[String].toDF("_id"))).getBy[DFArgs]
-        val hospProvinceERD = args.get.getOrElse("hospProvinceERD", DFArgs(Seq.empty[String].toDF("_id"))).getBy[DFArgs]
+        val hospAddressERD = args.get.get("hospAddressERD")
+        val hospPrefectureERD = args.get.get("hospPrefectureERD")
+        val hospCityERD = args.get.get("hospCityERD")
+        val hospProvinceERD = args.get.get("hospProvinceERD")
 
-        val hospDIS = hospBaseERD
-                .join(
-                    hospAddressERD.withColumnRenamed("_id", "main-id"),
-                    col("addressID") === col("main-id"),
-                    "left"
-                ).drop(col("main-id"))
-                .join(
-                    hospPrefectureERD
-                            .withColumnRenamed("_id", "main-id")
-                            .withColumnRenamed("name", "prefecture-name")
-                            .drop("polygon"),
-                    col("prefecture") === col("main-id"),
-                    "left"
-                ).drop(col("main-id"))
-                .join(
-                    hospCityERD
-                            .withColumnRenamed("_id", "main-id")
-                            .withColumnRenamed("name", "city-name")
-                            .drop("polygon"),
-                    col("city") === col("main-id"),
-                    "left"
-                ).drop(col("main-id"))
-                .join(
-                    hospProvinceERD
-                            .withColumnRenamed("_id", "main-id")
-                            .withColumnRenamed("name", "province-name")
-                            .drop("polygon"),
-                    col("province") === col("main-id"),
-                    "left"
-                ).drop(col("main-id"))
-                .select($"_id"
-                    , $"title" as "HOSP_NAME"
-                    , $"PHAIsRepeat" as "PHA_IS_REPEAT"
-                    , $"PHAHospId" as "PHA_HOSP_ID"
-                    , $"type" as "HOSP_TYPE"
-                    , $"level" as "HOSP_LEVEL"
-                    , $"character" as "HOSP_CHARACTER"
-                    , $"province-name" as "HOSP_PROVINCE_NAME"
-                    , $"city-name" as "HOSP_CITY_NAME"
-                    , $"prefecture-name" as "HOSP_PREFECTURE_NAME"
-                )
+        val addressDIS = hospAddressERD match {
+            case Some(address) =>
+                val addressDF = address.getBy[DFArgs]
+
+                val addressJoinPrefecture = hospPrefectureERD match {
+                    case Some(prefecture) =>
+                        val prefectureDF = prefecture.getBy[DFArgs]
+                                .withColumnRenamed("_id", "PREFECTURE_ID")
+                                .withColumnRenamed("name", "PREFECTURE_NAME")
+                                .withColumnRenamed("polygon", "PREFECTURE_POLYGON")
+                        addressDF.join(
+                            prefectureDF
+                            , addressDF("prefecture") === prefectureDF("PREFECTURE_ID")
+                            , "left"
+                        )
+                    case None => addressDF
+                }
+
+                val addressJoinCity = hospCityERD match {
+                    case Some(city) =>
+                        val cityDF = city.getBy[DFArgs]
+                                .withColumnRenamed("_id", "CITY_ID")
+                                .withColumnRenamed("name", "CITY_NAME")
+                                .withColumnRenamed("polygon", "CITY_POLYGON")
+                        addressJoinPrefecture.join(
+                            cityDF
+                            , addressJoinPrefecture("city") === cityDF("CITY_ID")
+                            , "left"
+                        )
+                    case None => addressJoinPrefecture
+                }
+
+                val addressJoinProvince = hospProvinceERD match {
+                    case Some(province) =>
+                        val provinceDF = province.getBy[DFArgs]
+                                .withColumnRenamed("_id", "PROVINCE_ID")
+                                .withColumnRenamed("name", "PROVINCE_NAME")
+                                .withColumnRenamed("polygon", "PROVINCE_POLYGON")
+                        addressJoinCity.join(
+                            provinceDF
+                            , addressJoinCity("province") === provinceDF("PROVINCE_ID")
+                            , "left"
+                        )
+                    case None => addressJoinCity
+                }
+
+                addressJoinProvince
+
+            case None => Seq.empty[String].toDF("_id")
+        }
+
+        val hospDIS = {
+            hospBaseERD
+                    .join(
+                        addressDIS,
+                        hospBaseERD("addressID") === addressDIS("_id"),
+                        "left"
+                    ).drop(addressDIS("_id"))
+                    .withColumnRenamed("title", "HOSP_NAME")
+                    .withColumnRenamed("PHAIsRepeat", "PHA_IS_REPEAT")
+                    .withColumnRenamed("PHAHospId", "PHA_HOSP_ID")
+                    .withColumnRenamed("type", "HOSP_TYPE")
+                    .withColumnRenamed("level", "HOSP_LEVEL")
+                    .withColumnRenamed("character", "HOSP_CHARACTER")
+        }
 
         MapArgs(Map("hospDIS" -> DFArgs(hospDIS)))
     }

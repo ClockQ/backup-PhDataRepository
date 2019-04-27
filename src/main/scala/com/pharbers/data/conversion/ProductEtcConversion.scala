@@ -45,7 +45,8 @@ case class ProductEtcConversion() extends PhDataConversion {
     }
 
     override def toDIS(args: MapArgs): MapArgs = {
-        val productEtcERD = args.get.getOrElse("productEtcERD", throw new Exception("not found productEtcERD")).getBy[DFArgs]
+        val productEtcERD = args.get.getOrElse("productEtcERD", throw new Exception("not found productEtcERD"))
+                .getBy[DFArgs].withColumn("ETC_PRODUCT_ID", $"_id")
         val atcERD = args.get.get("atcERD")
         val marketERD = args.get.get("marketERD")
         val productDevERD = args.get.get("productDevERD")
@@ -68,7 +69,6 @@ case class ProductEtcConversion() extends PhDataConversion {
                 }
 
                 productEtcERD
-                        .withColumn("ETC_PRODUCT_ID", $"_id")
                         .withColumn("MIN1", concat(
                             col("ETC_PRODUCT_NAME"),
                             col("ETC_DOSAGE_NAME"),

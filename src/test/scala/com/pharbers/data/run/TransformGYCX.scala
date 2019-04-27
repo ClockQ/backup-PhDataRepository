@@ -45,10 +45,9 @@ object TransformGYCX extends App {
                 case _: Exception => Seq.empty[(String, String, String)].toDF("_id", "PRODUCT_ID", "MARKET")
             }
         }
-        val procMatchDF = {
+        val prodMatchDF = {
             CSV2DF(pfizer_prod_match)
-                    .trim("PACK_NUMBER")
-                    .trim("PACK_COUNT")
+                    .trim("PACK_NUMBER").trim("PACK_COUNT")
                     .withColumn("PACK_NUMBER", when($"PACK_NUMBER".isNotNull, $"PACK_NUMBER").otherwise($"PACK_COUNT"))
         }
         val productEtcDIS = prodCvs.toDIS(MapArgs(Map(
@@ -56,7 +55,7 @@ object TransformGYCX extends App {
             , "atcERD" -> DFArgs(atcDF)
             , "marketERD" -> DFArgs(marketDF)
             , "productDevERD" -> DFArgs(productDevERD)
-            , "productMatchDF" -> DFArgs(procMatchDF)
+            , "productMatchDF" -> DFArgs(prodMatchDF)
         ))).getAs[DFArgs]("productEtcDIS")
         val productEtcDISCount = productEtcDIS.count()
 

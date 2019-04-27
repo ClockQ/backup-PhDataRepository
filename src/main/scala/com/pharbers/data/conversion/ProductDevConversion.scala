@@ -26,9 +26,9 @@ case class ProductDevConversion() extends PhDataConversion {
     }
 
     override def toDIS(args: MapArgs): MapArgs = {
-//        val productDevERD = args.get.getOrElse("productDevERD", throw new Exception("not found productDevERD")).getBy[DFArgs]
-//        val productImsERD = args.get.get("productImsERD")
-//        val productEtcERD = args.get.get("productEtcERD")
+        val productDevERD = args.get.getOrElse("productDevERD", throw new Exception("not found productDevERD")).getBy[DFArgs]
+        val productImsERD = args.get.get("productImsERD")
+        val productEtcERD = args.get.get("productEtcERD")
 //
 //        val prodConnImsERD = productImsERD match {
 //            case Some(_) =>

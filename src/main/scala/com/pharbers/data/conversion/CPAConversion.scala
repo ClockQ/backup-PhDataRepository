@@ -19,7 +19,7 @@ case class CPAConversion() extends PhDataConversion {
         val hospDF = args.get.getOrElse("hospDF", throw new Exception("not found hospDF")).getBy[DFArgs]
         val prodDF = args.get.getOrElse("prodDF", throw new Exception("not found prodDF")).getBy[DFArgs]
         val phaDF = args.get.getOrElse("phaDF", throw new Exception("not found phaDF")).getBy[DFArgs]
-        val appendProdFunc = args.get.getOrElse("appendProdFunc", throw new Exception("not found appendProdFunc")).getBy[SingleArgFuncArgs[MapArgs, MapArgs]]
+        val appendProdFunc = args.get.get("appendProdFunc")
 
         val connProdHosp = {
             cpaDF
@@ -50,11 +50,16 @@ case class CPAConversion() extends PhDataConversion {
         val notConnProdOfCpaCount = notConnProdOfCpa.count()
         if (notConnProdOfCpaCount != 0) {
             phDebugLog(notConnProdOfCpaCount + "条产品未匹配, 重新转换")
-            val notConnProdDIS = appendProdFunc(MapArgs(Map("sourceDataDF" -> DFArgs(notConnProdOfCpa))))
-                    .getAs[DFArgs]("productEtcDIS")
-            return toERD(MapArgs(args.get +
-                    ("prodDF" -> DFArgs(prodDF.unionByName(notConnProdDIS.alignAt(prodDF))))
-            ))
+            appendProdFunc match {
+                case Some(funcArgs) =>
+                    val notConnProdDIS = funcArgs.asInstanceOf[SingleArgFuncArgs[MapArgs, MapArgs]]
+                            .func(MapArgs(Map("sourceDataDF" -> DFArgs(notConnProdOfCpa))))
+                            .getAs[DFArgs]("productEtcDIS")
+                    return toERD(MapArgs(args.get +
+                            ("prodDF" -> DFArgs(prodDF.unionByName(notConnProdDIS.alignAt(prodDF))))
+                    ))
+                case None => Unit
+            }
         }
 
         // 存在未成功匹配的医院, 递归执行self.toERD

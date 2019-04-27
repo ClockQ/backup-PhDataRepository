@@ -5,22 +5,22 @@ import com.pharbers.pactions.actionbase._
 import org.apache.spark.sql.functions.{col, when}
 import com.pharbers.util.log.phLogTrait.phDebugLog
 import com.pharbers.pactions.jobs.sequenceJobWithMap
-import com.pharbers.data.conversion.{CPAConversion, HospConversion, ProductEtcConversion}
+import com.pharbers.data.conversion.{GYCXConversion, HospConversion, ProductEtcConversion}
 
 /**
   * @description:
   * @author: clock
   * @date: 2019-04-08 10:46
   */
-case class CPA2ERDJob(args: Map[String, String])(implicit any: Any = null) extends sequenceJobWithMap {
-    override val name: String = "CPA2ERDJob"
+case class GYCX2ERDJob(args: Map[String, String])(implicit any: Any = null) extends sequenceJobWithMap {
+    override val name: String = "GYCX2ERDJob"
     override val actions: List[pActionTrait] = Nil
 
     import com.pharbers.data.util._
 
     val company_id: String = args("company_id")
 
-    val cpa_file: String = args("cpa_file")
+    val gycx_file: String = args("gycx_file")
     val pha_file: String = args("pha_file")
 
     val hosp_base_file: String = args("hosp_base_file")
@@ -48,12 +48,12 @@ case class CPA2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
 
     val hospCvs: HospConversion = HospConversion()
     val prodCvs: ProductEtcConversion = ProductEtcConversion()
-    val cpaCvs: CPAConversion = CPAConversion()
+    val gycxCvs: GYCXConversion = GYCXConversion()
 
     override def perform(pr: pActionArgs = MapArgs(Map())): pActionArgs = {
-        phDebugLog("开始转换:" + cpa_file)
-        val cpaDF = CSV2DF(cpa_file)
-        val cpaDFCount: Long = cpaDF.count()
+        phDebugLog("开始转换:" + gycx_file)
+        val gycxDF = CSV2DF(gycx_file)
+        val gycxDFCount: Long = gycxDF.count()
         val phaDF = Parquet2DF(pha_file)
         val phaDFCount: Long = phaDF.count()
 
@@ -84,18 +84,18 @@ case class CPA2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
             if (prod_match_file.nonEmpty) args += "productMatchDF" -> DFArgs(
                 Parquet2DF(prod_match_file)
                         .trim("PACK_NUMBER")
-                        .trim("PACK_COUNT")
-                        .withColumn("PACK_NUMBER",
-                            when(col("PACK_NUMBER").isNotNull,
-                                col("PACK_NUMBER")
-                            ).otherwise(col("PACK_COUNT")))
+                    .trim("PACK_COUNT")
+                    .withColumn("PACK_NUMBER",
+                        when(col("PACK_NUMBER").isNotNull,
+                            col("PACK_NUMBER")
+                        ).otherwise(col("PACK_COUNT")))
             )
             args.result()
         }).getAs[DFArgs]("productEtcDIS")
         val productEtcDISCount = productEtcDIS.count()
 
-        val result = cpaCvs.toERD(MapArgs(Map(
-            "cpaDF" -> DFArgs(cpaDF.trim("COMPANY_ID", company_id).trim("SOURCE", "CPA"))
+        val result = gycxCvs.toERD(MapArgs(Map(
+            "gycxDF" -> DFArgs(gycxDF.trim("COMPANY_ID", company_id).trim("SOURCE", "GYCX"))
             , "hospDF" -> DFArgs(hospDIS)
             , "prodDF" -> DFArgs(productEtcDIS)
             , "phaDF" -> DFArgs(phaDF)
@@ -104,19 +104,19 @@ case class CPA2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
             }
         )))
 
-        val cpaERD = result.getAs[DFArgs]("cpaERD")
-        val cpaERDCount: Long = cpaERD.count()
-        val cpaProd = result.getAs[DFArgs]("prodDIS")
-        val cpaProdCount: Long = cpaProd.count()
-        val cpaHosp = result.getAs[DFArgs]("hospDIS")
-        val cpaHospCount: Long = cpaHosp.count()
-        val cpaPha = result.getAs[DFArgs]("phaDIS")
-        val cpaPhaCount: Long = cpaPha.count()
+        val gycxERD = result.getAs[DFArgs]("gycxERD")
+        val gycxERDCount: Long = gycxERD.count()
+        val gycxProd = result.getAs[DFArgs]("prodDIS")
+        val gycxProdCount: Long = gycxProd.count()
+        val gycxHosp = result.getAs[DFArgs]("hospDIS")
+        val gycxHospCount: Long = gycxHosp.count()
+        val gycxPha = result.getAs[DFArgs]("phaDIS")
+        val gycxPhaCount: Long = gycxPha.count()
 
-        if (cpaDFCount != cpaERDCount) throw new Exception(s"转换后条目不对$cpaDFCount -> $cpaERDCount")
-        if (productEtcDISCount != cpaProdCount && prod_etc_file_temp.nonEmpty) cpaProd.save2Parquet(prod_etc_file_temp)
-        if (hospDISCount != cpaHospCount && hosp_base_file_temp.nonEmpty) cpaHosp.save2Parquet(hosp_base_file_temp)
-        if (phaDFCount != cpaPhaCount && pha_file_temp.nonEmpty) cpaPha.save2Parquet(pha_file_temp)
+        if (gycxDFCount != gycxERDCount) throw new Exception(s"转换后条目不对$gycxDFCount -> $gycxERDCount")
+        if (productEtcDISCount != gycxProdCount && prod_etc_file_temp.nonEmpty) gycxProd.save2Parquet(prod_etc_file_temp)
+        if (hospDISCount != gycxHospCount && hosp_base_file_temp.nonEmpty) gycxHosp.save2Parquet(hosp_base_file_temp)
+        if (phaDFCount != gycxPhaCount && pha_file_temp.nonEmpty) gycxPha.save2Parquet(pha_file_temp)
 
         MapArgs(Map(
             "result" -> StringArgs("Conversion success")
