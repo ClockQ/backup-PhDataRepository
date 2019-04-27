@@ -19,14 +19,14 @@ case class MaxResultAggregationForMonthJob(args: Map[String, String])(implicit a
     val months: Seq[String] = args("months").split(",")
     val aggPath: String = args("aggPath")
 
-    val hospCvs = HospConversion()
+//    val hospCvs = HospConversion()
     //    val prodCvs = ProdConversion()
     val pfizerInfMaxCvs = MaxResultConversion()
-    val PROD_DEV_CVS = ProductDevConversion()
+//    val PROD_DEV_CVS = ProductDevConversion()
 
     val maxResultERD: DataFrame = Parquet2DF(maxResultERDLocation)
 
-    val hospDIS: DataFrame = ???
+    val hospDIS: DataFrame = args.getOrElse("hospDIS", throw new Exception("not found prodDIS")).asInstanceOf[DataFrame]
 //        hospCvs.toDIS(
 //        Map(
 //            "hospBaseERD" -> Parquet2DF(HOSP_BASE_LOCATION),
@@ -36,7 +36,7 @@ case class MaxResultAggregationForMonthJob(args: Map[String, String])(implicit a
 //            "hospProvinceERD" -> Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION)
 //        )
 //    )("hospDIS")
-    val productDIS: DataFrame = ???
+    val productDIS: DataFrame = args.getOrElse("productDIS", throw new Exception("not found prodDIS")).asInstanceOf[DataFrame]
 //    PROD_DEV_CVS.toDIS(
 //        Map(
 //            "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION),
