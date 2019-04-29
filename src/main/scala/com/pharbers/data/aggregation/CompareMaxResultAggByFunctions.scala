@@ -1,4 +1,4 @@
-package com.pharbers.data.job.aggregationJob
+package com.pharbers.data.aggregation
 
 import com.pharbers.pactions.actionbase.{DFArgs, MapArgs, pActionArgs, pActionTrait}
 import com.pharbers.pactions.jobs.sequenceJobWithMap

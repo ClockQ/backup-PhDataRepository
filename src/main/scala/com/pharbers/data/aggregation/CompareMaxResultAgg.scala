@@ -1,7 +1,7 @@
-package com.pharbers.data.job.aggregationJob
+package com.pharbers.data.aggregation
 
 import com.pharbers.data.conversion.ProductDevConversion
-import com.pharbers.data.job.aggregationJob.functions._
+import com.pharbers.data.aggregation.functions._
 import com.pharbers.data.util.ParquetLocation._
 import com.pharbers.data.util._
 import com.pharbers.pactions.actionbase._
@@ -13,7 +13,7 @@ import org.apache.spark.sql.types.IntegerType
 
 import scala.util.parsing.json.JSONObject
 
-case class CompareMaxResultAgg(args: Map[String, Any]) extends sequenceJobWithMap {
+case class CompareMaxResultAgg(args: MapArgs) extends sequenceJobWithMap {
 
 
 
@@ -22,20 +22,15 @@ case class CompareMaxResultAgg(args: Map[String, Any]) extends sequenceJobWithMa
 //    import scala.reflect.runtime.{universe => ru}
 //
 //    val classMirror = ru.runtimeMirror(getClass.getClassLoader)         //获取运行时类镜像
-//    val classTest = classMirror.staticModule("com.pharbers.data.job.aggregationJob.functions.GroupFunction")          //获取需要反射object
+//    val classTest = classMirror.staticModule("com.pharbers.data.aggregationJob.functions.GroupFunction")          //获取需要反射object
 //    val methods = classMirror.reflectModule(classTest)                  //构造获取方式的对象
 //    val objMirror = classMirror.reflect(methods.instance)               //反射结果赋予对象
 //    val method = methods.symbol.typeSignature.member(ru.TermName("groupByXYGroup")).asMethod  //反射调用函数
 //    val result = objMirror.reflectMethod(method)("", "").asInstanceOf[DataFrame => DataFrame]      //最后带参数,执行这个反射调用的函数
 
-    val sourceId = args("sourceId").asInstanceOf[String]
-//    val prodDIS = ProductDevConversion().toDIS(
-//        Map(
-//            "productDevERD" -> Parquet2DF(PROD_DEV_LOCATION),
-//            "productEtcERD" -> Parquet2DF(PROD_ETC_LOCATION + "/" + sourceId),
-//            "productImsERD" -> Parquet2DF(PROD_IMS_LOCATION)
-//        )
-//    )("productDIS")
+    val sourceId: String = args.get.getOrElse("sourceId", throw new Exception("not found sourceId")).getBy[StringArgs]
+    val marketMongo: String = args.get.getOrElse("marketMongo", throw new Exception("not found marketMongo")).getBy[StringArgs]
+    val productMongo: String = args.get.getOrElse("productMongo", throw new Exception("not found productMongo")).getBy[StringArgs]
 
     //todo:配置化
     val productFunctions: List[DataFrame => DataFrame] = List(
@@ -101,19 +96,9 @@ case class CompareMaxResultAgg(args: Map[String, Any]) extends sequenceJobWithMa
         val dfMap = super.perform(MapArgs(Map("maxResultAgg" -> DFArgs(MaxResultAggDF)))).asInstanceOf[MapArgs].get
 //        val resultDF = dfMap("salesRank10Compare").get.asInstanceOf[DataFrame]
         dfMap("productCompare").get.asInstanceOf[DataFrame]
-//                .join(
-//                    prodDIS
-//                            .withColumnRenamed("_id", "PRODUCT_ID")
-//                            .withColumn("PH_MIN", concat(col("PRODUCT_NAME"), col("DOSAGE_NAME"), col("PACKAGE_DES"), col("PACKAGE_NUMBER"), col("CORP_NAME")))
-//                            .dropDuplicates("PH_MIN")
-//                            .drop("COMPANY_ID")
-//                            .select("PRODUCT_ID", "PH_MIN"),
-//                    col("MIN_PRODUCT") === col("PH_MIN"),
-//                    "left"
-//                ).drop(col("PH_MIN"))
                 .selectExpr("PRODUCT_NAME","PH_CORP_NAME",  "PRODUCT as MIN_PRODUCT", "YM", "MARKET", "SALES", "COMPANY_ID", "SALES_SOM", "SALES_RANK", "SALES_RING_GROWTH_RANK", "SALES_YEAR_GROWTH", "SALES_RING_GROWTH")
                 .withColumn("YM", col("YM").cast(IntegerType))
-//                .save2Mongo("Productdimension")
+//                .save2Mongo(productMongo)
 
         dfMap("marketCompare").get.asInstanceOf[DataFrame]
                 .select("MARKET", "YM", "PRODUCT_COUNT", "SALES", "SALES_SOM", "COMPANY_ID", "PRODUCT_COUNT_RING_GROWTH", "PRODUCT_COUNT_YEAR_GROWTH",
@@ -126,7 +111,7 @@ case class CompareMaxResultAgg(args: Map[String, Any]) extends sequenceJobWithMa
                     col("top10MARKET") === col("MARKET") && col("topYM") === col("YM"), "left")
                 .drop("top10MARKET", "topYM")
                 .withColumn("YM", col("YM").cast(IntegerType))
-//                .save2Mongo("Marketdimension")
+//                .save2Mongo(marketMongo)
 
         MapArgs(Map(
             "result" -> StringArgs("Conversion success")
