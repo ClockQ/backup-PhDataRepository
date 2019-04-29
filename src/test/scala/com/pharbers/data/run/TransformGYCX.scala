@@ -47,7 +47,7 @@ object TransformGYCX extends App {
         }
         val prodMatchDF = {
             CSV2DF(pfizer_prod_match)
-                    .trim("PACK_NUMBER").trim("PACK_COUNT")
+                    .addColumn("PACK_NUMBER").addColumn("PACK_COUNT")
                     .withColumn("PACK_NUMBER", when($"PACK_NUMBER".isNotNull, $"PACK_NUMBER").otherwise($"PACK_COUNT"))
         }
         val productEtcDIS = prodCvs.toDIS(MapArgs(Map(
@@ -60,7 +60,7 @@ object TransformGYCX extends App {
         val productEtcDISCount = productEtcDIS.count()
 
         val result = gycxCvs.toERD(MapArgs(Map(
-            "gycxDF" -> DFArgs(gycxDF.trim("COMPANY_ID", company_id).trim("SOURCE", "GYCX"))
+            "gycxDF" -> DFArgs(gycxDF.addColumn("COMPANY_ID", company_id).addColumn("SOURCE", "GYCX"))
             , "hospDF" -> DFArgs(hospDIS)
             , "prodDF" -> DFArgs(productEtcDIS)
             , "phaDF" -> DFArgs(phaDF)

@@ -25,7 +25,13 @@ object commonUDF {
 
     val ym2MonthUdf: UserDefinedFunction = udf { ym: String => ym.toInt % 100 }
 
-    val mkStringByArray: UserDefinedFunction = udf { (array: Seq[String], seg: String) =>
+    val trimUdf: UserDefinedFunction = udf { str: String => str.trim }
+
+    val splitUdf: UserDefinedFunction = udf { (str: String, pattern: String) => str.split(pattern) }
+
+    val headUdf: UserDefinedFunction = udf { array: Seq[String] => array.head }
+
+    val mkStringUdf: UserDefinedFunction = udf { (array: Seq[String], seg: String) =>
         array.distinct.mkString(seg)
     }
 }

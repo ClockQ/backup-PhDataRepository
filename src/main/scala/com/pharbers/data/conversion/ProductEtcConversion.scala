@@ -22,10 +22,8 @@ case class ProductEtcConversion() extends PhDataConversion {
                 // 1. SOURCE
                 .groupBy("PRODUCT_NAME", "MOLE_NAME", "PACK_DES", "PACK_NUMBER", "DOSAGE", "DELIVERY_WAY", "CORP_NAME")
                 .agg(sort_array(collect_list("SOURCE")) as "SOURCE", sort_array(collect_list("COMPANY_ID")) as "COMPANY_ID")
-                .withColumn("SOURCE", commonUDF.mkStringByArray($"SOURCE", lit("+")))
-                .withColumn("COMPANY_ID", commonUDF.mkStringByArray($"COMPANY_ID", lit("+")))
-                // 2. MIN1
-                .withColumn("MIN1", concat(col("PRODUCT_NAME"), col("DOSAGE"), col("PACK_DES"), col("PACK_NUMBER"), col("CORP_NAME")))
+                .withColumn("SOURCE", commonUDF.mkStringUdf($"SOURCE", lit("+")))
+                .withColumn("COMPANY_ID", commonUDF.mkStringUdf($"COMPANY_ID", lit("+")))
                 .select(
                     $"COMPANY_ID" as "ETC_COMPANY_ID",
                     $"SOURCE" as "ETC_SOURCE",
@@ -54,16 +52,20 @@ case class ProductEtcConversion() extends PhDataConversion {
         val etcConnDevDF = productDevERD match {
             case Some(dev) =>
                 val productMatchDF = args.get("productMatchDF").getBy[DFArgs]
+                        .select($"MIN_PRODUCT_UNIT",
+                            regexp_replace($"MIN_PRODUCT_UNIT_STANDARD", " ", "") as "MIN2"
+                        ).dropDuplicates("MIN_PRODUCT_UNIT")
+
                 val productDevDF = {
                     dev.getBy[DFArgs].withColumnRenamed("_id", "DEV_PRODUCT_ID")
                             .select(col("DEV_PRODUCT_ID"), col("DEV_PRODUCT_NAME"), col("DEV_DOSAGE_NAME"),
                                 col("DEV_PACKAGE_DES"), col("DEV_PACKAGE_NUMBER"), col("DEV_CORP_NAME"))
-                            .withColumn("MIN2", concat(
+                            .withColumn("MIN2", regexp_replace(concat(
                                 col("DEV_PRODUCT_NAME"),
                                 col("DEV_DOSAGE_NAME"),
                                 col("DEV_PACKAGE_DES"),
                                 col("DEV_PACKAGE_NUMBER"),
-                                col("DEV_CORP_NAME"))
+                                col("DEV_CORP_NAME")), " ", "")
                             )
                             .dropDuplicates("MIN2")
                 }
@@ -77,17 +79,15 @@ case class ProductEtcConversion() extends PhDataConversion {
                             col("ETC_CORP_NAME"))
                         )
                         .join(productMatchDF
-                                .select("MIN_PRODUCT_UNIT", "MIN_PRODUCT_UNIT_STANDARD")
-                                .dropDuplicates("MIN_PRODUCT_UNIT"),
-                            col("MIN1") === col("MIN_PRODUCT_UNIT"), "left"
-                        )
-                        .join(productDevDF
-                            , productMatchDF("MIN_PRODUCT_UNIT_STANDARD") === productDevDF("MIN2")
+                            , col("MIN1") === col("MIN_PRODUCT_UNIT")
                             , "left"
                         )
-                        .drop("MIN1")
+                        .join(productDevDF
+                            , productMatchDF("MIN2") === productDevDF("MIN2")
+                            , "left"
+                        )
                         .drop("MIN_PRODUCT_UNIT")
-                        .drop("MIN_PRODUCT_UNIT_STANDARD")
+                        .drop("MIN1")
                         .drop("MIN2")
 
             case None => productEtcERD

@@ -21,14 +21,14 @@ object TransformProductIms extends App {
     val ImsProdFile = "/data/IMS/IMS_PRODUCT_STANDARD_201812/cn_prod_ref_201812_1.txt"
 
     val mnfDF = TXT2DF(ImsMnfFile) //6762
-    mnfDF.show(false)
+//    mnfDF.show(false)
     val lkpDF = TXT2DF(ImsLkpFile) //147152
-    lkpDF.show(false)
+//    lkpDF.show(false)
     val molDF = TXT2DF(ImsMolFile) //20328
-    molDF.show(false)
+//    molDF.show(false)
     val prodBaseDF = TXT2DF(ImsProdFile) //112848
     val prodBaseDFCount = prodBaseDF.count()
-    prodBaseDF.show(false)
+//    prodBaseDF.show(false)
 
     val piCvs = ProductImsConversion()
 
@@ -44,13 +44,11 @@ object TransformProductIms extends App {
     val prodImsMinus = prodBaseDFCount - productImsERDCount
     assert(prodImsMinus == 0, "prodIms: 转换后的ERD比源数据减少`" + prodImsMinus + "`条记录")
 
-    if(args.nonEmpty && args(0) == "TRUE"){
-        productImsERD.save2Mongo(PROD_IMS_LOCATION.split("/").last)
-        productImsERD.save2Parquet(PROD_IMS_LOCATION)
-    }
+    if(args.nonEmpty && args(0) == "TRUE")
+        productImsERD.save2Mongo(PROD_IMS_LOCATION.split("/").last).save2Parquet(PROD_IMS_LOCATION)
 
     val productImsDIS = piCvs.toDIS(MapArgs(Map(
-        "productImsERD" -> DFArgs(productImsERD) //DFArgs(Parquet2DF(PROD_IMS_LOCATION))
+        "productImsERD" -> DFArgs(Parquet2DF(PROD_IMS_LOCATION))
         , "atc3ERD" -> DFArgs(Parquet2DF(PROD_ATC3TABLE_LOCATION))
         , "oadERD" -> DFArgs(Parquet2DF(PROD_OADTABLE_LOCATION))
         , "productDevERD" -> DFArgs(Parquet2DF(PROD_DEV_LOCATION))

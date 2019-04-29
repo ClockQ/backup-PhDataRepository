@@ -34,7 +34,7 @@ object TransformMaxResult extends App {
         maxDF.show(false)
 
         val maxERD = maxCvs.toERD(MapArgs(Map(
-            "maxDF" -> DFArgs(maxDF.trim("COMPANY_ID", company_id))
+            "maxDF" -> DFArgs(maxDF.addColumn("COMPANY_ID", company_id))
             , "prodDF" -> DFArgs(productDevERD)
             , "hospDF" -> DFArgs(hospDIS)
         ))).getAs[DFArgs]("maxERD")

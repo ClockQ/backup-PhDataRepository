@@ -79,7 +79,7 @@ class Agg(company_id: String) {
 
     def setProdMatch(prod_match: String): Agg = {
         val matchDF = CSV2DF(prod_match)
-                .trim("PACK_NUMBER").trim("PACK_COUNT")
+                .addColumn("PACK_NUMBER").addColumn("PACK_COUNT")
                 .withColumn("PACK_NUMBER", when($"PACK_NUMBER".isNotNull, $"PACK_NUMBER").otherwise($"PACK_COUNT"))
 
         prodMatchDF = prodMatchDF.alignAt(matchDF).unionByName(matchDF.alignAt(prodMatchDF))

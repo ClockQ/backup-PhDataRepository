@@ -20,13 +20,14 @@ package object util {
     implicit val conn_instance: spark_conn_instance = sparkDriver.conn_instance
 
     implicit class SaveParquet(df: DataFrame) {
-        def save2Parquet(location: String): Unit = {
+        def save2Parquet(location: String): DataFrame = {
             val name = location.split("/").last
             val path = location.split("/").init.mkString("", "/", "/")
             phDebugLog(s"save `$name` to `$path` parquet")
             df.write.mode(SaveMode.Append)
                     .option("header", value = true)
                     .parquet(location)
+            df
         }
     }
 
@@ -34,10 +35,11 @@ package object util {
 
         import org.apache.spark.sql.expressions.UserDefinedFunction
 
-        def save2Mongo(name: String): Unit = {
+        def save2Mongo(name: String): DataFrame = {
             phDebugLog(s"save `$name` to Mongo")
             sparkDriver.setUtil(dataFrame2Mongo())
                     .dataFrame2Mongo(df.trimOId, PhMongoConf.server_host, PhMongoConf.server_port.toString, PhMongoConf.conn_name, name)
+            df
         }
 
         def trimOId: DataFrame = {
@@ -56,7 +58,7 @@ package object util {
 
     implicit class DFUtil(df: DataFrame) {
 
-        def trim(colName: String, colValue: Any = null): DataFrame = {
+        def addColumn(colName: String, colValue: Any = null): DataFrame = {
             if (df.columns.contains(colName))
                 df.withColumn(colName, when(col(colName).isNull, colValue).otherwise(col(colName)))
             else df.withColumn(colName, lit(colValue))
@@ -88,7 +90,7 @@ package object util {
         }
 
         def alignAt(alignDF: DataFrame): DataFrame = {
-            alignDF.columns.foldRight(df)((a, b) => b.trim(a))
+            alignDF.columns.foldRight(df)((a, b) => b.addColumn(a))
         }
 
         def addMonth(): DataFrame = {

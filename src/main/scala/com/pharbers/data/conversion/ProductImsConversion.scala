@@ -57,11 +57,11 @@ case class ProductImsConversion() extends PhDataConversion {
         val packAndMoleDF = lkpDF.join(molDF, lkpDF("MOLE_ID") === molDF("MOLE_ID")).drop(molDF("MOLE_ID"))
                 .groupBy("PACK_ID")
                 .agg(sort_array(collect_list("IMS_MOLE_NAME")) as "IMS_MOLE_NAME")
-                .withColumn("IMS_MOLE_NAME", commonUDF.mkStringByArray($"IMS_MOLE_NAME", lit("+")))
+                .withColumn("IMS_MOLE_NAME", commonUDF.mkStringUdf($"IMS_MOLE_NAME", lit("+")))
 
         val productImsERD = {
             prodBaseDF
-                    .trim("IMS_SOURCE", "CHC")
+                    .addColumn("IMS_SOURCE", "CHC")
                     // 1. IMS_PRODUCT_NAME
                     .withColumn("IMS_PRODUCT_NAME", splitProdMnf(prodBaseDF("PRD_DESC")))
                     // 2. IMS_MOLE_NAME

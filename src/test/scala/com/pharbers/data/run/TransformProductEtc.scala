@@ -17,18 +17,19 @@ object TransformProductEtc extends App {
     val prodCvs = ProductEtcConversion()
 
     def nhwaProdEtcDF(): Unit = {
-        val nhwa_company_id = NHWA_COMPANY_ID
+        val company_id = NHWA_COMPANY_ID
 
         val nhwa_cpa_csv = "/test/CPA&GYCX/Nhwa_201804_CPA_20181227.csv"
         val nhwa_prod_match = "/data/nhwa/pha_config_repository1809/Nhwa_ProductMatchTable_20181126.csv"
 
-        val cpaDF = CSV2DF(nhwa_cpa_csv).trim("COMPANY_ID", lit(nhwa_company_id)).trim("SOURCE", "CPA")
+        val cpaDF = CSV2DF(nhwa_cpa_csv).addColumn("COMPANY_ID", lit(company_id)).addColumn("SOURCE", "CPA")
         val sourceDF = cpaDF
         val prodMatchDF = CSV2DF(nhwa_prod_match)
-                .trim("PACK_NUMBER").trim("PACK_COUNT")
+                .addColumn("PACK_NUMBER").addColumn("PACK_COUNT")
                 .withColumn("PACK_NUMBER", when($"PACK_NUMBER".isNotNull, $"PACK_NUMBER").otherwise($"PACK_COUNT"))
+
         val marketDF = try{
-            Parquet2DF(PROD_MARKET_LOCATION + "/" + nhwa_company_id)
+            Parquet2DF(PROD_MARKET_LOCATION + "/" + company_id)
         } catch {
             case _: Exception => Seq.empty[(String, String, String)].toDF("_id", "PRODUCT_ID", "MARKET")
         }
@@ -38,13 +39,11 @@ object TransformProductEtc extends App {
             ))).getAs[DFArgs]("productEtcERD")
         productEtcERD.show(false)
 
-        if(args.nonEmpty && args(0) == "TRUE"){
-            productEtcERD.save2Mongo(PROD_ETC_LOCATION.split("/").last)
-            productEtcERD.save2Parquet(PROD_ETC_LOCATION + "/" + nhwa_company_id)
-        }
+        if(args.nonEmpty && args(0) == "TRUE")
+            productEtcERD.save2Mongo(PROD_ETC_LOCATION.split("/").last).save2Parquet(PROD_ETC_LOCATION + "/" + company_id)
 
         val productEtcDIS = prodCvs.toDIS(MapArgs(Map(
-            "productEtcERD" -> DFArgs(productEtcERD) //DFArgs(Parquet2DF(PROD_ETC_LOCATION + "/" + nhwa_company_id))
+            "productEtcERD" -> DFArgs(Parquet2DF(PROD_ETC_LOCATION + "/" + company_id))
             , "atcERD" -> DFArgs(atcDF)
             , "marketERD" -> DFArgs(marketDF)
             , "productDevERD" -> DFArgs(productDevERD)
@@ -68,21 +67,21 @@ object TransformProductEtc extends App {
     nhwaProdEtcDF()
 
     def pfizerProdEtcDF(): Unit = {
-        val pfizer_company_id = PFIZER_COMPANY_ID
+        val company_id = PFIZER_COMPANY_ID
 
         val pfizer_cpa_csv = "/test/CPA&GYCX/Pfizer_201804_CPA_20181227.csv"
         val pfizer_gycx_csv = "/test/CPA&GYCX/Pfizer_201804_Gycx_20181127.csv"
         val pfizer_prod_match = "/data/pfizer/pha_config_repository1901/Pfizer_ProductMatchTable_20190403.csv"
 
-        val cpaDF = CSV2DF(pfizer_cpa_csv).trim("COMPANY_ID", lit(pfizer_company_id)).trim("SOURCE", "CPA")
-        val gycDF = CSV2DF(pfizer_gycx_csv).trim("COMPANY_ID", lit(pfizer_company_id)).trim("SOURCE", "GYCX")
+        val cpaDF = CSV2DF(pfizer_cpa_csv).addColumn("COMPANY_ID", lit(company_id)).addColumn("SOURCE", "CPA")
+        val gycDF = CSV2DF(pfizer_gycx_csv).addColumn("COMPANY_ID", lit(company_id)).addColumn("SOURCE", "GYCX")
         val sourceDF = cpaDF unionByName gycDF
         val prodMatchDF = CSV2DF(pfizer_prod_match)
-                .trim("PACK_NUMBER").trim("PACK_COUNT")
+                .addColumn("PACK_NUMBER").addColumn("PACK_COUNT")
                 .withColumn("PACK_NUMBER", when($"PACK_NUMBER".isNotNull, $"PACK_NUMBER").otherwise($"PACK_COUNT"))
 
         val marketDF = try{
-            Parquet2DF(PROD_MARKET_LOCATION + "/" + pfizer_company_id)
+            Parquet2DF(PROD_MARKET_LOCATION + "/" + company_id)
         } catch {
             case _: Exception => Seq.empty[(String, String, String)].toDF("_id", "PRODUCT_ID", "MARKET")
         }
@@ -92,13 +91,11 @@ object TransformProductEtc extends App {
             ))).getAs[DFArgs]("productEtcERD")
         productEtcERD.show(false)
 
-        if(args.nonEmpty && args(0) == "TRUE"){
-            productEtcERD.save2Mongo(PROD_ETC_LOCATION.split("/").last)
-            productEtcERD.save2Parquet(PROD_ETC_LOCATION + "/" + pfizer_company_id)
-        }
+        if(args.nonEmpty && args(0) == "TRUE")
+            productEtcERD.save2Mongo(PROD_ETC_LOCATION.split("/").last).save2Parquet(PROD_ETC_LOCATION + "/" + company_id)
 
         val productEtcDIS = prodCvs.toDIS(MapArgs(Map(
-            "productEtcERD" -> DFArgs(Parquet2DF(PROD_ETC_LOCATION + "/" + pfizer_company_id))
+            "productEtcERD" -> DFArgs(Parquet2DF(PROD_ETC_LOCATION + "/" + company_id))
             , "atcERD" -> DFArgs(atcDF)
             , "marketERD" -> DFArgs(marketDF)
             , "productDevERD" -> DFArgs(productDevERD)

@@ -13,7 +13,7 @@ case class AtcTableConversion() extends PhDataConversion {
     import org.apache.spark.sql.functions._
 
     override def toERD(args: MapArgs): MapArgs = {
-        val atcTableDF = args.get.values.map(_.getBy[DFArgs].trim("ATC_CODE").select("MOLE_NAME", "ATC_CODE"))
+        val atcTableDF = args.get.values.map(_.getBy[DFArgs].addColumn("ATC_CODE").select("MOLE_NAME", "ATC_CODE"))
                 .reduce(_ unionByName _)
                 .filter(col("ATC_CODE") =!= "")
                 .distinct()

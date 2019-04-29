@@ -10,7 +10,7 @@ case class CHCConversion() extends PhDataConversion {
     import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     def toCHCStruct(dis: DataFrame): DataFrame = dis.select(
-        $"IMS_PACK_ID".as("PACK_ID"), $"TIME", $"name".as("CITY")
+        $"IMS_PACK_ID".as("PACK_ID"), $"TIME", $"CITY_NAME".as("CITY")
         , $"DEV_PRODUCT_NAME", $"DEV_MOLE_NAME", $"DEV_CORP_NAME"
         , $"DEV_PACKAGE_NUMBER", $"DEV_DOSAGE_NAME", $"DEV_PACKAGE_DES"
         , $"ATC3", $"OAD_TYPE"
@@ -21,6 +21,7 @@ case class CHCConversion() extends PhDataConversion {
         val chcDF = args.get.getOrElse("chcDF", throw new Exception("not found chcDF")).getBy[DFArgs]
         val dateDF = args.get.getOrElse("dateDF", throw new Exception("not found dateDF")).getBy[DFArgs]
         val productDIS = args.get.getOrElse("productDIS", throw new Exception("not found productDIS")).getBy[DFArgs]
+//                .filter($"DEV_PRODUCT_NAME".isNull)
                 .dropDuplicates("IMS_PACK_ID")
                 .select($"IMS_PRODUCT_ID".as("PRODUCT_ID"), $"IMS_PACK_ID")
         val cityDF = args.get.getOrElse("cityDF", throw new Exception("not found cityDF")).getBy[DFArgs]
@@ -65,6 +66,10 @@ case class CHCConversion() extends PhDataConversion {
         val cityERD = args.get.getOrElse("cityERD", throw new Exception("not found cityERD")).getBy[DFArgs]
         val dateERD = args.get.getOrElse("dateERD", throw new Exception("not found dateERD")).getBy[DFArgs]
 
+        val addressDIS = AddressConversion().toDIS(MapArgs(Map(
+            "cityERD" -> DFArgs(cityERD)
+        ))).getAs[DFArgs]("addressDIS")
+
         val chcDIS = {
             chcERD
                     .join(
@@ -78,10 +83,10 @@ case class CHCConversion() extends PhDataConversion {
                         "left"
                     ).drop(dateERD("_id"))
                     .join(
-                        cityERD,
-                        chcERD("CITY_ID") === cityERD("_id"),
+                        addressDIS,
+                        chcERD("CITY_ID") === addressDIS("CITY_ID"),
                         "left"
-                    ).drop(cityERD("_id"))
+                    ).drop(addressDIS("CITY_ID"))
         }
 
         MapArgs(Map("chcDIS" -> DFArgs(chcDIS)))

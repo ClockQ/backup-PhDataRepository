@@ -29,64 +29,22 @@ case class HospConversion() extends PhDataConversion {
         val hospCityERD = args.get.get("hospCityERD")
         val hospProvinceERD = args.get.get("hospProvinceERD")
 
-        val addressDIS = hospAddressERD match {
-            case Some(address) =>
-                val addressDF = address.getBy[DFArgs]
-
-                val addressJoinPrefecture = hospPrefectureERD match {
-                    case Some(prefecture) =>
-                        val prefectureDF = prefecture.getBy[DFArgs]
-                                .withColumnRenamed("_id", "PREFECTURE_ID")
-                                .withColumnRenamed("name", "PREFECTURE_NAME")
-                                .withColumnRenamed("polygon", "PREFECTURE_POLYGON")
-                        addressDF.join(
-                            prefectureDF
-                            , addressDF("prefecture") === prefectureDF("PREFECTURE_ID")
-                            , "left"
-                        )
-                    case None => addressDF
-                }
-
-                val addressJoinCity = hospCityERD match {
-                    case Some(city) =>
-                        val cityDF = city.getBy[DFArgs]
-                                .withColumnRenamed("_id", "CITY_ID")
-                                .withColumnRenamed("name", "CITY_NAME")
-                                .withColumnRenamed("polygon", "CITY_POLYGON")
-                        addressJoinPrefecture.join(
-                            cityDF
-                            , addressJoinPrefecture("city") === cityDF("CITY_ID")
-                            , "left"
-                        )
-                    case None => addressJoinPrefecture
-                }
-
-                val addressJoinProvince = hospProvinceERD match {
-                    case Some(province) =>
-                        val provinceDF = province.getBy[DFArgs]
-                                .withColumnRenamed("_id", "PROVINCE_ID")
-                                .withColumnRenamed("name", "PROVINCE_NAME")
-                                .withColumnRenamed("polygon", "PROVINCE_POLYGON")
-                        addressJoinCity.join(
-                            provinceDF
-                            , addressJoinCity("province") === provinceDF("PROVINCE_ID")
-                            , "left"
-                        )
-                    case None => addressJoinCity
-                }
-
-                addressJoinProvince
-
-            case None => Seq.empty[String].toDF("_id")
-        }
+        val addressDIS = AddressConversion().toDIS(MapArgs{
+            val args = Map.newBuilder[String, DFArgs]
+            if (hospProvinceERD.isDefined) args += "provinceERD" -> DFArgs(hospProvinceERD.get.getBy[DFArgs])
+            if (hospCityERD.nonEmpty) args += "cityERD" -> DFArgs(hospCityERD.get.getBy[DFArgs])
+            if (hospPrefectureERD.nonEmpty) args += "prefectureERD" -> DFArgs(hospPrefectureERD.get.getBy[DFArgs])
+            if (hospAddressERD.nonEmpty) args += "addressERD" -> DFArgs(hospAddressERD.get.getBy[DFArgs])
+            args.result()
+        }).getAs[DFArgs]("addressDIS")
 
         val hospDIS = {
             hospBaseERD
                     .join(
                         addressDIS,
-                        hospBaseERD("addressID") === addressDIS("_id"),
+                        hospBaseERD("addressID") === addressDIS("ADDRESS_ID"),
                         "left"
-                    ).drop(addressDIS("_id"))
+                    ).drop(addressDIS("ADDRESS_ID"))
                     .withColumnRenamed("title", "HOSP_NAME")
                     .withColumnRenamed("PHAIsRepeat", "PHA_IS_REPEAT")
                     .withColumnRenamed("PHAHospId", "PHA_HOSP_ID")

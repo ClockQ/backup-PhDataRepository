@@ -31,20 +31,21 @@ object ParquetLocation {
     val HOSP_PHA_LOCATION = "/repository/pha"
 
     // Product Dev
-    val PROD_DEV_LOCATION = "/repository/prod_dev3"
+    val PROD_DEV_LOCATION = "/repository/prod_dev5"
     // Product IMS
-    val PROD_ATC3TABLE_LOCATION = "/repository/atc3_table3"
-    val PROD_OADTABLE_LOCATION = "/repository/oad_table3"
-    val PROD_IMS_LOCATION = "/repository/prod_ims3"
+    val PROD_ATC3TABLE_LOCATION = "/repository/atc3_table5"
+    val PROD_OADTABLE_LOCATION = "/repository/oad_table5"
+    val PROD_IMS_LOCATION = "/repository/prod_ims5"
     // Product ATC
-    val PROD_ATCTABLE_LOCATION = "/repository/atc_table3"
+    val PROD_ATCTABLE_LOCATION = "/repository/atc_table5"
     // Product Etc
-    val PROD_ETC_LOCATION = "/repository/prod_etc3"
+    val PROD_ETC_LOCATION = "/repository/prod_etc5"
     // Product Market
-    val PROD_MARKET_LOCATION = "/repository/market3"
+    val PROD_MARKET_LOCATION = "/repository/market5"
 
     // SOURCE
-    val CHC_LOCATION = "/repository/chc3"
+    val CHC_LOCATION = "/repository/chc5"
+    val CHC_CA_LOCATION = "/repository/chc_ca"
     val CHC_DATE_LOCATION = "/repository/chc_date3"
     val CPA_LOCATION = "/repository/cpa"
     val GYCX_LOCATION = "/repository/gycx"

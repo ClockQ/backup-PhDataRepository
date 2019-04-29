@@ -24,8 +24,6 @@ object TransformAtcTable extends App {
     phDebugLog("atcTableDF `ERD` count = " + atcTableDF.count())
     atcTableDF.show(true)
 
-    if(args.nonEmpty && args(0) == "TRUE"){
-        atcTableDF.save2Parquet(PROD_ATCTABLE_LOCATION)
-        atcTableDF.save2Mongo(PROD_ATCTABLE_LOCATION.split("/").last)
-    }
+    if(args.nonEmpty && args(0) == "TRUE")
+        atcTableDF.save2Parquet(PROD_ATCTABLE_LOCATION).save2Mongo(PROD_ATCTABLE_LOCATION.split("/").last)
 }

@@ -86,7 +86,7 @@ case class CPAConversion() extends PhDataConversion {
         val cpaERD = connProdHosp
                 .generateId
                 .str2Time
-                .trim("PRODUCT_NAME_NOTE")
+                .addColumn("PRODUCT_NAME_NOTE")
                 .select($"_id", cpaDF("COMPANY_ID"), $"YM",
                     $"HOSPITAL_ID", $"ETC_PRODUCT_ID".as("PRODUCT_ID"),
                     $"VALUE".as("SALES"), $"STANDARD_UNIT".as("UNITS"), $"PRODUCT_NAME_NOTE")

@@ -45,7 +45,7 @@ object TransformCPA extends App {
         }
 
         val prodMatchDF = CSV2DF(nhwa_prod_match)
-                .trim("PACK_NUMBER").trim("PACK_COUNT")
+                .addColumn("PACK_NUMBER").addColumn("PACK_COUNT")
                 .withColumn("PACK_NUMBER", when($"PACK_NUMBER".isNotNull, $"PACK_NUMBER").otherwise($"PACK_COUNT"))
 
         val productEtcDIS = prodCvs.toDIS(MapArgs(Map(
@@ -58,7 +58,7 @@ object TransformCPA extends App {
         val productEtcDISCount = productEtcDIS.count()
 
         val result = cpaCvs.toERD(MapArgs(Map(
-            "cpaDF" -> DFArgs(cpaDF.trim("COMPANY_ID", company_id).trim("SOURCE", "CPA"))
+            "cpaDF" -> DFArgs(cpaDF.addColumn("COMPANY_ID", company_id).addColumn("SOURCE", "CPA"))
             , "hospDF" -> DFArgs(hospDIS)
             , "prodDF" -> DFArgs(productEtcDIS)
             , "phaDF" -> DFArgs(phaDF)
@@ -113,7 +113,7 @@ object TransformCPA extends App {
         }
 
         val prodMatchDF = CSV2DF(pfizer_prod_match)
-                .trim("PACK_NUMBER").trim("PACK_COUNT")
+                .addColumn("PACK_NUMBER").addColumn("PACK_COUNT")
                 .withColumn("PACK_NUMBER", when($"PACK_NUMBER".isNotNull, $"PACK_NUMBER").otherwise($"PACK_COUNT"))
 
         val productEtcDIS = prodCvs.toDIS(MapArgs(Map(
@@ -126,7 +126,7 @@ object TransformCPA extends App {
         val productEtcDISCount = productEtcDIS.count()
 
         val result = cpaCvs.toERD(MapArgs(Map(
-            "cpaDF" -> DFArgs(cpaDF.trim("COMPANY_ID", company_id).trim("SOURCE", "CPA"))
+            "cpaDF" -> DFArgs(cpaDF.addColumn("COMPANY_ID", company_id).addColumn("SOURCE", "CPA"))
             , "hospDF" -> DFArgs(hospDIS)
             , "prodDF" -> DFArgs(productEtcDIS)
             , "phaDF" -> DFArgs(phaDF)

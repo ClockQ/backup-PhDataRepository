@@ -83,8 +83,8 @@ case class CPA2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
             if (prod_dev_file.nonEmpty) args += "productDevERD" -> DFArgs(Parquet2DF(prod_dev_file))
             if (prod_match_file.nonEmpty) args += "productMatchDF" -> DFArgs(
                 Parquet2DF(prod_match_file)
-                        .trim("PACK_NUMBER")
-                        .trim("PACK_COUNT")
+                        .addColumn("PACK_NUMBER")
+                        .addColumn("PACK_COUNT")
                         .withColumn("PACK_NUMBER",
                             when(col("PACK_NUMBER").isNotNull,
                                 col("PACK_NUMBER")
@@ -95,7 +95,7 @@ case class CPA2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
         val productEtcDISCount = productEtcDIS.count()
 
         val result = cpaCvs.toERD(MapArgs(Map(
-            "cpaDF" -> DFArgs(cpaDF.trim("COMPANY_ID", company_id).trim("SOURCE", "CPA"))
+            "cpaDF" -> DFArgs(cpaDF.addColumn("COMPANY_ID", company_id).addColumn("SOURCE", "CPA"))
             , "hospDF" -> DFArgs(hospDIS)
             , "prodDF" -> DFArgs(productEtcDIS)
             , "phaDF" -> DFArgs(phaDF)
