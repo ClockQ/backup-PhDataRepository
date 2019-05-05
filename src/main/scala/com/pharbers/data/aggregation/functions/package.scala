@@ -1,4 +1,4 @@
-package com.pharbers.data.job.aggregationJob
+package com.pharbers.data.aggregation
 
 import org.apache.spark.sql.{Column, DataFrame, RelationalGroupedDataset}
 import org.apache.spark.sql.functions._

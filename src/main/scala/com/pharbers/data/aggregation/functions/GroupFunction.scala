@@ -1,4 +1,4 @@
-package com.pharbers.data.job.aggregationJob.functions
+package com.pharbers.data.aggregation.functions
 
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
