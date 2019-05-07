@@ -7,11 +7,9 @@ import com.pharbers.pactions.actionbase.MapArgs
   * @author: clock
   * @date: 2019-03-28 15:07
   */
-trait PhDataConversion {
+trait PhDataConversion2 {
 
-    def file2ERD(args: MapArgs): MapArgs
+    def toERD(args: MapArgs): MapArgs
 
-    def extractByDIS(args: MapArgs): MapArgs
-
-    def mergeERD(args: MapArgs): MapArgs
+    def toDIS(args: MapArgs): MapArgs
 }

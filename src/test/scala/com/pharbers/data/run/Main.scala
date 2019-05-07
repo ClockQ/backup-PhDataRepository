@@ -14,7 +14,6 @@ object Main extends App {
     TransformProductDev.main(STATUS)
     TransformOadAndAtc3Table.main(STATUS)
     TransformProductIms.main(STATUS)
-    TransformAtcTable.main(STATUS)
     TransformProductEtc.main(STATUS)
     TransformMarket.main(STATUS)
 

@@ -12,7 +12,7 @@ object TransformCPA extends App {
     import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     val hospCvs = HospConversion()
-    val prodCvs = ProductEtcConversion()
+    val prodCvs = ProductEtcConversion2()
     val cpaCvs = CPAConversion()
 
     val phaDF = Parquet2DF(HOSP_PHA_LOCATION)

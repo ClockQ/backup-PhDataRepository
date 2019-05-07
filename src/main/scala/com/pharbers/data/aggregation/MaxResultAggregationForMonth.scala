@@ -1,6 +1,6 @@
 package com.pharbers.data.aggregation
 
-import com.pharbers.data.conversion.{HospConversion, MaxResultConversion, ProductDevConversion}
+import com.pharbers.data.conversion.{HospConversion, MaxResultConversion, ProductDevConversion2}
 import com.pharbers.data.util.ParquetLocation._
 import com.pharbers.data.util._
 import com.pharbers.pactions.actionbase._

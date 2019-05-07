@@ -1,7 +1,8 @@
 package com.pharbers.data.run
 
 import org.apache.spark.sql.DataFrame
-import com.pharbers.util.log.phLogTrait.phDebugLog
+import com.pharbers.spark.phSparkDriver
+import com.pharbers.spark.session.spark_conn_instance
 import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
 
 /**
@@ -15,22 +16,27 @@ object TransformProductDev extends App {
     import com.pharbers.data.conversion._
     import org.apache.spark.sql.functions._
     import com.pharbers.data.util.ParquetLocation._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
 
-    def matchTable2Product(df: DataFrame): DataFrame = df
+//    implicit val sparkDriver: phSparkDriver = getSparkDriver()
+//    implicit val conn: spark_conn_instance = sparkDriver.conn_instance
+    import sparkDriver.ss.implicits._
+
+    def matchTable2Product(df: DataFrame, source: String): DataFrame = df
             .select(
                 $"STANDARD_PRODUCT_NAME" as "DEV_PRODUCT_NAME"
                 , $"STANDARD_CORP_NAME" as "DEV_CORP_NAME"
                 , $"STANDARD_MOLE_NAME" as "DEV_MOLE_NAME"
                 , $"STANDARD_PACK_DES" as "DEV_PACKAGE_DES"
-                , $"PACK_NUMBER" as "DEV_PACKAGE_NUMBER"
+                , $"PACK_COUNT" as "DEV_PACKAGE_NUMBER"
                 , $"STANDARD_DOSAGE" as "DEV_DOSAGE_NAME"
-                , lit(null) as "DEV_DELIVERY_WAY"
+                , lit("") as "DEV_DELIVERY_WAY"
                 , $"PACK_ID" as "DEV_PACK_ID"
+                , lit(source) as "DEV_SOURCE"
             )
 
     lazy val nhwaProductMatchFile = "/data/nhwa/pha_config_repository1809/Nhwa_ProductMatchTable_20181126.csv"
     lazy val pfizerProductMatchFile = "/data/pfizer/pha_config_repository1901/Pfizer_ProductMatchTable_20190403.csv"
+    lazy val astellasProductMatchFile = "/data/astellas/pha_config_repository1812/Astellas_ProductMatchTable.csv"
 
     lazy val packIdFile1 = "/test/chc/CHC_packid匹配表1.csv"
     lazy val packIdFile2 = "/test/chc/CHC_packid匹配表2.csv"
@@ -67,9 +73,14 @@ object TransformProductDev extends App {
         , $"packcode" as "DEV_PACK_ID"
     )
 
-    lazy val nhwaMatchDF = matchTable2Product(CSV2DF(nhwaProductMatchFile).withColumnRenamed("PACK_COUNT", "PACK_NUMBER"))
+    lazy val nhwaMatchDF = matchTable2Product(CSV2DF(nhwaProductMatchFile), "nhwa")
+//    nhwaMatchDF.show(false)
 
-    lazy val pfizerMatchDF = matchTable2Product(CSV2DF(pfizerProductMatchFile))
+    lazy val pfizerMatchDF = matchTable2Product(CSV2DF(pfizerProductMatchFile).withColumnRenamed("PACK_NUMBER", "PACK_COUNT"), "pfizer")
+//    pfizerMatchDF.show(false)
+
+    lazy val astellasMatchDF = matchTable2Product(CSV2DF(astellasProductMatchFile), "astellas")
+//    astellasMatchDF.show(false)
 
     lazy val pdc = ProductDevConversion()
 
@@ -103,18 +114,17 @@ object TransformProductDev extends App {
                 )
     }
 
-    val productDevERD: DataFrame = pdc.toERD(MapArgs(Map(
-//        "nhwaMatchDF" -> DFArgs(nhwaMatchDF)
-//        , "pfizerMatchDF" -> DFArgs(pfizerMatchDF)
+    lazy val productDevERD: DataFrame = pdc.file2ERD(MapArgs(Map(
+        "nhwaMatchDF" -> DFArgs(nhwaMatchDF)
+        , "pfizerMatchDF" -> DFArgs(pfizerMatchDF)
+        , "astellasMatchDF" -> DFArgs(astellasMatchDF)
 //        , "packIdDF" -> DFArgs(packIdDF)
-        "imsPackIdDF" -> DFArgs(imsPackIdDF)
+//        , "imsPackIdDF" -> DFArgs(imsPackIdDF)
     ))).getAs[DFArgs]("productDevERD")
+    lazy val productDevERDCount = productDevERD.count()
     productDevERD.show(false)
-    val productDevERDCount = productDevERD.count()
 
-    phDebugLog(s"imsPackIdDF count = ${imsPackIdDF.count()}, productDevERD count = $productDevERDCount")
-
-//    if (args.nonEmpty && args(0) == "TRUE")
-        productDevERD.save2Mongo(PROD_DEV_LOCATION.split("/").last).save2Parquet(PROD_DEV_LOCATION)
+    if (args.nonEmpty && args(0) == "TRUE")
+        productDevERD.save2Parquet(PROD_DEV_LOCATION).save2Mongo(PROD_DEV_LOCATION.split("/").last)
 
 }

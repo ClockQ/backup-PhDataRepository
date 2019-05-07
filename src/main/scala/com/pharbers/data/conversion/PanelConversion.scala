@@ -7,7 +7,7 @@ import com.pharbers.util.log.phLogTrait.phDebugLog
 import com.pharbers.data.util.commonUDF.generateIdUdf
 import com.pharbers.pactions.actionbase.MapArgs
 
-case class PanelConversion(company_id: String) extends PhDataConversion {
+case class PanelConversion(company_id: String) extends PhDataConversion2 {
 
     def toERD(args: Map[String, DataFrame]): Map[String, DataFrame] = {
         val panelDF = args.getOrElse("panelDF", throw new Exception("not found panelDF"))

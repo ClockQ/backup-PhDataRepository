@@ -5,7 +5,7 @@ import com.pharbers.pactions.actionbase._
 import org.apache.spark.sql.functions.{col, when}
 import com.pharbers.util.log.phLogTrait.phDebugLog
 import com.pharbers.pactions.jobs.sequenceJobWithMap
-import com.pharbers.data.conversion.{CPAConversion, HospConversion, ProductEtcConversion}
+import com.pharbers.data.conversion.{CPAConversion, HospConversion, ProductEtcConversion2}
 
 /**
   * @description:
@@ -47,7 +47,7 @@ case class CPA2ERDJob(args: Map[String, String])(implicit any: Any = null) exten
     val pha_file_temp: String = args.getOrElse("pha_file_temp", "")
 
     val hospCvs: HospConversion = HospConversion()
-    val prodCvs: ProductEtcConversion = ProductEtcConversion()
+    val prodCvs: ProductEtcConversion2 = ProductEtcConversion2()
     val cpaCvs: CPAConversion = CPAConversion()
 
     override def perform(pr: pActionArgs = MapArgs(Map())): pActionArgs = {

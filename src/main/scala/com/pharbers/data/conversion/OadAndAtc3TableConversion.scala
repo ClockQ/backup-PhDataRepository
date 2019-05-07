@@ -7,7 +7,7 @@ import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
   * @author: clock
   * @date: 2019-03-28 16:40
   */
-case class OadAndAtc3TableConversion() extends PhDataConversion {
+case class OadAndAtc3TableConversion() extends PhDataConversion2 {
 
     import com.pharbers.data.util._
     import com.pharbers.data.util.sparkDriver.ss.implicits._

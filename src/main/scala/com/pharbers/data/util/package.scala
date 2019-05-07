@@ -1,14 +1,12 @@
 package com.pharbers.data
 
-import com.pharbers.data.model.oidSchema
-import org.apache.spark.rdd.RDD
 import com.pharbers.spark.util._
 import org.apache.spark.sql.functions._
 import com.pharbers.spark.phSparkDriver
 import com.pharbers.pactions.actionbase._
+import com.pharbers.data.model.oidSchema
 import org.apache.spark.sql.{DataFrame, SaveMode}
 import com.pharbers.util.log.phLogTrait.phDebugLog
-import com.pharbers.spark.session.spark_conn_instance
 
 /**
   * @description: data util collection
@@ -16,8 +14,8 @@ import com.pharbers.spark.session.spark_conn_instance
   * @date: 2019-03-28 15:49
   */
 package object util {
-    implicit val sparkDriver: phSparkDriver = getSparkDriver()
-    implicit val conn_instance: spark_conn_instance = sparkDriver.conn_instance
+    implicit val sparkDriver = getSparkDriver()
+    implicit val con = sparkDriver.conn_instance
 
     implicit class SaveParquet(df: DataFrame) {
         def save2Parquet(location: String): DataFrame = {
@@ -35,10 +33,16 @@ package object util {
 
         import org.apache.spark.sql.expressions.UserDefinedFunction
 
-        def save2Mongo(name: String): DataFrame = {
+        def save2Mongo(name: String)(implicit sparkDriver: phSparkDriver): DataFrame = {
             phDebugLog(s"save `$name` to Mongo")
-            sparkDriver.setUtil(dataFrame2Mongo())
-                    .dataFrame2Mongo(df.trimOId, PhMongoConf.server_host, PhMongoConf.server_port.toString, PhMongoConf.conn_name, name)
+            sparkDriver.setUtil(dataFrame2Mongo()(sparkDriver.conn_instance))
+                    .dataFrame2Mongo(
+                        df.trimOId,
+                        PhMongoConf.server_host,
+                        PhMongoConf.server_port.toString,
+                        PhMongoConf.conn_name,
+                        name
+                    )
             df
         }
 
@@ -101,22 +105,28 @@ package object util {
 
     implicit class pActionArgsGetValue(args: pActionArgs) {
         def getBy[T <: pActionArgs]: T#t = args.asInstanceOf[T].get
+
         def getAs[T <: pActionArgs](index: String): T#t = args.asInstanceOf[MapArgs].get(index).asInstanceOf[T].get
     }
 
-    val FILE2DF: (String, String) => DataFrame = sparkDriver.setUtil(csv2RDD()).csv2RDD(_, _, header = true).na.fill("")
+    def FILE2DF(file_path: String, delimiter: String)(implicit sparkDriver: phSparkDriver): DataFrame =
+        sparkDriver.setUtil(csv2RDD()(sparkDriver.conn_instance))
+                .csv2RDD(file_path, delimiter, header = true).na.fill("")
 
-    val CSV2DF: String => DataFrame = FILE2DF(_, ",")
+    def CSV2DF(file_path: String)(implicit sparkDriver: phSparkDriver): DataFrame =
+        FILE2DF(file_path, ",")
 
-    val TXT2DF: String => DataFrame = FILE2DF(_, "|")
+    def TXT2DF(file_path: String)(implicit sparkDriver: phSparkDriver): DataFrame =
+        FILE2DF(file_path, "|")
 
-    val Mongo2DF: String => DataFrame =
-        sparkDriver.setUtil(mongo2DF()).mongo2DF(
+    def Mongo2DF(collName: String)(implicit sparkDriver: phSparkDriver): DataFrame =
+        sparkDriver.setUtil(mongo2DF()(sparkDriver.conn_instance)).mongo2DF(
             PhMongoConf.server_host,
             PhMongoConf.server_port.toString,
-            PhMongoConf.conn_name, _
+            PhMongoConf.conn_name,
+            collName
         ).trimId
 
-    val Parquet2DF: String => DataFrame =
-        sparkDriver.setUtil(readParquet()).readParquet(_)
+    def Parquet2DF(file_path: String)(implicit sparkDriver: phSparkDriver): DataFrame =
+        sparkDriver.setUtil(readParquet()(sparkDriver.conn_instance)).readParquet(file_path)
 }

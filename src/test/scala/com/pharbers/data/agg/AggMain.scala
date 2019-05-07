@@ -116,7 +116,7 @@ class Agg(company_id: String) {
     lazy val marketDF = Parquet2DF(PROD_MARKET_LOCATION + "/" + company_id)
 
     lazy val prodDIS: DataFrame = {
-        val productEtcDIS = ProductEtcConversion().toDIS(MapArgs(Map(
+        val productEtcDIS = ProductEtcConversion2().toDIS(MapArgs(Map(
             "productEtcERD" -> DFArgs(productEtcERD)
             , "atcERD" -> DFArgs(atcDF)
             , "marketERD" -> DFArgs(marketDF)

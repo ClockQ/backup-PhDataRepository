@@ -10,7 +10,7 @@ import org.apache.spark.sql.expressions.UserDefinedFunction
   * @author: clock
   * @date: 2019-04-15 14:47
   */
-case class ProductImsConversion() extends PhDataConversion {
+case class ProductImsConversion() extends PhDataConversion2 {
 
     import com.pharbers.data.util._
     import org.apache.spark.sql.functions._

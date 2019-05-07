@@ -1,7 +1,7 @@
 package com.pharbers.data.run
 
 import com.pharbers.util.log.phLogTrait.phDebugLog
-import com.pharbers.data.conversion.ProductEtcConversion
+import com.pharbers.data.conversion.ProductEtcConversion2
 import com.pharbers.data.run.TransformGYCX.args
 import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
 
@@ -14,7 +14,7 @@ object TransformMarket extends App {
 
     val productDevERD = Parquet2DF(PROD_DEV_LOCATION)
 
-    val prodCvs = ProductEtcConversion()
+    val prodCvs = ProductEtcConversion2()
 
     def nhwaMarketDF(): Unit = {
         val company_id = NHWA_COMPANY_ID

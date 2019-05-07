@@ -39,7 +39,7 @@ object TransformCHC extends App {
         , "cityDF" -> DFArgs(cityDF)
         , "productDIS" -> DFArgs(productImsDIS)
         , "addCHCProdFunc" -> SingleArgFuncArgs { df: DataFrame =>
-            ProductDevConversion().toERD(MapArgs(Map(
+            ProductDevConversion2().toERD(MapArgs(Map(
                 "chcDF" -> DFArgs(df)
             ))).getAs[DFArgs]("productDevERD")
         }
@@ -88,7 +88,7 @@ object TransformCHC extends App {
                     , $"IMS_PACK_ID" as "DEV_PACK_ID"
                 )
 
-        val pdc = ProductDevConversion()
+        val pdc = ProductDevConversion2()
 
         val productDevERD: DataFrame = pdc.toERD(MapArgs(Map(
             "chcDF" -> DFArgs(chc2Product(prodIdIsNull))

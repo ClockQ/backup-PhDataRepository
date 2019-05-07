@@ -31,7 +31,7 @@ object ParquetLocation {
     val HOSP_PHA_LOCATION = "/repository/pha"
 
     // Product Dev
-    val PROD_DEV_LOCATION = "/repository/prod_dev5"
+    val PROD_DEV_LOCATION = "/repository/prod_dev_max"
     // Product IMS
     val PROD_ATC3TABLE_LOCATION = "/repository/atc3_table5"
     val PROD_OADTABLE_LOCATION = "/repository/oad_table5"
@@ -39,7 +39,8 @@ object ParquetLocation {
     // Product ATC
     val PROD_ATCTABLE_LOCATION = "/repository/atc_table5"
     // Product Etc
-    val PROD_ETC_LOCATION = "/repository/prod_etc5"
+    val PROD_ETC_LOCATION = "/repository/prod_etc_max"
+    val PROD_ETC_DIS_LOCATION = "/repository/prod_etc_dis_max"
     // Product Market
     val PROD_MARKET_LOCATION = "/repository/market5"
 

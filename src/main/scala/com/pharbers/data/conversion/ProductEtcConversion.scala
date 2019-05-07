@@ -1,6 +1,6 @@
 package com.pharbers.data.conversion
 
-import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
+import com.pharbers.pactions.actionbase.{DFArgs, MapArgs, SingleArgFuncArgs, StringArgs}
 
 /**
   * @description: product of pharbers
@@ -13,90 +13,50 @@ case class ProductEtcConversion() extends PhDataConversion {
     import org.apache.spark.sql.functions._
     import com.pharbers.data.util.sparkDriver.ss.implicits._
 
-    override def toERD(args: MapArgs): MapArgs = {
+    override def file2ERD(args: MapArgs): MapArgs = {
+        val company_id = args.getAs[StringArgs]("company_id")
+        val matchMarketFunc = args.getAs[SingleArgFuncArgs[MapArgs, MapArgs]]("matchMarketFunc")
+        val matchDevFunc = args.getAs[SingleArgFuncArgs[MapArgs, MapArgs]]("matchDevFunc")
 
-        val sourceDataDF = args.get.getOrElse("sourceDataDF", throw new Exception("not found sourceDataDF")).getBy[DFArgs]
+        val matchMarketProdDF = matchMarketFunc(args).get.head._2.getBy[DFArgs]
 
-        val prodERD = sourceDataDF
-                .select("COMPANY_ID", "SOURCE", "PRODUCT_NAME", "MOLE_NAME", "PACK_DES", "PACK_NUMBER", "DOSAGE", "DELIVERY_WAY", "CORP_NAME")
-                // 1. SOURCE
-                .groupBy("PRODUCT_NAME", "MOLE_NAME", "PACK_DES", "PACK_NUMBER", "DOSAGE", "DELIVERY_WAY", "CORP_NAME")
-                .agg(sort_array(collect_list("SOURCE")) as "SOURCE", sort_array(collect_list("COMPANY_ID")) as "COMPANY_ID")
-                .withColumn("SOURCE", commonUDF.mkStringUdf($"SOURCE", lit("+")))
-                .withColumn("COMPANY_ID", commonUDF.mkStringUdf($"COMPANY_ID", lit("+")))
+        val matchDevProdDF = matchDevFunc(
+            MapArgs(args.get + ("prodMatchDF" -> DFArgs(matchMarketProdDF)))
+        ).get.head._2.getBy[DFArgs]
+
+        val productEtcERD = matchDevProdDF
                 .select(
-                    $"COMPANY_ID" as "ETC_COMPANY_ID",
-                    $"SOURCE" as "ETC_SOURCE",
-                    $"PRODUCT_NAME" as "ETC_PRODUCT_NAME",
-                    $"CORP_NAME" as "ETC_CORP_NAME",
-                    $"MOLE_NAME" as "ETC_MOLE_NAME",
-                    $"PACK_DES" as "ETC_PACKAGE_DES",
-                    $"PACK_NUMBER" as "ETC_PACKAGE_NUMBER",
-                    $"DOSAGE" as "ETC_DOSAGE_NAME",
-                    $"DELIVERY_WAY" as "ETC_DELIVERY_WAY"
+                    lit(company_id) as "ETC_COMPANY_ID"
+                    , $"STANDARD_PRODUCT_NAME" as "ETC_PRODUCT_NAME"
+                    , $"STANDARD_CORP_NAME" as "ETC_CORP_NAME"
+                    , $"STANDARD_MOLE_NAME" as "ETC_MOLE_NAME"
+                    , $"STANDARD_PACK_DES" as "ETC_PACKAGE_DES"
+                    , $"PACK_COUNT" as "ETC_PACKAGE_NUMBER"
+                    , $"STANDARD_DOSAGE" as "ETC_DOSAGE_NAME"
+                    , lit("") as "ETC_DELIVERY_WAY"
+                    , $"MARKET"
+                    , $"DEV_PRODUCT_ID"
                 )
+                .dropDuplicates("DEV_PRODUCT_ID")
                 .generateId
 
         MapArgs(Map(
-            "productEtcERD" -> DFArgs(prodERD)
+            "productEtcERD" -> DFArgs(productEtcERD)
         ))
     }
 
-    override def toDIS(args: MapArgs): MapArgs = {
+    override def extractByDIS(args: MapArgs): MapArgs = ???
+
+    override def mergeERD(args: MapArgs): MapArgs = {
         val productEtcERD = args.get.getOrElse("productEtcERD", throw new Exception("not found productEtcERD"))
                 .getBy[DFArgs].withColumn("ETC_PRODUCT_ID", $"_id")
         val atcERD = args.get.get("atcERD")
-        val marketERD = args.get.get("marketERD")
         val productDevERD = args.get.get("productDevERD")
-
-        val etcConnDevDF = productDevERD match {
-            case Some(dev) =>
-                val productMatchDF = args.get("productMatchDF").getBy[DFArgs]
-                        .select($"MIN_PRODUCT_UNIT",
-                            regexp_replace($"MIN_PRODUCT_UNIT_STANDARD", " ", "") as "MIN2"
-                        ).dropDuplicates("MIN_PRODUCT_UNIT")
-
-                val productDevDF = {
-                    dev.getBy[DFArgs].withColumnRenamed("_id", "DEV_PRODUCT_ID")
-                            .select(col("DEV_PRODUCT_ID"), col("DEV_PRODUCT_NAME"), col("DEV_DOSAGE_NAME"),
-                                col("DEV_PACKAGE_DES"), col("DEV_PACKAGE_NUMBER"), col("DEV_CORP_NAME"))
-                            .withColumn("MIN2", regexp_replace(concat(
-                                col("DEV_PRODUCT_NAME"),
-                                col("DEV_DOSAGE_NAME"),
-                                col("DEV_PACKAGE_DES"),
-                                col("DEV_PACKAGE_NUMBER"),
-                                col("DEV_CORP_NAME")), " ", "")
-                            )
-                            .dropDuplicates("MIN2")
-                }
-
-                productEtcERD
-                        .withColumn("MIN1", concat(
-                            col("ETC_PRODUCT_NAME"),
-                            col("ETC_DOSAGE_NAME"),
-                            col("ETC_PACKAGE_DES"),
-                            col("ETC_PACKAGE_NUMBER"),
-                            col("ETC_CORP_NAME"))
-                        )
-                        .join(productMatchDF
-                            , col("MIN1") === col("MIN_PRODUCT_UNIT")
-                            , "left"
-                        )
-                        .join(productDevDF
-                            , productMatchDF("MIN2") === productDevDF("MIN2")
-                            , "left"
-                        )
-                        .drop("MIN_PRODUCT_UNIT")
-                        .drop("MIN1")
-                        .drop("MIN2")
-
-            case None => productEtcERD
-        }
 
         val etcConnAtcDF = atcERD match {
             case Some(atc) =>
                 val atcDF = atc.getBy[DFArgs].dropDuplicates("MOLE_NAME")
-                etcConnDevDF
+                productEtcERD
                         .join(
                             atcDF
                             , col("ETC_MOLE_NAME") === atcDF("MOLE_NAME")
@@ -104,23 +64,22 @@ case class ProductEtcConversion() extends PhDataConversion {
                         )
                         .drop(atcDF("_id"))
                         .drop(atcDF("MOLE_NAME"))
-            case None => etcConnDevDF
+            case None => productEtcERD
         }
 
-        val etcConnMarketERD = marketERD match {
-            case Some(market) =>
-                val marketDF = market.getBy[DFArgs]
+        val etcConnDevDF = productDevERD match {
+            case Some(dev) =>
+                val devDF = dev.getBy[DFArgs]
                 etcConnAtcDF
                         .join(
-                            marketDF
-                            , etcConnAtcDF("DEV_PRODUCT_ID") === marketDF("PRODUCT_ID")
+                            devDF
+                            , col("DEV_PRODUCT_ID") === devDF("_id")
                             , "left"
                         )
-                        .drop(marketDF("_id"))
-                        .drop(marketDF("PRODUCT_ID"))
+                        .drop(devDF("_id"))
             case None => etcConnAtcDF
         }
 
-        MapArgs(Map("productEtcDIS" -> DFArgs(etcConnMarketERD)))
+        MapArgs(Map("productEtcDIS" -> DFArgs(etcConnDevDF)))
     }
 }

@@ -12,7 +12,7 @@ object TransformGYCX extends App {
     import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     val hospCvs = HospConversion()
-    val prodCvs = ProductEtcConversion()
+    val prodCvs = ProductEtcConversion2()
     val gycxCvs = GYCXConversion()
 
     val phaDF = Parquet2DF(HOSP_PHA_LOCATION)

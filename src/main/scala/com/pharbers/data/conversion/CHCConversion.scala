@@ -3,7 +3,7 @@ package com.pharbers.data.conversion
 import org.apache.spark.sql.DataFrame
 import com.pharbers.pactions.actionbase.{DFArgs, MapArgs, SingleArgFuncArgs}
 
-case class CHCConversion() extends PhDataConversion {
+case class CHCConversion() extends PhDataConversion2 {
 
     import com.pharbers.data.util._
     import org.apache.spark.sql.functions._
