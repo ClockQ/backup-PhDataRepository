@@ -7,7 +7,7 @@ package com.pharbers.data.conversion
   * @author: clock
   * @date: 2019-04-28 16:54
   */
-case class AddressConversion() extends PhDataConversion2 {
+case class AddressConversion() extends PhDataConversion {
 
     import com.pharbers.data.util._
     import com.pharbers.data.util.sparkDriver.ss.implicits._

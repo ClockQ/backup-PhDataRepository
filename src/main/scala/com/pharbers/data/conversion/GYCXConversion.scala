@@ -3,7 +3,7 @@ package com.pharbers.data.conversion
 import com.pharbers.util.log.phLogTrait.phDebugLog
 import com.pharbers.pactions.actionbase.{DFArgs, MapArgs, SingleArgFuncArgs}
 
-case class GYCXConversion() extends PhDataConversion2 {
+case class GYCXConversion() extends PhDataConversion {
 
     import com.pharbers.data.util._
     import org.apache.spark.sql.functions._

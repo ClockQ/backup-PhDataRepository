@@ -15,7 +15,6 @@ object Main extends App {
     TransformOadAndAtc3Table.main(STATUS)
     TransformProductIms.main(STATUS)
     TransformProductEtc.main(STATUS)
-    TransformMarket.main(STATUS)
 
     // address
     TransformAddress.main(STATUS)
@@ -29,7 +28,7 @@ object Main extends App {
 
     // source
     TransformPHA.main(SAVE)
-    TransformCPA.main(STATUS)
+//    TransformCPA.main(STATUS)
     TransformGYCX.main(STATUS)
 
     TransformPanel.main(STATUS)

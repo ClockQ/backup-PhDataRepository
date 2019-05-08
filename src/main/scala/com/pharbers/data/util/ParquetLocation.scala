@@ -29,6 +29,7 @@ object ParquetLocation {
     val HOSP_ADDRESS_TIER_LOCATION = "/repository/tier"
     // hospital pha
     val HOSP_PHA_LOCATION = "/repository/pha"
+    val HOSP_DIS_LOCATION = "/repository/hosp_dis_max"
 
     // Product Dev
     val PROD_DEV_LOCATION = "/repository/prod_dev_max"

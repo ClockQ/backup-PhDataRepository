@@ -12,7 +12,7 @@ case class ProductDevConversion() extends PhDataConversion {
     import com.pharbers.data.util._
     import org.apache.spark.sql.functions._
 
-    override def file2ERD(args: MapArgs): MapArgs = {
+    override def toERD(args: MapArgs): MapArgs = {
         val productDevERD = args.get.values.map(_.getBy[DFArgs]).reduce(_ unionByName _)
                 .withColumn("DEV_PACK_ID",
                     when(col("DEV_PACK_ID").isNotNull, col("DEV_PACK_ID").cast("int")).otherwise(lit(0))
@@ -33,8 +33,6 @@ case class ProductDevConversion() extends PhDataConversion {
         ))
     }
 
-    override def extractByDIS(args: MapArgs): MapArgs = ???
-
-    override def mergeERD(args: MapArgs): MapArgs = ???
+    override def toDIS(args: MapArgs): MapArgs = ???
 
 }

@@ -18,17 +18,18 @@ object TransformPHA extends App {
     val oldPhaDF = try {
         Parquet2DF(HOSP_PHA_LOCATION)
     } catch {
-        case _: Exception => Seq.empty[(String, String, String, String)].toDF("CPA", "GYC", "PHA_ID", "PHA_ID_NEW")
+        case _: Exception => Seq.empty[(Int, Int, String, String)].toDF("CPA", "GYC", "PHA_ID", "PHA_ID_NEW")
     }
 
     val newPhaDF = phaDF
+            .withColumn("CPA", $"CPA".cast("int"))
+            .withColumn("GYC", $"GYC".cast("int"))
             .withColumnRenamed("PHA ID", "PHA_ID")
             .unionByName(oldPhaDF)
             .distinct()
 
     newPhaDF.show(false)
 
-    if(args.nonEmpty && args(0) == "TRUE"){
+    if (args.nonEmpty && args(0) == "TRUE")
         newPhaDF.save2Parquet(HOSP_PHA_LOCATION)
-    }
 }

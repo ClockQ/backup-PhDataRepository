@@ -13,7 +13,7 @@ case class ProductEtcConversion() extends PhDataConversion {
     import org.apache.spark.sql.functions._
     import com.pharbers.data.util.sparkDriver.ss.implicits._
 
-    override def file2ERD(args: MapArgs): MapArgs = {
+    override def toERD(args: MapArgs): MapArgs = {
         val company_id = args.getAs[StringArgs]("company_id")
         val matchMarketFunc = args.getAs[SingleArgFuncArgs[MapArgs, MapArgs]]("matchMarketFunc")
         val matchDevFunc = args.getAs[SingleArgFuncArgs[MapArgs, MapArgs]]("matchDevFunc")
@@ -37,7 +37,7 @@ case class ProductEtcConversion() extends PhDataConversion {
                     , $"MARKET"
                     , $"DEV_PRODUCT_ID"
                 )
-                .dropDuplicates("DEV_PRODUCT_ID")
+                .distinct()
                 .generateId
 
         MapArgs(Map(
@@ -45,11 +45,9 @@ case class ProductEtcConversion() extends PhDataConversion {
         ))
     }
 
-    override def extractByDIS(args: MapArgs): MapArgs = ???
-
-    override def mergeERD(args: MapArgs): MapArgs = {
+    override def toDIS(args: MapArgs): MapArgs = {
         val productEtcERD = args.get.getOrElse("productEtcERD", throw new Exception("not found productEtcERD"))
-                .getBy[DFArgs].withColumn("ETC_PRODUCT_ID", $"_id")
+                .getBy[DFArgs].withColumnRenamed("_id", "ETC_PRODUCT_ID")
         val atcERD = args.get.get("atcERD")
         val productDevERD = args.get.get("productDevERD")
 
@@ -81,5 +79,26 @@ case class ProductEtcConversion() extends PhDataConversion {
         }
 
         MapArgs(Map("productEtcDIS" -> DFArgs(etcConnDevDF)))
+    }
+
+    def matchDevFunc(args: MapArgs): MapArgs = {
+        val prodMatchDF = args.getAs[DFArgs]("prodMatchDF")
+        val prodDevDF = args.getAs[DFArgs]("prodDevDF").withColumn("DEV_PRODUCT_ID", $"_id")
+        val resultDF = prodMatchDF.join(
+            prodDevDF
+            , prodMatchDF("STANDARD_PRODUCT_NAME") === prodDevDF("DEV_PRODUCT_NAME")
+                    && prodMatchDF("STANDARD_MOLE_NAME") === prodDevDF("DEV_MOLE_NAME")
+                    && prodMatchDF("STANDARD_DOSAGE") === prodDevDF("DEV_DOSAGE_NAME")
+                    && prodMatchDF("STANDARD_PACK_DES") === prodDevDF("DEV_PACKAGE_DES")
+                    && prodMatchDF("PACK_COUNT") === prodDevDF("DEV_PACKAGE_NUMBER")
+                    && prodMatchDF("STANDARD_CORP_NAME") === prodDevDF("DEV_CORP_NAME")
+            , "left"
+        )
+
+        val nullCount = resultDF.filter($"DEV_PRODUCT_ID".isNull).count()
+        if (nullCount != 0)
+            throw new Exception("product exist " + nullCount + " null `DEV_PRODUCT_ID`")
+
+        MapArgs(Map("result" -> DFArgs(resultDF)))
     }
 }

@@ -9,9 +9,7 @@ import com.pharbers.pactions.actionbase.MapArgs
   */
 trait PhDataConversion {
 
-    def file2ERD(args: MapArgs): MapArgs
+    def toERD(args: MapArgs): MapArgs
 
-    def extractByDIS(args: MapArgs): MapArgs
-
-    def mergeERD(args: MapArgs): MapArgs
+    def toDIS(args: MapArgs): MapArgs
 }

@@ -30,7 +30,7 @@ object TransformCHC extends App {
         "productImsERD" -> DFArgs(Parquet2DF(PROD_IMS_LOCATION))
         , "atc3ERD" -> DFArgs(Parquet2DF(PROD_ATC3TABLE_LOCATION))
         , "oadERD" -> DFArgs(Parquet2DF(PROD_OADTABLE_LOCATION))
-        , "productDevERD" -> DFArgs(Parquet2DF(PROD_DEV_LOCATION))
+        , "productDevERD" -> DFArgs(Mongo2DF("prod_dev9"))
     ))).getAs[DFArgs]("productImsDIS")
 
     val chcERD = chcCvs.toERD(MapArgs(Map(
@@ -45,7 +45,7 @@ object TransformCHC extends App {
         }
     ))).getAs[DFArgs]("chcERD")
     val chcERDCount = chcERD.count()
-    chcERD.show(false)
+//    chcERD.show(false)
 
     val chcProdIsNullCount = chcERD.filter($"PRODUCT_ID".isNull).count()
     assert(chcProdIsNullCount == 0, "chc: 转换后的ERD有`" + chcProdIsNullCount + "`条产品未匹配")
@@ -57,15 +57,15 @@ object TransformCHC extends App {
         chcERD.save2Parquet(CHC_LOCATION).save2Mongo(CHC_LOCATION.split("/").last)
 
     val chcDIS = chcCvs.toDIS(MapArgs(Map(
-        "chcERD" -> DFArgs(Parquet2DF(CHC_LOCATION))
+        "chcERD" -> DFArgs(Mongo2DF("chc3"))
         , "dateERD" -> DFArgs(Parquet2DF(CHC_DATE_LOCATION))
         , "cityERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_CITY_LOCATION))
         , "productDIS" -> DFArgs(productImsDIS)
     ))).getAs[DFArgs]("chcDIS")
     val chcDISCount = chcDIS.count() // 8728
+//    chcDIS.show(false)
+//    chcCvs.toCHCStruct(chcDIS).show(false)
     chcDIS.show(false)
-    chcCvs.toCHCStruct(chcDIS).show(false)
-
     val chcDisMinus = chcDFCount - chcDISCount
     assert(chcDisMinus == 0, "chc: 转换后的DIS比源数据减少`" + chcDisMinus + "`条记录")
 

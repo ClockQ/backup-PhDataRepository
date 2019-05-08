@@ -7,7 +7,7 @@ import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
   * @author: clock
   * @date: 2019-04-15 14:49
   */
-case class ProductDevConversion2() extends PhDataConversion2 {
+case class ProductDevConversion2() extends PhDataConversion {
 
     import com.pharbers.data.util._
     import org.apache.spark.sql.functions._

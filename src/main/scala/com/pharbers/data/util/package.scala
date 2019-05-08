@@ -47,14 +47,14 @@ package object util {
         }
 
         def trimOId: DataFrame = {
-            phDebugLog(s"trim `ObjectID` in DataFrame")
+//            phDebugLog(s"trim `ObjectID` in DataFrame")
             val trimOIdUdf: UserDefinedFunction = udf(oidSchema)
             if (df.columns.contains("_id")) df.withColumn("_id", trimOIdUdf(col("_id")))
             else df
         }
 
         def trimId: DataFrame = {
-            phDebugLog(s"trim `ID` in DataFrame")
+//            phDebugLog(s"trim `ID` in DataFrame")
             if (df.columns.contains("_id")) df.withColumn("_id", lit(col("_id")("oid")))
             else df
         }
@@ -70,7 +70,7 @@ package object util {
 
         def generateId: DataFrame = {
             if (df.columns.contains("_id")) df
-            else df.withColumn("_id", commonUDF.generateIdUdf())
+            else df.withColumn("_id", commonUDF.generateIdUdf()).cache()
         }
 
         def str2Time: DataFrame = {

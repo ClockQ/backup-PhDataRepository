@@ -114,7 +114,7 @@ object TransformProductDev extends App {
                 )
     }
 
-    lazy val productDevERD: DataFrame = pdc.file2ERD(MapArgs(Map(
+    lazy val productDevERD: DataFrame = pdc.toERD(MapArgs(Map(
         "nhwaMatchDF" -> DFArgs(nhwaMatchDF)
         , "pfizerMatchDF" -> DFArgs(pfizerMatchDF)
         , "astellasMatchDF" -> DFArgs(astellasMatchDF)

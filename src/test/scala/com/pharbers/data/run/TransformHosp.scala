@@ -42,21 +42,25 @@ object TransformHosp extends App {
 //    transformHosp()
 
 
-    val hospCvs = HospConversion()
+    lazy val hospCvs = HospConversion()
 
-    val hospBaseERD = Parquet2DF(HOSP_BASE_LOCATION)
-    val hospBaseERDCount = hospBaseERD.count()
+    lazy val hospBaseERD = Parquet2DF(HOSP_BASE_LOCATION)
+    lazy val hospBaseERDCount = hospBaseERD.count()
 
-    val hospDIS = hospCvs.toDIS(MapArgs(Map(
+    lazy val hospDIS = hospCvs.toDIS(MapArgs(Map(
         "hospBaseERD" -> DFArgs(hospBaseERD)
         , "hospAddressERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_BASE_LOCATION))
         , "hospPrefectureERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_PREFECTURE_LOCATION))
         , "hospCityERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_CITY_LOCATION))
         , "hospProvinceERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION))
     ))).getAs[DFArgs]("hospDIS")
-    val hospDISCount = hospDIS.count()
+    lazy val hospDISCount = hospDIS.count()
     hospDIS.show(false)
 
     val hospMinus = hospBaseERDCount - hospDISCount
     assert(hospMinus == 0, "prodIms: 转换后的DIS比ERD减少`" + hospMinus + "`条记录")
+
+    if (args.nonEmpty && args(0) == "TRUE")
+        hospDIS.save2Parquet(HOSP_DIS_LOCATION)
+
 }

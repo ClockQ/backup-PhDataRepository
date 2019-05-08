@@ -1,123 +1,141 @@
 package com.pharbers.data.conversion
 
 import com.pharbers.util.log.phLogTrait.phDebugLog
-import com.pharbers.pactions.actionbase.{DFArgs, MapArgs, SingleArgFuncArgs}
+import com.pharbers.pactions.actionbase.{DFArgs, MapArgs, SingleArgFuncArgs, StringArgs}
 
 /**
   * @description:
   * @author: clock
   * @date: 2019-03-28 16:40
   */
-case class CPAConversion() extends PhDataConversion2 {
+case class CPAConversion() extends PhDataConversion {
 
     import com.pharbers.data.util._
     import org.apache.spark.sql.functions._
     import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     override def toERD(args: MapArgs): MapArgs = {
-        val cpaDF = args.get.getOrElse("cpaDF", throw new Exception("not found cpaDF")).getBy[DFArgs]
-        val hospDF = args.get.getOrElse("hospDF", throw new Exception("not found hospDF")).getBy[DFArgs]
-        val prodDF = args.get.getOrElse("prodDF", throw new Exception("not found prodDF")).getBy[DFArgs]
-        val phaDF = args.get.getOrElse("phaDF", throw new Exception("not found phaDF")).getBy[DFArgs]
-        val appendProdFunc = args.get.get("appendProdFunc")
+        val company_id = args.getAs[StringArgs]("company_id")
+        val source = args.getAs[StringArgs]("source")
 
-        val connProdHosp = {
-            cpaDF
-                    .join(
-                        phaDF.drop("_id").dropDuplicates("CPA")
-                        , cpaDF("HOSP_ID") === phaDF("CPA")
-                        , "left"
-                    )
-                    .join(
-                        hospDF.withColumnRenamed("_id", "HOSPITAL_ID").dropDuplicates("PHA_HOSP_ID")
-                        , phaDF("PHA_ID_NEW") === hospDF("PHA_HOSP_ID")
-                        , "left"
-                    )
-                    .join(
-                        prodDF
-                        , cpaDF("PRODUCT_NAME") === prodDF("ETC_PRODUCT_NAME")
-                                && cpaDF("MOLE_NAME") === prodDF("ETC_MOLE_NAME")
-                                && cpaDF("DOSAGE") === prodDF("ETC_DOSAGE_NAME")
-                                && cpaDF("PACK_DES") === prodDF("ETC_PACKAGE_DES")
-                                && cpaDF("PACK_NUMBER") === prodDF("ETC_PACKAGE_NUMBER")
-                                && cpaDF("CORP_NAME") === prodDF("ETC_CORP_NAME")
-                        , "left"
-                    )
-        }
+        val matchHospFunc = args.getAs[SingleArgFuncArgs[MapArgs, MapArgs]]("matchHospFunc")
+        val matchProdFunc = args.getAs[SingleArgFuncArgs[MapArgs, MapArgs]]("matchProdFunc")
 
-        // 存在未成功匹配的产品, 递归执行self.toERD
-        val notConnProdOfCpa = connProdHosp.filter(col("ETC_PRODUCT_ID").isNull)
-        val notConnProdOfCpaCount = notConnProdOfCpa.count()
-        if (notConnProdOfCpaCount != 0) {
-            phDebugLog(notConnProdOfCpaCount + "条产品未匹配, 重新转换")
-            appendProdFunc match {
-                case Some(funcArgs) =>
-                    val notConnProdDIS = funcArgs.asInstanceOf[SingleArgFuncArgs[MapArgs, MapArgs]]
-                            .func(MapArgs(Map("sourceDataDF" -> DFArgs(notConnProdOfCpa))))
-                            .getAs[DFArgs]("productEtcDIS")
-                    return toERD(MapArgs(args.get +
-                            ("prodDF" -> DFArgs(prodDF.unionByName(notConnProdDIS.alignAt(prodDF))))
-                    ))
-                case None => Unit
-            }
-        }
+        val matchHospCpaDF = matchHospFunc(args).get.head._2.getBy[DFArgs]
+        val matchDevProdDF = matchProdFunc(
+            MapArgs(args.get + ("cpaDF" -> DFArgs(matchHospCpaDF)))
+        ).get.head._2.getBy[DFArgs]
 
-        // 存在未成功匹配的医院, 递归执行self.toERD
-        val notConnHospOfCpa = connProdHosp.filter(col("HOSPITAL_ID").isNull)
-        val notConnHospOfCpaCount = notConnHospOfCpa.count()
-        if (notConnHospOfCpaCount != 0) {
-            phDebugLog(notConnHospOfCpaCount + "条医院未匹配, 重新转换")
-            val notConnPhaDIS = notConnHospOfCpa.select(col("HOSP_ID"))
-                    .distinct()
-                    .withColumnRenamed("HOSP_ID", "CPA")
-                    .withColumn("PHA_ID_NEW", commonUDF.generateIdUdf())
-                    .cache()
-
-            val notConnHospDIS = notConnPhaDIS.select("PHA_ID_NEW")
-                    .withColumnRenamed("PHA_ID_NEW", "PHA_HOSP_ID")
-                    .generateId
-
-            return toERD(MapArgs(args.get +
-                    ("hospDF" -> DFArgs(hospDF.unionByName(notConnHospDIS.alignAt(hospDF)))) +
-                    ("phaDF" -> DFArgs(phaDF.unionByName(notConnPhaDIS.alignAt(phaDF))))
-            ))
-        }
-
-        val cpaERD = connProdHosp
-                .generateId
+        val cpaERD = matchDevProdDF
+                .addColumn("COMPANY_ID", company_id)
+                .addColumn("SOURCE", source)
+                .addColumn("PRODUCT_NAME_NOTE", "")
                 .str2Time
-                .addColumn("PRODUCT_NAME_NOTE")
-                .select($"_id", cpaDF("COMPANY_ID"), $"YM",
-                    $"HOSPITAL_ID", $"ETC_PRODUCT_ID".as("PRODUCT_ID"),
-                    $"VALUE".as("SALES"), $"STANDARD_UNIT".as("UNITS"), $"PRODUCT_NAME_NOTE")
+                .select($"COMPANY_ID", $"SOURCE", $"YM", $"HOSPITAL_ID", $"PRODUCT_ID"
+                    , $"VALUE".cast("double").as("SALES"), $"STANDARD_UNIT".cast("double").as("UNITS")
+                    , $"PRODUCT_NAME_NOTE")
+                .generateId
 
-        MapArgs(Map(
-            "cpaERD" -> DFArgs(cpaERD),
-            "prodDIS" -> DFArgs(prodDF),
-            "hospDIS" -> DFArgs(hospDF),
-            "phaDIS" -> DFArgs(phaDF)
-        ))
+        MapArgs(Map("cpaERD" -> DFArgs(cpaERD)))
     }
 
     override def toDIS(args: MapArgs): MapArgs = {
         val cpaERD = args.get.getOrElse("cpaERD", throw new Exception("not found cpaERD")).getBy[DFArgs]
-        val hospERD = args.get.getOrElse("hospERD", throw new Exception("not found hospERD")).getBy[DFArgs]
-        val prodERD = args.get.getOrElse("prodERD", throw new Exception("not found prodERD")).getBy[DFArgs]
+        val hospDIS = args.get.getOrElse("hospDIS", throw new Exception("not found hospDIS")).getBy[DFArgs]
+        val prodDIS = args.get.getOrElse("prodDIS", throw new Exception("not found prodDIS")).getBy[DFArgs]
 
         val cpaDIS = cpaERD
                 .join(
-                    hospERD,
-                    cpaERD("HOSPITAL_ID") === hospERD("_id"),
+                    hospDIS,
+                    cpaERD("HOSPITAL_ID") === hospDIS("_id"),
                     "left"
                 )
-                .drop(hospERD("_id"))
+                .drop(hospDIS("_id"))
                 .join(
-                    prodERD,
-                    cpaERD("PRODUCT_ID") === prodERD("_id"),
+                    prodDIS.drop(prodDIS("_id")),
+                    cpaERD("PRODUCT_ID") === prodDIS("DEV_PRODUCT_ID"),
                     "left"
                 )
-                .drop(prodERD("_id"))
 
         MapArgs(Map("cpaDIS" -> DFArgs(cpaDIS)))
+    }
+
+    def matchHospFunc(args: MapArgs): MapArgs = {
+        val cpaDF = args.getAs[DFArgs]("cpaDF")
+        val hospDF = args.getAs[DFArgs]("hospDF")
+                .select($"_id" as "HOSPITAL_ID", $"PHA_HOSP_ID")
+                .dropDuplicates("PHA_HOSP_ID")
+        val phaDF = args.getAs[DFArgs]("phaDF")
+                .select($"CPA", $"PHA_ID_NEW")
+                .dropDuplicates("CPA")
+
+        val resultDF = cpaDF
+                .join(
+                    phaDF
+                    , cpaDF("HOSP_ID") === phaDF("CPA")
+                    , "left"
+                )
+                .drop(phaDF("CPA"))
+                .join(
+                    hospDF
+                    , phaDF("PHA_ID_NEW") === hospDF("PHA_HOSP_ID")
+                    , "left"
+                )
+                .drop(phaDF("PHA_ID_NEW"))
+                .drop(hospDF("PHA_HOSP_ID"))
+//        val nullCount = resultDF.filter($"HOSPITAL_ID".isNull).count()
+//        if (nullCount != 0)
+//            throw new Exception("cpa exist " + nullCount + " null `HOSPITAL_ID`")
+                .withColumn("HOSPITAL_ID",
+            when(hospDF("HOSPITAL_ID").isNotNull, hospDF("HOSPITAL_ID"))
+                    .otherwise(concat(lit("other"), cpaDF("HOSP_ID")))
+        )
+        MapArgs(Map("result" -> DFArgs(resultDF)))
+    }
+
+    def matchProdFunc(args: MapArgs): MapArgs = {
+        val cpaDF = args.getAs[DFArgs]("cpaDF")
+                .withColumn("min1", concat(
+                    col("PRODUCT_NAME"),
+                    col("DOSAGE"),
+                    col("PACK_DES"),
+                    col("PACK_NUMBER"),
+                    col("CORP_NAME"))
+                )
+                .withColumn("min1", regexp_replace($"min1", " ", ""))
+        val prodDF = args.getAs[DFArgs]("prodDF")
+                .withColumn("min2", concat(
+                    col("ETC_PRODUCT_NAME"),
+                    col("ETC_DOSAGE_NAME"),
+                    col("ETC_PACKAGE_DES"),
+                    col("ETC_PACKAGE_NUMBER"),
+                    col("ETC_CORP_NAME"))
+                )
+                .select($"DEV_PRODUCT_ID" as "PRODUCT_ID", regexp_replace($"min2", " ", "") as "min2")
+        val prodMatchDF = args.getAs[DFArgs]("prodMatchDF")
+                .select(
+                    regexp_replace($"MIN_PRODUCT_UNIT", " ", "") as "MIN_PRODUCT_UNIT"
+                    , regexp_replace($"MIN_PRODUCT_UNIT_STANDARD", " ", "") as "MIN_PRODUCT_UNIT_STANDARD"
+                )
+
+        val resultDF = cpaDF
+                .join(
+                    prodMatchDF
+                    , cpaDF("min1") === prodMatchDF("MIN_PRODUCT_UNIT")
+                    , "left"
+                )
+                .drop(cpaDF("min1"))
+                .drop("MIN_PRODUCT_UNIT")
+                .join(
+                    prodDF
+                    , prodMatchDF("MIN_PRODUCT_UNIT_STANDARD") === prodDF("min2")
+                    , "left"
+                )
+                .drop("MIN_PRODUCT_UNIT_STANDARD")
+                .drop(prodDF("min2"))
+        val nullCount = resultDF.filter($"PRODUCT_ID".isNull).count()
+        if (nullCount != 0)
+            throw new Exception("cpa exist " + nullCount + " null `PRODUCT_ID`")
+        MapArgs(Map("result" -> DFArgs(resultDF)))
     }
 }

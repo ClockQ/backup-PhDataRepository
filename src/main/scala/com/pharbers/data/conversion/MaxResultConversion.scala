@@ -3,7 +3,7 @@ package com.pharbers.data.conversion
 import org.apache.spark.sql.DataFrame
 import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
 
-case class MaxResultConversion() extends PhDataConversion2 {
+case class MaxResultConversion() extends PhDataConversion {
 
     import com.pharbers.data.util._
     import org.apache.spark.sql.functions._
