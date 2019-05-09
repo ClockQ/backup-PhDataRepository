@@ -2,6 +2,7 @@ package com.pharbers.data.util
 
 import com.pharbers.spark.phSparkDriver
 import com.pharbers.util.log.phLogTrait.phDebugLog
+import com.pharbers.spark.session.spark_conn_instance
 
 /**
   * @description:
@@ -18,4 +19,9 @@ object getSparkDriver {
         sparkDriver.sc.setLogLevel("ERROR")
         sparkDriver
     }
+}
+
+object spark {
+    implicit val sparkDriver: phSparkDriver = getSparkDriver()
+    implicit val conn: spark_conn_instance = sparkDriver.conn_instance
 }

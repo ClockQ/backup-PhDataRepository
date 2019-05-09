@@ -1,8 +1,6 @@
 package com.pharbers.data.run
 
 import org.apache.spark.sql.DataFrame
-import com.pharbers.spark.phSparkDriver
-import com.pharbers.spark.session.spark_conn_instance
 import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
 
 /**
@@ -17,8 +15,7 @@ object TransformProductDev extends App {
     import org.apache.spark.sql.functions._
     import com.pharbers.data.util.ParquetLocation._
 
-//    implicit val sparkDriver: phSparkDriver = getSparkDriver()
-//    implicit val conn: spark_conn_instance = sparkDriver.conn_instance
+    import com.pharbers.data.util.spark._
     import sparkDriver.ss.implicits._
 
     def matchTable2Product(df: DataFrame, source: String): DataFrame = df

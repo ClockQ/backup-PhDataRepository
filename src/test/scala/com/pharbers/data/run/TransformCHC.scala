@@ -13,7 +13,9 @@ object TransformCHC extends App {
     import com.pharbers.data.util._
     import com.pharbers.data.conversion._
     import com.pharbers.data.util.ParquetLocation._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
+
+    import com.pharbers.data.util.spark._
+    import sparkDriver.ss.implicits._
 
     val chcFile1 = "/test/OAD CHC data for 5 cities to 2018Q3 v3.csv"
     val chcFile2 = "/test/chc/OAD CHC data for 5 cities to 2018Q4.csv"

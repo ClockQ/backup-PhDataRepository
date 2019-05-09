@@ -1,5 +1,6 @@
 package com.pharbers.data.conversion
 
+import com.pharbers.spark.phSparkDriver
 import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
 
 /**
@@ -7,10 +8,10 @@ import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
   * @author: clock
   * @date: 2019-03-28 16:40
   */
-case class OadAndAtc3TableConversion() extends PhDataConversion {
+case class OadAndAtc3TableConversion()(implicit val sparkDriver: phSparkDriver) extends PhDataConversion {
 
     import com.pharbers.data.util._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
+    import sparkDriver.ss.implicits._
 
     override def toERD(args: MapArgs): MapArgs = {
         val chcDF = args.get.getOrElse("chcDF", throw new Exception("not found chcDF")).getBy[DFArgs]

@@ -10,7 +10,9 @@ object TransformCHCDate extends App {
     import com.pharbers.data.util._
     import org.apache.spark.sql.functions._
     import com.pharbers.data.util.ParquetLocation._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
+
+    import com.pharbers.data.util.spark._
+    import sparkDriver.ss.implicits._
 
     val chcFile1 = "/test/OAD CHC data for 5 cities to 2018Q3 v3.csv"
     val chcFile2 = "/test/chc/OAD CHC data for 5 cities to 2018Q4.csv"
@@ -35,8 +37,6 @@ object TransformCHCDate extends App {
 
     newDateDF.show(false)
 
-    if(args.nonEmpty && args(0) == "TRUE"){
-        newDateDF.save2Mongo(PROD_DEV_LOCATION.split("/").last)
-        newDateDF.save2Parquet(PROD_DEV_LOCATION)
-    }
+    if(args.nonEmpty && args(0) == "TRUE")
+        newDateDF.save2Parquet(CHC_DATE_LOCATION).save2Mongo(CHC_DATE_LOCATION.split("/").last)
 }

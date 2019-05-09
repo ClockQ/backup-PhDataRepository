@@ -10,6 +10,15 @@ object ParquetLocation {
     val NHWA_COMPANY_ID = "5ca069bceeefcc012918ec72"
     val PFIZER_COMPANY_ID = "5ca069e2eeefcc012918ec73"
 
+    // hospital address
+    val HOSP_ADDRESS_BASE_LOCATION = "/repository/address"
+    val HOSP_ADDRESS_CITY_LOCATION = "/repository/city"
+    val HOSP_ADDRESS_MEDLE_LOCATION = "/test/hosp/Address/medle"
+    val HOSP_ADDRESS_PREFECTURE_LOCATION = "/repository/prefecture"
+    val HOSP_ADDRESS_PROVINCE_LOCATION = "/repository/province"
+    val HOSP_ADDRESS_REGION_LOCATION = "/repository/region"
+    val HOSP_ADDRESS_TIER_LOCATION = "/repository/tier"
+    val ADDRESS_DIS_LOCATION = "/repository/address_dis"
     // hospital
     val HOSP_BASE_LOCATION = "/repository/hosp"
     val HOSP_BED_LOCATION = "/test/hosp/bed"
@@ -19,14 +28,6 @@ object ParquetLocation {
     val HOSP_SPECIALTY_LOCATION = "/test/hosp/specialty"
     val HOSP_STAFFNUM_LOCATION = "/test/hosp/staffNum"
     val HOSP_UNIT_LOCATION = "/test/hosp/unit"
-    // hospital address
-    val HOSP_ADDRESS_BASE_LOCATION = "/repository/address"
-    val HOSP_ADDRESS_CITY_LOCATION = "/repository/city"
-    val HOSP_ADDRESS_MEDLE_LOCATION = "/test/hosp/Address/medle"
-    val HOSP_ADDRESS_PREFECTURE_LOCATION = "/repository/prefecture"
-    val HOSP_ADDRESS_PROVINCE_LOCATION = "/repository/province"
-    val HOSP_ADDRESS_REGION_LOCATION = "/repository/region"
-    val HOSP_ADDRESS_TIER_LOCATION = "/repository/tier"
     // hospital pha
     val HOSP_PHA_LOCATION = "/repository/pha"
     val HOSP_DIS_LOCATION = "/repository/hosp_dis_max"
@@ -51,6 +52,7 @@ object ParquetLocation {
     val CHC_DATE_LOCATION = "/repository/chc_date3"
     val CPA_LOCATION = "/repository/cpa"
     val GYCX_LOCATION = "/repository/gycx"
+    val FULL_HOSP_LOCATION = "/repository/full_hosp"
 
     val PANEL_LOCATION = "/repository/panel3"
     val MAX_RESULT_LOCATION = "/repository/max3"

@@ -8,6 +8,8 @@ object TransformOadAndAtc3Table extends App {
     import com.pharbers.data.conversion._
     import com.pharbers.data.util.ParquetLocation._
 
+    import com.pharbers.data.util.spark._
+
     val chcFile_Q3 = "/test/OAD CHC data for 5 cities to 2018Q3 v3.csv"
     val chcFile_Q4 = "/test/chc/OAD CHC data for 5 cities to 2018Q4.csv"
 

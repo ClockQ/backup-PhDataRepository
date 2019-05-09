@@ -11,6 +11,7 @@ object TransformProductEtc extends App {
 
 //    implicit val sparkDriver: phSparkDriver = getSparkDriver()
 //    implicit val conn: spark_conn_instance = sparkDriver.conn_instance
+    import com.pharbers.data.util.spark._
     import sparkDriver.ss.implicits._
 
     lazy val productDevERD = Parquet2DF(PROD_DEV_LOCATION)
@@ -58,7 +59,7 @@ object TransformProductEtc extends App {
             , "productDevERD" -> DFArgs(productDevERD)
         ))).getAs[DFArgs]("productEtcDIS")
         lazy val productEtcDISCount = productEtcDIS.count()
-//        productEtcDIS.show(false)
+        productEtcDIS.show(false)
 
         if(args.nonEmpty && args(0) == "TRUE")
             productEtcDIS.save2Parquet(PROD_ETC_DIS_LOCATION + "/" + company_id)

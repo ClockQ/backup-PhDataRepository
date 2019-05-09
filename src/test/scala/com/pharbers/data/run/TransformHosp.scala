@@ -12,9 +12,10 @@ object TransformHosp extends App {
 
     import com.pharbers.data.util._
     import com.pharbers.data.conversion._
-    import org.apache.spark.sql.functions._
     import com.pharbers.data.util.ParquetLocation._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
+
+    import com.pharbers.data.util.spark._
+    import sparkDriver.ss.implicits._
 
     def transformHosp(): Unit = {
         val driver = phFactory.getSparkInstance()
@@ -41,26 +42,24 @@ object TransformHosp extends App {
     }
 //    transformHosp()
 
-
     lazy val hospCvs = HospConversion()
 
     lazy val hospBaseERD = Parquet2DF(HOSP_BASE_LOCATION)
     lazy val hospBaseERDCount = hospBaseERD.count()
 
+    lazy val addressDIS = Parquet2DF(ADDRESS_DIS_LOCATION)
+    lazy val addressDISCount = addressDIS.count()
+
     lazy val hospDIS = hospCvs.toDIS(MapArgs(Map(
         "hospBaseERD" -> DFArgs(hospBaseERD)
-        , "hospAddressERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_BASE_LOCATION))
-        , "hospPrefectureERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_PREFECTURE_LOCATION))
-        , "hospCityERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_CITY_LOCATION))
-        , "hospProvinceERD" -> DFArgs(Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION))
+        , "addressDIS" -> DFArgs(addressDIS)
     ))).getAs[DFArgs]("hospDIS")
     lazy val hospDISCount = hospDIS.count()
     hospDIS.show(false)
 
     val hospMinus = hospBaseERDCount - hospDISCount
-    assert(hospMinus == 0, "prodIms: 转换后的DIS比ERD减少`" + hospMinus + "`条记录")
+    assert(hospMinus == 0, "hospital: 转换后的DIS比ERD减少`" + hospMinus + "`条记录")
 
     if (args.nonEmpty && args(0) == "TRUE")
         hospDIS.save2Parquet(HOSP_DIS_LOCATION)
-
 }

@@ -1,17 +1,18 @@
 package com.pharbers.data.conversion
 
 import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
+import com.pharbers.spark.phSparkDriver
 
 /**
   * @description: product of pharbers
   * @author: clock
   * @date: 2019-03-28 16:40
   */
-case class ProductEtcConversion2() extends PhDataConversion {
+case class ProductEtcConversion2()(implicit val sparkDriver: phSparkDriver) extends PhDataConversion {
 
     import com.pharbers.data.util._
+    import sparkDriver.ss.implicits._
     import org.apache.spark.sql.functions._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     override def toERD(args: MapArgs): MapArgs = {
 

@@ -2,12 +2,13 @@ package com.pharbers.data.conversion
 
 import org.apache.spark.sql.DataFrame
 import com.pharbers.pactions.actionbase.{DFArgs, MapArgs, SingleArgFuncArgs}
+import com.pharbers.spark.phSparkDriver
 
-case class CHCConversion() extends PhDataConversion {
+case class CHCConversion()(implicit val sparkDriver: phSparkDriver) extends PhDataConversion {
 
     import com.pharbers.data.util._
+    import sparkDriver.ss.implicits._
     import org.apache.spark.sql.functions._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     def toCHCStruct(dis: DataFrame): DataFrame = dis.select(
         $"IMS_PACK_ID".as("PACK_ID"), $"TIME", $"CITY_NAME".as("CITY")
@@ -66,7 +67,7 @@ case class CHCConversion() extends PhDataConversion {
         val cityERD = args.get.getOrElse("cityERD", throw new Exception("not found cityERD")).getBy[DFArgs]
         val dateERD = args.get.getOrElse("dateERD", throw new Exception("not found dateERD")).getBy[DFArgs]
 
-        val addressDIS = AddressConversion().toDIS(MapArgs(Map(
+        val addressDIS = AddressConversion()(sparkDriver).toDIS(MapArgs(Map(
             "cityERD" -> DFArgs(cityERD)
         ))).getAs[DFArgs]("addressDIS")
 

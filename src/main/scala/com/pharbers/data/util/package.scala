@@ -14,8 +14,6 @@ import com.pharbers.util.log.phLogTrait.phDebugLog
   * @date: 2019-03-28 15:49
   */
 package object util {
-    implicit val sparkDriver = getSparkDriver()
-    implicit val con = sparkDriver.conn_instance
 
     implicit class SaveParquet(df: DataFrame) {
         def save2Parquet(location: String): DataFrame = {

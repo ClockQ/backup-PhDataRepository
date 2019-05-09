@@ -1,16 +1,16 @@
 package com.pharbers.data.conversion
 
-
+import com.pharbers.spark.phSparkDriver
 
 /**
   * @description:
   * @author: clock
   * @date: 2019-04-28 16:54
   */
-case class AddressConversion() extends PhDataConversion {
+case class AddressConversion()(implicit val sparkDriver: phSparkDriver) extends PhDataConversion {
 
     import com.pharbers.data.util._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
+    import sparkDriver.ss.implicits._
     import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
 
     override def toERD(args: MapArgs): MapArgs = ???

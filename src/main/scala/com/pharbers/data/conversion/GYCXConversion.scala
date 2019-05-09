@@ -2,12 +2,13 @@ package com.pharbers.data.conversion
 
 import com.pharbers.util.log.phLogTrait.phDebugLog
 import com.pharbers.pactions.actionbase.{DFArgs, MapArgs, SingleArgFuncArgs}
+import com.pharbers.spark.phSparkDriver
 
-case class GYCXConversion() extends PhDataConversion {
+case class GYCXConversion()(implicit val sparkDriver: phSparkDriver) extends PhDataConversion {
 
     import com.pharbers.data.util._
+    import sparkDriver.ss.implicits._
     import org.apache.spark.sql.functions._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     override def toERD(args: MapArgs): MapArgs = {
         val gycxDF = args.get.getOrElse("gycxDF", throw new Exception("not found gycxDF")).getBy[DFArgs]

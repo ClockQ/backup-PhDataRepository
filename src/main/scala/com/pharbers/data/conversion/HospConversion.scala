@@ -1,5 +1,6 @@
 package com.pharbers.data.conversion
 
+import com.pharbers.spark.phSparkDriver
 import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
 
 /**
@@ -7,11 +8,11 @@ import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
   * @author: clock
   * @date: 2019-03-28 16:40
   */
-case class HospConversion() extends PhDataConversion {
+case class HospConversion()(implicit val sparkDriver: phSparkDriver) extends PhDataConversion {
 
     import com.pharbers.data.util._
+    import sparkDriver.ss.implicits._
     import org.apache.spark.sql.functions._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     override def toERD(args: MapArgs): MapArgs = ???
 
@@ -24,19 +25,7 @@ case class HospConversion() extends PhDataConversion {
         val hospSpecialtyERD = args.get.getOrElse("hospSpecialtyERD", Seq.empty[String].toDF("_id"))
         val hospStaffNumERD = args.get.getOrElse("hospStaffNumERD", Seq.empty[String].toDF("_id"))
         val hospUnitERD = args.get.getOrElse("hospUnitERD", Seq.empty[String].toDF("_id"))
-        val hospAddressERD = args.get.get("hospAddressERD")
-        val hospPrefectureERD = args.get.get("hospPrefectureERD")
-        val hospCityERD = args.get.get("hospCityERD")
-        val hospProvinceERD = args.get.get("hospProvinceERD")
-
-        val addressDIS = AddressConversion().toDIS(MapArgs{
-            val args = Map.newBuilder[String, DFArgs]
-            if (hospProvinceERD.isDefined) args += "provinceERD" -> DFArgs(hospProvinceERD.get.getBy[DFArgs])
-            if (hospCityERD.nonEmpty) args += "cityERD" -> DFArgs(hospCityERD.get.getBy[DFArgs])
-            if (hospPrefectureERD.nonEmpty) args += "prefectureERD" -> DFArgs(hospPrefectureERD.get.getBy[DFArgs])
-            if (hospAddressERD.nonEmpty) args += "addressERD" -> DFArgs(hospAddressERD.get.getBy[DFArgs])
-            args.result()
-        }).getAs[DFArgs]("addressDIS")
+        val addressDIS = args.get.getOrElse("addressDIS", DFArgs(Seq.empty[String].toDF("ADDRESS_ID"))).getBy[DFArgs]
 
         val hospDIS = {
             hospBaseERD

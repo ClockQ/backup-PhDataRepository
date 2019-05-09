@@ -3,6 +3,7 @@ package com.pharbers.data.conversion
 import org.apache.spark.sql.DataFrame
 import com.pharbers.data.util.commonUDF
 import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
+import com.pharbers.spark.phSparkDriver
 import org.apache.spark.sql.expressions.UserDefinedFunction
 
 /**
@@ -10,11 +11,11 @@ import org.apache.spark.sql.expressions.UserDefinedFunction
   * @author: clock
   * @date: 2019-04-15 14:47
   */
-case class ProductImsConversion() extends PhDataConversion {
+case class ProductImsConversion()(implicit val sparkDriver: phSparkDriver) extends PhDataConversion {
 
     import com.pharbers.data.util._
+    import sparkDriver.ss.implicits._
     import org.apache.spark.sql.functions._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     override def toERD(args: MapArgs): MapArgs = {
         val columnSeq = Seq(

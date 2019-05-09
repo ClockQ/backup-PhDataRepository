@@ -1,5 +1,6 @@
 package com.pharbers.data.conversion
 
+import com.pharbers.spark.phSparkDriver
 import com.pharbers.pactions.actionbase.{DFArgs, MapArgs, SingleArgFuncArgs, StringArgs}
 
 /**
@@ -7,11 +8,11 @@ import com.pharbers.pactions.actionbase.{DFArgs, MapArgs, SingleArgFuncArgs, Str
   * @author: clock
   * @date: 2019-03-28 16:40
   */
-case class ProductEtcConversion() extends PhDataConversion {
+case class ProductEtcConversion()(implicit val sparkDriver: phSparkDriver) extends PhDataConversion {
 
     import com.pharbers.data.util._
+    import sparkDriver.ss.implicits._
     import org.apache.spark.sql.functions._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     override def toERD(args: MapArgs): MapArgs = {
         val company_id = args.getAs[StringArgs]("company_id")

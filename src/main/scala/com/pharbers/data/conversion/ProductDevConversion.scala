@@ -1,5 +1,6 @@
 package com.pharbers.data.conversion
 
+import com.pharbers.spark.phSparkDriver
 import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
 
 /**
@@ -7,8 +8,9 @@ import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
   * @author: clock
   * @date: 2019-04-15 14:49
   */
-case class ProductDevConversion() extends PhDataConversion {
+case class ProductDevConversion()(implicit val sparkDriver: phSparkDriver) extends PhDataConversion {
 
+    import sparkDriver.ss._
     import com.pharbers.data.util._
     import org.apache.spark.sql.functions._
 

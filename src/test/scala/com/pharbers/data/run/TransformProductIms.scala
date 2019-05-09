@@ -15,6 +15,8 @@ object TransformProductIms extends App {
     import org.apache.spark.sql.functions._
     import com.pharbers.data.util.ParquetLocation._
 
+    import com.pharbers.data.util.spark._
+
     val ImsMnfFile = "/data/IMS/IMS_PRODUCT_STANDARD_201812/cn_mnf_ref_201812_1.txt"
     val ImsLkpFile = "/data/IMS/IMS_PRODUCT_STANDARD_201812/cn_mol_lkp_201812_1.txt"
     val ImsMolFile = "/data/IMS/IMS_PRODUCT_STANDARD_201812/cn_mol_ref_201812_1.txt"

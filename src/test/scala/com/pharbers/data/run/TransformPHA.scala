@@ -9,7 +9,9 @@ object TransformPHA extends App {
 
     import com.pharbers.data.util._
     import com.pharbers.data.util.ParquetLocation._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
+
+    import com.pharbers.data.util.spark._
+    import sparkDriver.ss.implicits._
 
     val pha_csv = "/test/CPA&GYCX/CPA_GYC_PHA.csv"
 

@@ -7,10 +7,13 @@ package com.pharbers.data.run
   */
 object TransformAddress extends App {
 
-    import com.pharbers.data.conversion._
-    import com.pharbers.data.util.ParquetLocation._
     import com.pharbers.data.util._
+    import com.pharbers.data.conversion._
     import com.pharbers.pactions.actionbase._
+    import com.pharbers.data.util.ParquetLocation._
+
+    import com.pharbers.data.util.spark._
+    import sparkDriver.ss.implicits._
 
     val provinceDF = Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION)
     val provinceDFCount = provinceDF.count()
@@ -33,4 +36,7 @@ object TransformAddress extends App {
     val addressDISCount = addressDIS.count()
     addressDIS.show(false)
     println(provinceDFCount, cityDFCount, prefectureDFCount, addressDFCount, addressDISCount)
+
+    if (args.nonEmpty && args(0) == "TRUE")
+        addressDIS.save2Parquet(ADDRESS_DIS_LOCATION)//.save2Mongo(ADDRESS_DIS_LOCATION.split("/").last)
 }
