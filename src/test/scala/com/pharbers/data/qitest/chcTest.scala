@@ -11,7 +11,8 @@ import org.apache.spark.sql.functions._
 object chcTest extends App {
 
     import com.pharbers.data.util._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
+    import com.pharbers.data.util.spark._
+    import com.pharbers.data.util.spark.sparkDriver.ss.implicits._
 
     lazy val imsPackFile = "/test/IMS_PACK_ID.csv"
     lazy val chc_oad_q4 = "/test/chc/OAD CHC data for 5 cities to 2018Q4.csv"

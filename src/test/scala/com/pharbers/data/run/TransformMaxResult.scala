@@ -6,6 +6,7 @@ import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
 object TransformMaxResult extends App {
 
     import com.pharbers.data.util._
+    import com.pharbers.data.util.spark._
     import com.pharbers.data.conversion._
     import com.pharbers.data.util.ParquetLocation._
 

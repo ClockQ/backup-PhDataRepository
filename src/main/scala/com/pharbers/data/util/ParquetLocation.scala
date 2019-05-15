@@ -50,9 +50,15 @@ object ParquetLocation {
     val CHC_LOCATION = "/repository/chc5"
     val CHC_CA_LOCATION = "/repository/chc_ca"
     val CHC_DATE_LOCATION = "/repository/chc_date3"
+
+    // MAX
     val CPA_LOCATION = "/repository/cpa"
     val GYCX_LOCATION = "/repository/gycx"
     val FULL_HOSP_LOCATION = "/repository/full_hosp"
+    val MISS_HOSP_LOCATION = "/repository/miss_hosp"
+    val NOT_PUBLISHED_HOSP_LOCATION = "/repository/not_published_hosp"
+    val SAMPLE_HOSP_LOCATION = "/repository/sample_hosp"
+    val UNIVERSE_HOSP_LOCATION = "/repository/universe_hosp"
 
     val PANEL_LOCATION = "/repository/panel3"
     val MAX_RESULT_LOCATION = "/repository/max3"

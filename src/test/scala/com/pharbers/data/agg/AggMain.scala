@@ -67,7 +67,8 @@ class Agg(company_id: String) {
     import com.pharbers.data.conversion._
     import org.apache.spark.sql.functions._
     import com.pharbers.data.util.ParquetLocation._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
+    import com.pharbers.data.util.spark._
+    import com.pharbers.data.util.spark.sparkDriver.ss.implicits._
 
     var sourceDF: DataFrame = Seq.empty[String].toDF("_id")
     var prodMatchDF: DataFrame = Seq.empty[String].toDF("_id")

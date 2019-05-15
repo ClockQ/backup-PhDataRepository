@@ -12,7 +12,7 @@ case class ProductDevConversion2()(implicit val sparkDriver: phSparkDriver) exte
 
     import com.pharbers.data.util._
     import org.apache.spark.sql.functions._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
+    import sparkDriver.ss.implicits._
 
     override def toERD(args: MapArgs): MapArgs = {
         val productDevERD = args.get.values.map(_.getBy[DFArgs]).reduce(_ unionByName _)

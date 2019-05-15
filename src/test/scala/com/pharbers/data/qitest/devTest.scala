@@ -13,7 +13,9 @@ object devTest extends App {
     import com.pharbers.data.conversion._
     import org.apache.spark.sql.functions._
     import com.pharbers.data.util.ParquetLocation._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
+    import com.pharbers.data.util.spark._
+
+    import sparkDriver.ss.implicits._
 
     TransformProductDev.pfizerMatchDF.filter($"DEV_DELIVERY_WAY".isNull).show(false)
 

@@ -10,7 +10,7 @@ import com.pharbers.util.log.phLogTrait.phDebugLog
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.IntegerType
-
+import com.pharbers.data.util.spark._
 import scala.util.parsing.json.JSONObject
 
 case class CompareMaxResultAgg(args: MapArgs) extends sequenceJobWithMap {

@@ -15,6 +15,7 @@ import com.pharbers.data.conversion.{CPAConversion, HospConversion, ProductEtcCo
 case class CPA2ERDJob(args: Map[String, String])(implicit any: Any = null) extends sequenceJobWithMap {
     override val name: String = "CPA2ERDJob"
     override val actions: List[pActionTrait] = Nil
+    import com.pharbers.data.util.spark._
 
     import com.pharbers.data.util._
 

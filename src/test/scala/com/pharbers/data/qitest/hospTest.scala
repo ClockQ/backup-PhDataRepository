@@ -12,7 +12,9 @@ object hospTest extends App {
 
     import com.pharbers.data.util._
     import org.apache.spark.sql.functions._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
+    import com.pharbers.data.util.spark._
+    import com.pharbers.data.util.spark.sparkDriver.ss.implicits._
 
     Parquet2DF(HOSP_PHA_LOCATION).show(false)
+
 }

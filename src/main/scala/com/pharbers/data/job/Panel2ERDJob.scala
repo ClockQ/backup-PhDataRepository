@@ -10,6 +10,7 @@ import com.pharbers.data.util._
 class Panel2ERDJob(args: Map[String, String])(implicit any: Any = null) extends sequenceJobWithMap {
     override val actions: List[pActionTrait] = Nil
     override val name: String = "Panel2ERDJob"
+    import com.pharbers.data.util.spark._
 
     val company_id: String = args("company_id")
     val panel_file: String = args("panel_file")

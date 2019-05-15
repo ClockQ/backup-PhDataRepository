@@ -10,17 +10,17 @@ object Main extends App {
     val NOT_SAVE = Array("FALSE")
     val STATUS = NOT_SAVE
 
-    // product
-    TransformProductDev.main(STATUS)
-    TransformOadAndAtc3Table.main(STATUS)
-    TransformProductIms.main(STATUS)
-    TransformProductEtc.main(STATUS)
-
     // address
     TransformAddress.main(STATUS)
 
     // hosp
     TransformHosp.main(STATUS)
+
+    // product
+    TransformProductDev.main(STATUS)
+    TransformOadAndAtc3Table.main(STATUS)
+    TransformProductIms.main(STATUS)
+    TransformProductEtc.main(STATUS)
 
     // CHC
     TransformCHCDate.main(SAVE)
@@ -28,8 +28,9 @@ object Main extends App {
 
     // source
     TransformPHA.main(SAVE)
-//    TransformCPA.main(STATUS)
+    TransformCPA.main(STATUS)
     TransformGYCX.main(STATUS)
+    TransformMissHosp.main(SAVE)
 
     TransformPanel.main(STATUS)
     TransformMaxResult.main(STATUS)

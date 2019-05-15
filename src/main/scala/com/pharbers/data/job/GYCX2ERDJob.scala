@@ -15,6 +15,7 @@ import com.pharbers.data.conversion.{GYCXConversion, HospConversion, ProductEtcC
 case class GYCX2ERDJob(args: Map[String, String])(implicit any: Any = null) extends sequenceJobWithMap {
     override val name: String = "GYCX2ERDJob"
     override val actions: List[pActionTrait] = Nil
+    import com.pharbers.data.util.spark._
 
     import com.pharbers.data.util._
 

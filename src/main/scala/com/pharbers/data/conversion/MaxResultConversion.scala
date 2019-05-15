@@ -2,12 +2,13 @@ package com.pharbers.data.conversion
 
 import org.apache.spark.sql.DataFrame
 import com.pharbers.pactions.actionbase.{DFArgs, MapArgs}
+import com.pharbers.spark.phSparkDriver
 
-case class MaxResultConversion() extends PhDataConversion {
+case class MaxResultConversion()(implicit val sparkDriver: phSparkDriver) extends PhDataConversion {
 
     import com.pharbers.data.util._
+    import sparkDriver.ss.implicits._
     import org.apache.spark.sql.functions._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
 
     override def toERD(args: MapArgs): MapArgs = {
         val maxDF = args.get.getOrElse("maxDF", throw new Exception("not found maxDF")).getBy[DFArgs]

@@ -3,7 +3,6 @@ package com.pharbers.data
 import com.pharbers.spark.util._
 import org.apache.spark.sql.functions._
 import com.pharbers.spark.phSparkDriver
-import com.pharbers.pactions.actionbase._
 import com.pharbers.data.model.oidSchema
 import org.apache.spark.sql.{DataFrame, SaveMode}
 import com.pharbers.util.log.phLogTrait.phDebugLog
@@ -33,8 +32,8 @@ package object util {
 
         def save2Mongo(name: String)(implicit sparkDriver: phSparkDriver): DataFrame = {
             phDebugLog(s"save `$name` to Mongo")
-            sparkDriver.setUtil(dataFrame2Mongo()(sparkDriver.conn_instance))
-                    .dataFrame2Mongo(
+            sparkDriver.setUtil(com.pharbers.spark.util.save2Mongo()(sparkDriver.conn_instance))
+                    .save2Mongo(
                         df.trimOId,
                         PhMongoConf.server_host,
                         PhMongoConf.server_port.toString,
@@ -101,15 +100,9 @@ package object util {
         }
     }
 
-    implicit class pActionArgsGetValue(args: pActionArgs) {
-        def getBy[T <: pActionArgs]: T#t = args.asInstanceOf[T].get
-
-        def getAs[T <: pActionArgs](index: String): T#t = args.asInstanceOf[MapArgs].get(index).asInstanceOf[T].get
-    }
-
     def FILE2DF(file_path: String, delimiter: String)(implicit sparkDriver: phSparkDriver): DataFrame =
-        sparkDriver.setUtil(csv2RDD()(sparkDriver.conn_instance))
-                .csv2RDD(file_path, delimiter, header = true).na.fill("")
+        sparkDriver.setUtil(readCsv()(sparkDriver.conn_instance))
+                .readCsv(file_path, delimiter, header = true).na.fill("")
 
     def CSV2DF(file_path: String)(implicit sparkDriver: phSparkDriver): DataFrame =
         FILE2DF(file_path, ",")
@@ -118,7 +111,7 @@ package object util {
         FILE2DF(file_path, "|")
 
     def Mongo2DF(collName: String)(implicit sparkDriver: phSparkDriver): DataFrame =
-        sparkDriver.setUtil(mongo2DF()(sparkDriver.conn_instance)).mongo2DF(
+        sparkDriver.setUtil(readMongo()(sparkDriver.conn_instance)).readMongo(
             PhMongoConf.server_host,
             PhMongoConf.server_port.toString,
             PhMongoConf.conn_name,

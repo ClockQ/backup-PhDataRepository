@@ -61,12 +61,13 @@ case class CPAConversion()(implicit val sparkDriver: phSparkDriver) extends PhDa
     }
 
     def matchHospFunc(args: MapArgs): MapArgs = {
-        val cpaDF = args.getAs[DFArgs]("cpaDF")
+        val cpaDF = args.getAs[DFArgs]("cpaDF").withColumn("HOSP_ID", $"HOSP_ID".cast("int"))
         val hospDF = args.getAs[DFArgs]("hospDF")
                 .select($"_id" as "HOSPITAL_ID", $"PHA_HOSP_ID")
                 .dropDuplicates("PHA_HOSP_ID")
         val phaDF = args.getAs[DFArgs]("phaDF")
                 .select($"CPA", $"PHA_ID_NEW")
+                .withColumn("CPA", $"CPA".cast("int"))
                 .dropDuplicates("CPA")
 
         val resultDF = cpaDF
@@ -76,6 +77,8 @@ case class CPAConversion()(implicit val sparkDriver: phSparkDriver) extends PhDa
                     , "left"
                 )
                 .drop(phaDF("CPA"))
+
+
                 .join(
                     hospDF
                     , phaDF("PHA_ID_NEW") === hospDF("PHA_HOSP_ID")
@@ -83,13 +86,11 @@ case class CPAConversion()(implicit val sparkDriver: phSparkDriver) extends PhDa
                 )
                 .drop(phaDF("PHA_ID_NEW"))
                 .drop(hospDF("PHA_HOSP_ID"))
-//        val nullCount = resultDF.filter($"HOSPITAL_ID".isNull).count()
-//        if (nullCount != 0)
-//            throw new Exception("cpa exist " + nullCount + " null `HOSPITAL_ID`")
                 .withColumn("HOSPITAL_ID",
-            when(hospDF("HOSPITAL_ID").isNotNull, hospDF("HOSPITAL_ID"))
-                    .otherwise(concat(lit("other"), cpaDF("HOSP_ID")))
-        )
+                    when(hospDF("HOSPITAL_ID").isNotNull, hospDF("HOSPITAL_ID"))
+                            .otherwise(concat(lit("other"), cpaDF("HOSP_ID")))
+                )
+
         MapArgs(Map("result" -> DFArgs(resultDF)))
     }
 

@@ -1,6 +1,5 @@
 package com.pharbers.data.run
 
-import com.pharbers.util.log.phLogTrait.phDebugLog
 import com.pharbers.pactions.actionbase.{DFArgs, MapArgs, SingleArgFuncArgs, StringArgs}
 
 object TransformCPA extends App {
@@ -9,7 +8,9 @@ object TransformCPA extends App {
     import com.pharbers.data.conversion._
     import org.apache.spark.sql.functions._
     import com.pharbers.data.util.ParquetLocation._
-    import com.pharbers.data.util.sparkDriver.ss.implicits._
+
+    import com.pharbers.data.util.spark._
+    import sparkDriver.ss.implicits._
 
     val cpaCvs = CPAConversion()
 
@@ -21,7 +22,7 @@ object TransformCPA extends App {
     def nhwaCpaERD(): Unit = {
         val company_id = NHWA_COMPANY_ID
 
-        val cpa_csv_file = "/test/CPA&GYCX/Nhwa_201804_CPA_20181227.csv"
+        val cpa_csv_file = "/data/nhwa/pha_config_repository1809/Nhwa_201809_CPA_20181126.csv"
         val prod_match_file = "/data/nhwa/pha_config_repository1809/Nhwa_ProductMatchTable_20181126.csv"
 
         lazy val cpaDF = CSV2DF(cpa_csv_file)
@@ -45,11 +46,11 @@ object TransformCPA extends App {
             , "matchProdFunc" -> SingleArgFuncArgs(cpaCvs.matchProdFunc)
         ))).getAs[DFArgs]("cpaERD")
         lazy val cpaERDCount = cpaERD.count()
-//        cpaERD.show(false)
+        //        cpaERD.show(false)
         lazy val cpaERDMinus = cpaDFCount - cpaERDCount
         assert(cpaERDMinus == 0, "nhwa: 转换后的ERD比源数据减少`" + cpaERDMinus + "`条记录")
 
-        if(args.nonEmpty && args(0) == "TRUE")
+        if (args.nonEmpty && args(0) == "TRUE")
             cpaERD.save2Parquet(CPA_LOCATION + "/" + company_id + "/20181227")//.save2Mongo(CPA_LOCATION.split("/").last)
 
         lazy val cpaDIS = cpaCvs.toDIS(MapArgs(Map(
@@ -60,9 +61,59 @@ object TransformCPA extends App {
         lazy val cpaDISCount = cpaDIS.count()
 //        cpaDIS.show(false)
         lazy val cpaDISMinus = cpaDFCount - cpaDISCount
+        println(cpaDFCount, cpaERDCount, cpaDISCount)
         assert(cpaERDMinus == 0, "nhwa: 转换后的DIS比源数据减少`" + cpaDISMinus + "`条记录")
     }
+
     nhwaCpaERD()
+
+    def nhwaCpaFullHospERD(): Unit = {
+        val company_id = NHWA_COMPANY_ID
+
+        val cpa_full_hosp_file = "hdfs:///data/nhwa/pha_config_repository1804/Nhwa_2018_FullHosp_20180629.csv"
+        val prod_match_file = "/data/nhwa/pha_config_repository1809/Nhwa_ProductMatchTable_20181126.csv"
+
+        lazy val cpaFullHospDF = CSV2DF(cpa_full_hosp_file)
+        lazy val cpaFullHospDFCount = cpaFullHospDF.count()
+
+        lazy val prodMatchDF = CSV2DF(prod_match_file)
+                .addColumn("PACK_NUMBER").addColumn("PACK_COUNT")
+                .withColumn("PACK_NUMBER", when($"PACK_NUMBER".isNotNull, $"PACK_NUMBER").otherwise($"PACK_COUNT"))
+
+        lazy val productEtcDIS = Parquet2DF(PROD_ETC_DIS_LOCATION + "/" + company_id)
+
+        lazy val cpaERD = cpaCvs.toERD(MapArgs(Map(
+            "company_id" -> StringArgs(company_id)
+            , "source" -> StringArgs("CPA")
+            , "cpaDF" -> DFArgs(cpaFullHospDF)
+            , "hospDF" -> DFArgs(hospDIS)
+            , "prodDF" -> DFArgs(productEtcDIS)
+            , "phaDF" -> DFArgs(phaDF)
+            , "prodMatchDF" -> DFArgs(prodMatchDF)
+            , "matchHospFunc" -> SingleArgFuncArgs(cpaCvs.matchHospFunc)
+            , "matchProdFunc" -> SingleArgFuncArgs(cpaCvs.matchProdFunc)
+        ))).getAs[DFArgs]("cpaERD")
+        lazy val cpaERDCount = cpaERD.count()
+        //        cpaERD.show(false)
+        lazy val cpaERDMinus = cpaFullHospDFCount - cpaERDCount
+        println(cpaERDCount, cpaFullHospDFCount)
+        assert(cpaERDMinus == 0, "nhwa full hosp: 转换后的ERD比源数据减少`" + cpaERDMinus + "`条记录")
+
+        if (args.nonEmpty && args(0) == "TRUE")
+            cpaERD.save2Parquet(FULL_HOSP_LOCATION + "/" + company_id + "/20180629")//.save2Mongo(CPA_LOCATION.split("/").last)
+
+        lazy val cpaDIS = cpaCvs.toDIS(MapArgs(Map(
+            "cpaERD" -> DFArgs(cpaERD) //DFArgs(Parquet2DF(FULL_HOSP_LOCATION + "/" + company_id + "/20180629"))
+            , "hospDIS" -> DFArgs(hospDIS)
+            , "prodDIS" -> DFArgs(productEtcDIS)
+        ))).getAs[DFArgs]("cpaDIS")
+        lazy val cpaDISCount = cpaDIS.count()
+        cpaDIS.show(false)
+        lazy val cpaDISMinus = cpaFullHospDFCount - cpaDISCount
+        assert(cpaERDMinus == 0, "nhwa full hosp: 转换后的DIS比源数据减少`" + cpaDISMinus + "`条记录")
+    }
+
+//    nhwaCpaFullHospERD()
 
 //    def pfizerCpaERD(): Unit = {
 //        val company_id = PFIZER_COMPANY_ID
