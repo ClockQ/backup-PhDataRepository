@@ -47,12 +47,12 @@ case class CPAConversion()(implicit val sparkDriver: phSparkDriver) extends PhDa
         val cpaDIS = cpaERD
                 .join(
                     hospDIS,
-                    cpaERD("HOSPITAL_ID") === hospDIS("_id"),
+                    cpaERD("HOSPITAL_ID") === hospDIS("HOSPITAL_ID"),
                     "left"
                 )
-                .drop(hospDIS("_id"))
+                .drop(hospDIS("HOSPITAL_ID"))
                 .join(
-                    prodDIS.drop(prodDIS("_id")),
+                    prodDIS,
                     cpaERD("PRODUCT_ID") === prodDIS("DEV_PRODUCT_ID"),
                     "left"
                 )
@@ -63,12 +63,12 @@ case class CPAConversion()(implicit val sparkDriver: phSparkDriver) extends PhDa
     def matchHospFunc(args: MapArgs): MapArgs = {
         val cpaDF = args.getAs[DFArgs]("cpaDF").withColumn("HOSP_ID", $"HOSP_ID".cast("int"))
         val hospDF = args.getAs[DFArgs]("hospDF")
-                .select($"_id" as "HOSPITAL_ID", $"PHA_HOSP_ID")
-                .dropDuplicates("PHA_HOSP_ID")
+                .select($"HOSPITAL_ID", $"PHA_HOSP_ID")
+                .distinctByKey("PHA_HOSP_ID")()
         val phaDF = args.getAs[DFArgs]("phaDF")
                 .select($"CPA", $"PHA_ID_NEW")
                 .withColumn("CPA", $"CPA".cast("int"))
-                .dropDuplicates("CPA")
+                .distinctByKey("CPA")()
 
         val resultDF = cpaDF
                 .join(
@@ -77,8 +77,6 @@ case class CPAConversion()(implicit val sparkDriver: phSparkDriver) extends PhDa
                     , "left"
                 )
                 .drop(phaDF("CPA"))
-
-
                 .join(
                     hospDF
                     , phaDF("PHA_ID_NEW") === hospDF("PHA_HOSP_ID")

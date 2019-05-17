@@ -60,17 +60,18 @@ object TransformCPA extends App {
         ))).getAs[DFArgs]("cpaDIS")
         lazy val cpaDISCount = cpaDIS.count()
 //        cpaDIS.show(false)
+
         lazy val cpaDISMinus = cpaDFCount - cpaDISCount
         println(cpaDFCount, cpaERDCount, cpaDISCount)
         assert(cpaERDMinus == 0, "nhwa: 转换后的DIS比源数据减少`" + cpaDISMinus + "`条记录")
     }
 
-    nhwaCpaERD()
+//    nhwaCpaERD()
 
     def nhwaCpaFullHospERD(): Unit = {
         val company_id = NHWA_COMPANY_ID
 
-        val cpa_full_hosp_file = "hdfs:///data/nhwa/pha_config_repository1804/Nhwa_2018_FullHosp_20180629.csv"
+        val cpa_full_hosp_file = "hdfs:///data/nhwa/pha_config_repository1809/Nhwa_2018_FullHosp_20180629.csv"
         val prod_match_file = "/data/nhwa/pha_config_repository1809/Nhwa_ProductMatchTable_20181126.csv"
 
         lazy val cpaFullHospDF = CSV2DF(cpa_full_hosp_file)
@@ -95,8 +96,8 @@ object TransformCPA extends App {
         ))).getAs[DFArgs]("cpaERD")
         lazy val cpaERDCount = cpaERD.count()
         //        cpaERD.show(false)
+
         lazy val cpaERDMinus = cpaFullHospDFCount - cpaERDCount
-        println(cpaERDCount, cpaFullHospDFCount)
         assert(cpaERDMinus == 0, "nhwa full hosp: 转换后的ERD比源数据减少`" + cpaERDMinus + "`条记录")
 
         if (args.nonEmpty && args(0) == "TRUE")
@@ -108,8 +109,10 @@ object TransformCPA extends App {
             , "prodDIS" -> DFArgs(productEtcDIS)
         ))).getAs[DFArgs]("cpaDIS")
         lazy val cpaDISCount = cpaDIS.count()
-        cpaDIS.show(false)
+//        cpaDIS.show(false)
+
         lazy val cpaDISMinus = cpaFullHospDFCount - cpaDISCount
+        println(cpaFullHospDFCount, cpaERDCount, cpaDISCount)
         assert(cpaERDMinus == 0, "nhwa full hosp: 转换后的DIS比源数据减少`" + cpaDISMinus + "`条记录")
     }
 

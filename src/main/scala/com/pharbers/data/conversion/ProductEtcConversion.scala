@@ -54,7 +54,7 @@ case class ProductEtcConversion()(implicit val sparkDriver: phSparkDriver) exten
 
         val etcConnAtcDF = atcERD match {
             case Some(atc) =>
-                val atcDF = atc.getBy[DFArgs].dropDuplicates("MOLE_NAME")
+                val atcDF = atc.getBy[DFArgs].distinctByKey("MOLE_NAME")()
                 productEtcERD
                         .join(
                             atcDF

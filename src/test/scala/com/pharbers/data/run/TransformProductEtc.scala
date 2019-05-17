@@ -59,8 +59,10 @@ object TransformProductEtc extends App {
             , "productDevERD" -> DFArgs(productDevERD)
         ))).getAs[DFArgs]("productEtcDIS")
         lazy val productEtcDISCount = productEtcDIS.count()
-        productEtcDIS.show(false)
+//        productEtcDIS.show(false)
 
+        lazy val productEtcDISMinus = productEtcERDCount - productEtcDISCount
+        assert(productEtcDISMinus == 0, "nhwa full hosp: 转换后的DIS比ERD减少`" + productEtcDISMinus + "`条记录")
         if(args.nonEmpty && args(0) == "TRUE")
             productEtcDIS.save2Parquet(PROD_ETC_DIS_LOCATION + "/" + company_id)
     }
@@ -116,6 +118,11 @@ object TransformProductEtc extends App {
                 .sort(col("count").desc)
                 .show(false)
 
+        if(args.nonEmpty && args(0) == "TRUE")
+            productEtcDIS.save2Parquet(PROD_ETC_DIS_LOCATION + "/" + company_id)
+
+        lazy val productEtcDISMinus = productEtcERDCount - productEtcDISCount
+        assert(productEtcDISMinus == 0, "nhwa full hosp: 转换后的DIS比ERD减少`" + productEtcDISMinus + "`条记录")
         if(args.nonEmpty && args(0) == "TRUE")
             productEtcDIS.save2Parquet(PROD_ETC_DIS_LOCATION + "/" + company_id)
     }

@@ -34,6 +34,7 @@ case class HospConversion()(implicit val sparkDriver: phSparkDriver) extends PhD
                         hospBaseERD("addressID") === addressDIS("ADDRESS_ID"),
                         "left"
                     ).drop(addressDIS("ADDRESS_ID"))
+                    .withColumnRenamed("_id", "HOSPITAL_ID")
                     .withColumnRenamed("title", "HOSP_NAME")
                     .withColumnRenamed("PHAIsRepeat", "PHA_IS_REPEAT")
                     .withColumnRenamed("PHAHospId", "PHA_HOSP_ID")

@@ -4,8 +4,8 @@ import com.pharbers.spark.util._
 import org.apache.spark.sql.functions._
 import com.pharbers.spark.phSparkDriver
 import com.pharbers.data.model.oidSchema
-import org.apache.spark.sql.{DataFrame, SaveMode}
 import com.pharbers.util.log.phLogTrait.phDebugLog
+import org.apache.spark.sql.{Column, DataFrame, SaveMode}
 
 /**
   * @description: data util collection
@@ -44,14 +44,13 @@ package object util {
         }
 
         def trimOId: DataFrame = {
-//            phDebugLog(s"trim `ObjectID` in DataFrame")
+            //            phDebugLog(s"trim `ObjectID` in DataFrame")
             val trimOIdUdf: UserDefinedFunction = udf(oidSchema)
             if (df.columns.contains("_id")) df.withColumn("_id", trimOIdUdf(col("_id")))
             else df
         }
 
         def trimId: DataFrame = {
-//            phDebugLog(s"trim `ID` in DataFrame")
             if (df.columns.contains("_id")) df.withColumn("_id", lit(col("_id")("oid")))
             else df
         }
@@ -68,6 +67,16 @@ package object util {
         def generateId: DataFrame = {
             if (df.columns.contains("_id")) df
             else df.withColumn("_id", commonUDF.generateIdUdf()).cache()
+        }
+
+        def distinctByKey(key: String*)(chooseBy: String = "", chooseFun: Column => Column = min): DataFrame = {
+            val columns = df.columns
+            val sortBy = if (chooseBy == "") columns.head else chooseBy
+
+            df.groupBy(key.head, key.tail: _*)
+                    .agg(chooseFun(struct(sortBy, columns.filter(_ != sortBy): _*)) as "tmp")
+                    .select("tmp.*")
+                    .select(columns.head, columns.tail: _*)
         }
 
         def str2Time: DataFrame = {
