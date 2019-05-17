@@ -46,7 +46,6 @@ object TransformHosp extends App {
 
     lazy val hospBaseERD = Parquet2DF(HOSP_BASE_LOCATION)
     lazy val hospBaseERDCount = hospBaseERD.count()
-
     lazy val addressDIS = Parquet2DF(ADDRESS_DIS_LOCATION)
     lazy val addressDISCount = addressDIS.count()
 

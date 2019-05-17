@@ -69,11 +69,11 @@ package object util {
             else df.withColumn("_id", commonUDF.generateIdUdf()).cache()
         }
 
-        def distinctByKey(key: String*)(chooseBy: String = "", chooseFun: Column => Column = min): DataFrame = {
+        def distinctByKey(keys: String*)(chooseBy: String = "", chooseFun: Column => Column = min): DataFrame = {
             val columns = df.columns
             val sortBy = if (chooseBy == "") columns.head else chooseBy
 
-            df.groupBy(key.head, key.tail: _*)
+            df.groupBy(keys.head, keys.tail: _*)
                     .agg(chooseFun(struct(sortBy, columns.filter(_ != sortBy): _*)) as "tmp")
                     .select("tmp.*")
                     .select(columns.head, columns.tail: _*)
