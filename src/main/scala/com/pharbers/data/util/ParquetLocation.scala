@@ -47,4 +47,5 @@ object ParquetLocation {
     //agg
     val MAX_RESULT_MARKET_AGG_LOCATION = "/repository/agg/maxResult/market"
     val MAX_RESULT_ADDRESS_AGG_LOCATION = "/repository/agg/maxResult/address"
+    val MAX_RESULT_CITY_AGG_LOCATION = "/repository/agg/maxResult/city"
 }

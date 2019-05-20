@@ -61,7 +61,7 @@ case class MaxResultConversion(company_id: String) extends PhDataConversion {
                 "left"
             ).drop(col("main-id"))
             .join(
-                hospDIS.filter(col("PHAIsRepeat") === 0).select("PHAHospId", "city-name", "province-name").distinct(),
+                hospDIS.filter(col("PHAIsRepeat") === 0).select("PHAHospId", "city-name", "province-name", "region-name").distinct(),
                 col("PHA_ID") === col("PHAHospId"),
                 "left"
             ).drop(col("PHAHospId"))

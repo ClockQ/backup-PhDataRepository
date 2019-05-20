@@ -1,4 +1,4 @@
-package com.pharbers.data.job.aggregationJob
+package com.pharbers.data.job
 
 import com.pharbers.data.conversion.{HospConversion, MaxResultConversion, ProductDevConversion}
 import com.pharbers.data.util.ParquetLocation._
@@ -31,7 +31,8 @@ case class MaxResultAggregationForMonthJob(args: Map[String, String])(implicit a
             "hospAddressERD" -> Parquet2DF(HOSP_ADDRESS_BASE_LOCATION),
             "hospPrefectureERD" -> Parquet2DF(HOSP_ADDRESS_PREFECTURE_LOCATION),
             "hospCityERD" -> Parquet2DF(HOSP_ADDRESS_CITY_LOCATION),
-            "hospProvinceERD" -> Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION)
+            "hospProvinceERD" -> Parquet2DF(HOSP_ADDRESS_PROVINCE_LOCATION),
+            "hospRegionERD" -> Parquet2DF(HOSP_ADDRESS_REGION_LOCATION)
         )
     )("hospDIS")
     val productDIS: DataFrame = PROD_DEV_CVS.toDIS(
@@ -56,12 +57,13 @@ case class MaxResultAggregationForMonthJob(args: Map[String, String])(implicit a
         phDebugLog("聚合开始:" + maxResultERDLocation)
 
         val maxMiddleDF = maxDIS
-                .select(col("COMPANY_ID"), col("province-name"), col("city-name")
+                .select(col("COMPANY_ID"), col("province-name"), col("city-name"), col("region-name")
                     , col("MIN_PRODUCT"), col("YM"), col("SALES")
                     , col("UNITS"), col("MARKET"), col("PRODUCT_NAME")
                     , col("MOLE_NAME"), col("CORP_NAME"), col("PH_CORP_NAME"))
-                .withColumnRenamed("province-name", "province")
-                .withColumnRenamed("city-name", "city")
+                .withColumnRenamed("province-name", "PROVINCE")
+                .withColumnRenamed("city-name", "CITY")
+                .withColumnRenamed("region-name", "REGION")
                 .addMonth
                 .filter(col("COMPANY_ID") === companyId
                         && col("YM") >= ym.min
@@ -71,9 +73,12 @@ case class MaxResultAggregationForMonthJob(args: Map[String, String])(implicit a
                 months.foreach(x => {
                     val oneMonthAgg = maxMiddleDF
                             .filter(col("MONTH") === x)
-                            .groupBy("MIN_PRODUCT", "YM") // 消除了地区维度
-                            .agg(expr("count(province) as PROVINCE_COUNT"),
-                                expr("count(city) as CITY_COUNT"),
+                            .groupBy("MIN_PRODUCT", "YM", "CITY") // 地区按city
+                            .agg(
+                                expr("first(REGION) as REGION"),
+                                expr("first(PROVINCE) as PROVINCE"),
+
+//                                expr("count(CITY) as CITY_COUNT"),
                                 expr("sum(SALES) as SALES"),
                                 expr("sum(UNITS) as UNITS"),
                                 expr("first(COMPANY_ID) as COMPANY_ID"),
@@ -83,7 +88,7 @@ case class MaxResultAggregationForMonthJob(args: Map[String, String])(implicit a
                                 expr("first(PH_CORP_NAME) as PH_CORP_NAME"))
                             .withColumn("time", unix_timestamp)
                     phDebugLog(s"消除了地区,聚合$x 月 maxAggDF完成")
-                    oneMonthAgg.save2Parquet(MAX_RESULT_ADDRESS_AGG_LOCATION)
+                    oneMonthAgg.save2Parquet(MAX_RESULT_CITY_AGG_LOCATION)
                 })
 
 //        val dfMap = super.perform(MapArgs(Map("productDF" -> DFArgs(productDF)))).asInstanceOf[MapArgs].get

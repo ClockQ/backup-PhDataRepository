@@ -1,6 +1,7 @@
 package com.pharbers.test
 
-import com.pharbers.data.job.aggregationJob.MaxResultAggregationForMonthJob
+import com.pharbers.data.job.MaxResultAggregationForMonthJob
+
 
 object testMaxResultAggForMonthJob extends App {
     import com.pharbers.reflect.PhReflect._

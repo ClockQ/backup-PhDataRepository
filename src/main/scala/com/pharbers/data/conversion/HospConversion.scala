@@ -27,6 +27,7 @@ case class HospConversion() extends PhDataConversion {
         val hospPrefectureERD = args.getOrElse("hospPrefectureERD", Seq.empty[String].toDF("_id"))
         val hospCityERD = args.getOrElse("hospCityERD", Seq.empty[String].toDF("_id"))
         val hospProvinceERD = args.getOrElse("hospProvinceERD", Seq.empty[String].toDF("_id"))
+        val hospRegionERD = args.getOrElse("hospRegionERD", Seq.empty[String].toDF("_id"))
 
         val hospDIS = hospBaseERD
             .join(
@@ -58,6 +59,15 @@ case class HospConversion() extends PhDataConversion {
                 col("province") === col("main-id"),
                 "left"
             ).drop(col("main-id"))
+            .join(
+                hospRegionERD
+                        .withColumnRenamed("_id", "mainId")
+                        .withColumnRenamed("name", "region-name")
+                        .drop("polygon"),
+//                array_contains(col("region"), col("mainId")),
+                col("region")(0) === col("mainId"),
+                "left"
+            ).drop(col("mainId"))
 
         Map(
             "hospDIS" -> hospDIS
