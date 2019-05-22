@@ -30,14 +30,14 @@ package object util {
 
         import org.apache.spark.sql.expressions.UserDefinedFunction
 
-        def save2Mongo(name: String)(implicit sparkDriver: phSparkDriver): DataFrame = {
+        def save2Mongo(name: String, conn_name: String = PhMongoConf.conn_name)(implicit sparkDriver: phSparkDriver): DataFrame = {
             phDebugLog(s"save `$name` to Mongo")
             sparkDriver.setUtil(com.pharbers.spark.util.save2Mongo()(sparkDriver.conn_instance))
                     .save2Mongo(
                         df.trimOId,
                         PhMongoConf.server_host,
                         PhMongoConf.server_port.toString,
-                        PhMongoConf.conn_name,
+                        conn_name,
                         name
                     )
             df
@@ -119,11 +119,11 @@ package object util {
     def TXT2DF(file_path: String)(implicit sparkDriver: phSparkDriver): DataFrame =
         FILE2DF(file_path, "|")
 
-    def Mongo2DF(collName: String)(implicit sparkDriver: phSparkDriver): DataFrame =
+    def Mongo2DF(collName: String, conn_name: String = PhMongoConf.conn_name)(implicit sparkDriver: phSparkDriver): DataFrame =
         sparkDriver.setUtil(readMongo()(sparkDriver.conn_instance)).readMongo(
             PhMongoConf.server_host,
             PhMongoConf.server_port.toString,
-            PhMongoConf.conn_name,
+            conn_name,
             collName
         ).trimId
 
