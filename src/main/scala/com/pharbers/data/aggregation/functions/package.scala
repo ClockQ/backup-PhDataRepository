@@ -35,6 +35,11 @@ package object functions {
         df => df.addRank(colName, col("X_GROUP"), col("Y_GROUP"))
     }
 
+    def eiCompare(colName: String): DataFrame => DataFrame = {
+        import com.pharbers.data.util.PhWindowUtil._
+        df => df.addEI("X_GROUP", colName, col("Y_GROUP"))
+    }
+
     //Expr functions
     def maxResultAggByProductsAndYmsExpr: RelationalGroupedDataset => DataFrame = {
         relationalGroupedDataset => relationalGroupedDataset.agg(
@@ -42,6 +47,10 @@ package object functions {
             expr("sum(UNITS) as UNITS"),
             expr("first(COMPANY_ID) as COMPANY_ID"),
             expr("first(YM) as YM"),
+            expr("first(YM_TYPE) as YM_TYPE"),
+            expr("first(ADDRESS) as ADDRESS"),
+            expr("first(ADDRESS_TYPE) as ADDRESS_TYPE"),
+            expr("first(TIER) as TIER"),
             expr("first(MARKET) as MARKET"),
             expr("sum(PRODUCT_COUNT) as PRODUCT_COUNT")
         )
@@ -53,10 +62,14 @@ package object functions {
             expr("sum(UNITS) as UNITS"),
             expr("first(COMPANY_ID) as COMPANY_ID"),
             expr("first(YM) as YM"),
+            expr("first(YM_TYPE) as YM_TYPE"),
+            expr("first(ADDRESS) as ADDRESS"),
+            expr("first(ADDRESS_TYPE) as ADDRESS_TYPE"),
+            expr("first(TIER) as TIER"),
             expr("first(PRODUCT) as PRODUCT"),
             expr("first(MARKET) as MARKET"),
             expr("first(PRODUCT_NAME) as PRODUCT_NAME"),
-            expr("first(PH_CORP_NAME) as PH_CORP_NAME"),
+            expr("first(CORP_NAME) as CORP_NAME"),
             expr("count(MIN_PRODUCT) as PRODUCT_COUNT")
         )
     }

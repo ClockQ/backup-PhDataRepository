@@ -22,12 +22,21 @@ object PhWindowUtil {
                     .drop(colName + "_RING")
         }
 
+        def addEI(dataCol: String, colName: String, partition: Column*): DataFrame ={
+            val windowYearOnYear = Window.partitionBy(partition.head).orderBy(col(dataCol).cast(IntegerType)).rangeBetween(-100, -100)
+            df.withColumn(colName + "_LAST_SOM", first(col(colName + "_SOM")).over(windowYearOnYear))
+                    .withColumn(colName + "_EI", col(colName + "_SOM") / col(colName + "_LAST_SOM"))
+                    .drop(colName + "_LAST_SOM")
+
+        }
+
         def addSom(colName: String, partition: Column*): DataFrame ={
             val window = Window.partitionBy(partition: _*).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
             df.withColumn(colName + "_SUM", sum(col(colName)).over(window))
                     .withColumn(colName + "_SOM", col(colName)/ col(colName + "_SUM"))
                     .drop(colName + "_SUM")
         }
+
 
         def addRank(order: String, partition: Column*): DataFrame = {
             val window = Window.partitionBy(partition: _*).orderBy(col(order).desc)
