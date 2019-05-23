@@ -8,9 +8,8 @@ import com.pharbers.data.util._
 import com.pharbers.pactions.actionbase._
 import com.pharbers.pactions.jobs.sequenceJobWithMap
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types.{IntegerType, StringType}
+import org.apache.spark.sql.types.IntegerType
 
 case class CompareMaxResultAgg(args: MapArgs) extends sequenceJobWithMap {
 
@@ -54,8 +53,8 @@ case class CompareMaxResultAgg(args: MapArgs) extends sequenceJobWithMap {
     )
 
     val salesRankOtherAggFunctions: List[DataFrame => DataFrame] = List(
-        distinguishRankTop5AndOther("SALES_RANK", "PRODUCT"),
-        aggByGroups(maxResultAggBySalesRankOtherAndYmsExpr, "MARKET", "YM", "SALES_RANK")
+        distinguishRankTopNAndOther("SALES_RANK", 50, "PRODUCT"),
+        aggByGroups(maxResultAggBySalesRankOtherAndYmsExpr, "MARKET", "YM", "SALES_RANK", "ADDRESS")
     )
 
     val salesRank10AggFunctions: List[DataFrame => DataFrame] = List(
@@ -101,33 +100,7 @@ case class CompareMaxResultAgg(args: MapArgs) extends sequenceJobWithMap {
 
     override def perform(pr: pActionArgs): pActionArgs = {
 
-        //todo: 提出去
-//        var MaxResultAggDF = Parquet2DF(maxAgg)
-//                .filter(col("COMPANY_ID") === sourceId && col("PRODUCT_NAME") =!= "" && col("CITY") =!= "")
-//
-//
-//        val marketDF = CSV2DF("/repository/agg/maxResult/Pfizer_MarketMatchTable.csv")
-//
-//        val windowMAT = Window.partitionBy("MIN_PRODUCT", "CITY").orderBy(col("YM").cast(IntegerType)).rangeBetween(-100, 0)
-//
-//        MaxResultAggDF =
-////                MaxResultAggRDDFunc.addYTDSales(MaxResultAggDF)
-//                MaxResultAggDF.withColumn("SALES", sum(col("SALES"))
-//                        .over(windowMAT))
-//                        .withColumn("YM_TYPE", lit("MAT"))
-//                        .withColumn("ADDRESS", col("REGION"))
-//                        .withColumn("ADDRESS_TYPE", lit("REGION"))
-//                        .join(
-//                            marketDF.withColumnRenamed("MOLE_NAME", "mole"),
-//                        col("MOLE_NAME") === col("mole"),
-//                        "left")
-//                        .drop("mole")
-//                        .withColumn("TIER", lit(0))
-
-
-//        val dfMap = super.perform(MapArgs(Map("maxResultAgg" -> DFArgs(MaxResultAggDF)))).asInstanceOf[MapArgs].get
         val dfMap = super.perform().asInstanceOf[MapArgs].get
-//        val resultDF = dfMap("salesRank10Compare").get.asInstanceOf[DataFrame]
         dfMap("productCompare").get.asInstanceOf[DataFrame]
                 .selectExpr(
                     "PRODUCT_NAME",

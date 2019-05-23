@@ -77,13 +77,17 @@ package object functions {
     def maxResultAggBySalesRankOtherAndYmsExpr: RelationalGroupedDataset => DataFrame = {
         relationalGroupedDataset => relationalGroupedDataset.agg(
             expr("sum(SALES) as SALES"),
-            expr("sum(UNITS) as UNITS"),
             expr("sum(SALES_SOM) as SALES_SOM"),
             expr("first(COMPANY_ID) as COMPANY_ID"),
             expr("first(YM) as YM"),
+            expr("first(YM_TYPE) as YM_TYPE"),
+            expr("first(ADDRESS) as ADDRESS"),
+            expr("first(ADDRESS_TYPE) as ADDRESS_TYPE"),
             expr("first(MARKET) as MARKET"),
-            expr("first(SALES_RANK) as SALES_RANK"),
-            expr("sum(PRODUCT_COUNT) as PRODUCT_COUNT")
+            expr("first(PRODUCT_NAME) as PRODUCT_NAME"),
+            expr("first(CORP_NAME) as CORP_NAME"),
+            expr("first(MIN_PRODUCT) as PRODUCT_COUNT"),
+            expr("first(SALES_RANK) as SALES_RANK")
         )
     }
 
@@ -92,8 +96,8 @@ package object functions {
         df => df.filter(col(colName) === value)
     }
 
-    def distinguishRankTop5AndOther(rankName: String, columns: String*): DataFrame => DataFrame = {
-        df => columns.foldLeft(df.withColumn(rankName, when(col(rankName) > 5, "others").otherwise(col(rankName))))((a, b) => {
+    def distinguishRankTopNAndOther(rankName: String,topN: Int, columns: String*): DataFrame => DataFrame = {
+        df => columns.foldLeft(df.withColumn(rankName, when(col(rankName) > topN, "others").otherwise(col(rankName))))((a, b) => {
             a.withColumn(b, when(col(rankName) === "others", "others").otherwise(col(b)))
         })
     }
