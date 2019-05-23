@@ -20,7 +20,6 @@ object agg2MaxView extends App {
     lazy val aggData = Mongo2DF("aggregateData", "pharbers-aggrate-data")
 
     lazy val cityDF = OnlineMongo2DF("City")
-            .withColumn("TITLE", concat($"TITLE", lit("市")))
 
     lazy val productDF = OnlineMongo2DF("Product")
 
@@ -32,7 +31,7 @@ object agg2MaxView extends App {
                 .connectProduct(productDF) // "GOODS_TYPE", "GOODS_ID"
                 .connectValue() // "VALUE_TYPE", "VALUE"
                 .select("INFO_ID", "DATE_TYPE", "DATE", "ADDRESS_TYPE", "ADDRESS_ID", "GOODS_TYPE", "GOODS_ID", "VALUE_TYPE", "VALUE")
-                .distinct()
+                .distinctByKey("INFO_ID", "DATE_TYPE", "DATE", "ADDRESS_TYPE", "ADDRESS_ID", "GOODS_TYPE", "GOODS_ID", "VALUE_TYPE")("VALUE", max)
                 .generateId
     }
 
