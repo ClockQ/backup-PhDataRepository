@@ -27,7 +27,8 @@ object commonUDF {
 
     val trimUdf: UserDefinedFunction = udf { str: String => str.trim }
 
-    val splitUdf: UserDefinedFunction = udf { (str: String, pattern: String) => str.split(pattern) }
+    val splitUdf: UserDefinedFunction = udf { (str: String, pattern: String) =>
+        str.split(pattern) }
 
     val headUdf: UserDefinedFunction = udf { array: Seq[String] => array.head }
 

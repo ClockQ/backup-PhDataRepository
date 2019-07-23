@@ -20,7 +20,8 @@ object TransformMissHosp extends App {
     val missHospFile = "hdfs:///data/nhwa/pha_config_repository1809/Missing_Hospital.csv"
     val notPublishedHospFile = "hdfs:///data/nhwa/pha_config_repository1809/Nhwa_2018_NotPublishedHosp_20180629.csv"
     val sampleFile = "hdfs:///data/nhwa/pha_config_repository1804/Nhwa_2018_If_panel_all_麻醉市场_20180629.csv"
-    val universeFile = "hdfs:///data/nhwa/pha_config_repository1809/Nhwa_universe_麻醉市场_20180705.csv"
+    //    val universeFile = "hdfs:///data/nhwa/pha_config_repository1809/Nhwa_universe_麻醉市场_20180705.csv"
+    val universeFile = "hdfs:///data/xlt/XLT_Universe_XLT_20181115.csv"
 
     lazy val phaDF = Parquet2DF(HOSP_PHA_LOCATION).distinctByKey("CPA")()
     lazy val hospDIS = Parquet2DF(HOSP_DIS_LOCATION).select($"HOSPITAL_ID", $"PHA_HOSP_ID").distinctByKey("PHA_HOSP_ID")()
@@ -90,9 +91,7 @@ object TransformMissHosp extends App {
     }
 
     lazy val universeDF = {
-        val phaDF = Parquet2DF(HOSP_PHA_LOCATION)
         val universeDF = CSV2DF(universeFile)
-
         val resultDF = universeDF
                 .withColumnRenamed("PHA_HOSP_ID", "PHA_ID_OLD")
                 .join(phaDF, $"PHA_ID_OLD" === phaDF("PHA_ID"), "left")
@@ -111,6 +110,7 @@ object TransformMissHosp extends App {
         resultDF.show(false)
         resultDF
     }
+    universeDF
 
     if (args.nonEmpty && args(0) == "TRUE")
         missHospERD.save2Parquet(MISS_HOSP_LOCATION + "/" + company_id)

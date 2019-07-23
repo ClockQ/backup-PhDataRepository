@@ -18,7 +18,6 @@ package object util {
         def save2Parquet(location: String): DataFrame = {
             val name = location.split("/").last
             val path = location.split("/").init.mkString("", "/", "/")
-            phDebugLog(s"save `$name` to `$path` parquet")
             df.write.mode(SaveMode.Append)
                     .option("header", value = true)
                     .parquet(location)
@@ -31,7 +30,6 @@ package object util {
         import org.apache.spark.sql.expressions.UserDefinedFunction
 
         def save2Mongo(name: String, conn_name: String = PhMongoConf.conn_name)(implicit sparkDriver: phSparkDriver): DataFrame = {
-            phDebugLog(s"save `$name` to Mongo")
             sparkDriver.setUtil(com.pharbers.spark.util.save2Mongo()(sparkDriver.conn_instance))
                     .save2Mongo(
                         df.trimOId,
